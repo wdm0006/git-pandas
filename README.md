@@ -1,7 +1,22 @@
 Git-Pandas
 ==========
 
-A simple set of wrappers around gitpython for creating pandas dataframes out of git data.
+A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
+two primary objects:
+
+ * Repository()
+ * ProjectDirectory()
+ 
+A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
+in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
+repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).
+
+Current functionality includes:
+
+ * Commit history with extension and directory filtering
+ * Blame with extension and directory filtering
+ 
+Please see examples for more detailed usage.
 
 
 Examples / Usage
@@ -104,3 +119,14 @@ A project is a collection of repos:
         'deletions': np.sum
     })
     print(attr)
+
+Contributing
+------------
+
+If you'd like to contribute, let me know, or just submit a pull request. We have no specific long term goals or guidelines
+at this stage.
+
+License
+-------
+
+This is BSD licensed (see License.md)
