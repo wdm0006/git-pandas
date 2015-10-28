@@ -49,29 +49,29 @@ class ProjectDirectory(object):
 
         return df
 
+    def blame(self, extensions=None, ignore_dir=None):
+        """
+
+        :param extensions:
+        :param ignore_dir:
+        :return:
+        """
+
+        df = DataFrame(columns=['loc'])
+
+        for repo in self.repos:
+            try:
+                df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir))
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldnt be blamed' % (repo, ))
+                pass
+
+        df = df.groupby(df.index).agg({'loc': np.sum})
+        df = df.sort(columns=['loc'], ascending=False)
+
+        return df
+
 if __name__ == '__main__':
-    set_option('display.height', 1000)
-    set_option('display.max_rows', 500)
-    set_option('display.max_columns', 500)
-    set_option('display.width', 1000)
-
-    p = ProjectDirectory(working_dir='/Users/willmcginnis/Documents/Predikto/')
-
-    # get the commit history
-    ch = p.commit_history('develop', limit=None, extensions=['py'], ignore_dir=['lib', 'docs', 'test', 'tests', 'tests_t'])
-    print(ch.head(5))
-
-    # get the list of committers
-    print('\nCommiters:')
-    print(''.join([str(x) + '\n' for x in set(ch['committer'].values)]))
-    print('\n')
-
-    # print out everyone's contributions
-    attr = ch.reindex(columns=['committer', 'lines', 'insertions', 'deletions', 'net']).groupby(['committer'])
-    attr = attr.agg({
-        'lines': np.sum,
-        'insertions': np.sum,
-        'deletions': np.sum,
-        'net': np.sum
-    })
-    print(attr)
+    g = ProjectDirectory(working_dir='')
+    b = g.blame(extensions=['py'])
+    print(b)

@@ -1,4 +1,4 @@
-from git import Repo
+from git import Repo, GitCommandError
 import os
 from pandas import DataFrame, to_datetime, set_option
 import datetime
@@ -109,6 +109,33 @@ class Repository(object):
 
         return out
 
+    def blame(self, extensions=None, ignore_dir=None):
+        """
+
+        """
+
+        if ignore_dir is None:
+            ignore_dir = []
+
+        blames = []
+        for roots, dirs, files in os.walk(self.git_dir):
+            if '.git' not in roots and sum([1 if x in roots else 0 for x in ignore_dir]) == 0:
+                if extensions is not None:
+                    filenames = [roots + os.sep + x for x in files if x.split('.')[-1] in extensions]
+                else:
+                    filenames = [roots + os.sep + x for x in files]
+
+                for file in filenames:
+                    try:
+                        blames.append(self.repo.blame('HEAD', str(file).replace(self.git_dir + '/', '')))
+                    except GitCommandError as err:
+                        pass
+
+        blames = [item for sublist in blames for item in sublist]
+        blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+
+        return blames
+
     def __str__(self):
         return '%s' % (self.git_dir, )
 
@@ -123,59 +150,3 @@ class GitFlowRepository(Repository):
     def __init__(self):
         super(Repository, self).__init__()
 
-
-if __name__ == '__main__':
-    set_option('display.height', 1000)
-    set_option('display.max_rows', 500)
-    set_option('display.max_columns', 500)
-    set_option('display.width', 1000)
-
-    # build an example repository object and try some things out
-    dir = ''
-    ignore_dirs = [
-        'docs',
-        'tests',
-        'Data'
-    ]
-    r = Repository(dir)
-
-    # is it bare?
-    print('\nRepo bare?')
-    print(r.is_bare())
-    print('\n')
-
-    # get the commit history
-    ch = r.commit_history('develop', limit=None, extensions=['py'], ignore_dir=ignore_dirs)
-    print(ch.head(5))
-
-    # get the list of committers
-    print('\nCommiters:')
-    print(''.join([str(x) + '\n' for x in set(ch['committer'].values)]))
-    print('\n')
-
-    # print out everyone's contributions
-    attr = ch.reindex(columns=['committer', 'lines', 'insertions', 'deletions']).groupby(['committer'])
-    attr = attr.agg({
-        'lines': np.sum,
-        'insertions': np.sum,
-        'deletions': np.sum
-    })
-    print(attr)
-
-    # get the file change history
-    fh = r.file_change_history('develop', limit=None, ignore_dir=ignore_dirs)
-    fh['ext'] = fh['filename'].map(lambda x: x.split('.')[-1])
-    print(fh.head(50))
-
-    # print out unique extensions
-    print('\nExtensions Found:')
-    print(''.join([str(x) + '\n' for x in set(fh['ext'].values)]))
-    print('\n')
-
-    # agg by extension
-    etns = fh.reindex(columns=['ext', 'insertions', 'deletions']).groupby(['ext'])
-    etns = etns.agg({
-        'insertions': np.sum,
-        'deletions': np.sum
-    })
-    print(etns)
