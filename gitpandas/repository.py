@@ -56,10 +56,11 @@ class Repository(object):
         ds = [x[:-1] + [sum([x[-1][key]['lines'] for key in x[-1].keys()]),
                        sum([x[-1][key]['insertions'] for key in x[-1].keys()]),
                        sum([x[-1][key]['deletions'] for key in x[-1].keys()]),
+                       sum([x[-1][key]['insertions'] for key in x[-1].keys()]) - sum([x[-1][key]['deletions'] for key in x[-1].keys()])
                        ] for x in ds if len(x[-1].keys()) > 0]
 
         # make it a pandas dataframe
-        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions'])
+        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
