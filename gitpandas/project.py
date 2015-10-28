@@ -71,7 +71,3 @@ class ProjectDirectory(object):
 
         return df
 
-if __name__ == '__main__':
-    g = ProjectDirectory(working_dir='')
-    b = g.blame(extensions=['py'])
-    print(b)
