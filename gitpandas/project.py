@@ -71,3 +71,35 @@ class ProjectDirectory(object):
 
         return df
 
+    def repo_information(self):
+        """
+        Returns a dataframe with the properties of all repositories in the project directory.
+
+        :return: df
+        """
+
+        data = [[repo.git_dir,
+                 repo.repo.branches,
+                 repo.repo.bare,
+                 repo.repo.remotes,
+                 repo.repo.description,
+                 repo.repo.references,
+                 repo.repo.heads,
+                 repo.repo.submodules,
+                 repo.repo.tags,
+                 repo.repo.active_branch] for repo in self.repos]
+
+        df = DataFrame(data, columns=[
+            'local_directory',
+            'branches',
+            'bare',
+            'remotes',
+            'description',
+            'references',
+            'heads',
+            'submodules',
+            'tags',
+            'active_branch'
+        ])
+
+        return df
