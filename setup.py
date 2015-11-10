@@ -16,7 +16,7 @@ setup(
     description='A utility for interacting with data from git repositories as Pandas dataframes',
     long_description=long_description,
     url='https://github.com/wdm0006/git-pandas',
-    download_url='https://github.com/wdm0006/git-pandas/tarball/0.0.1',
+    download_url='https://github.com/wdm0006/git-pandas/tarball/' + VERSION,
     license='BSD',
     classifiers=[
       'Development Status :: 3 - Alpha',
