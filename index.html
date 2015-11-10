@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Git-Pandas &mdash; git-pandas 0.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="git-pandas 0.0.1 documentation" href="#"/>
+        <link rel="next" title="Repository" href="repository.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> git-pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">git-pandas</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>Git-Pandas</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="git-pandas">
+<h1>Git-Pandas<a class="headerlink" href="#git-pandas" title="Permalink to this headline">¶</a></h1>
+<p>A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
+two primary objects:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Repository()</li>
+<li>ProjectDirectory()</li>
+</ul>
+</div></blockquote>
+<p>A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
+in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
+repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).</p>
+<p>Current functionality includes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Commit history with extension and directory filtering</li>
+<li>Blame with extension and directory filtering</li>
+</ul>
+</div></blockquote>
+<p>Please see examples for more detailed usage.</p>
+<div class="section" id="examples-usage">
+<h2>Examples / Usage<a class="headerlink" href="#examples-usage" title="Permalink to this headline">¶</a></h2>
+<p>A repository is just 1 git repo:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">to_datetime</span><span class="p">,</span> <span class="n">set_option</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.height&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="c"># build an example repository object and try some things out</span>
+<span class="nb">dir</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+<span class="n">ignore_dirs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&#39;docs&#39;</span><span class="p">,</span>
+    <span class="s">&#39;tests&#39;</span><span class="p">,</span>
+    <span class="s">&#39;Data&#39;</span>
+<span class="p">]</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+
+<span class="c"># is it bare?</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repo bare?&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c"># get the commit history</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">],</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dirs</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ch</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="c"># get the list of committers</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Commiters:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c"># print out everyone&#39;s contributions</span>
+<span class="n">attr</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;lines&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;committer&#39;</span><span class="p">])</span>
+<span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s">&#39;lines&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
+<span class="p">})</span>
+<span class="k">print</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+
+<span class="c"># get the file change history</span>
+<span class="n">fh</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dirs</span><span class="p">)</span>
+<span class="n">fh</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+<span class="c"># print out unique extensions</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Extensions Found:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">fh</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c"># agg by extension</span>
+<span class="n">etns</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;ext&#39;</span><span class="p">])</span>
+<span class="n">etns</span> <span class="o">=</span> <span class="n">etns</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
+<span class="p">})</span>
+<span class="k">print</span><span class="p">(</span><span class="n">etns</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A project is a collection of repos:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span><span class="p">,</span> <span class="n">GitCommandError</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">set_option</span>
+<span class="kn">from</span> <span class="nn">gitpandas.repository</span> <span class="kn">import</span> <span class="n">Repository</span>
+
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.height&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;/foo/bar/&#39;</span><span class="p">)</span>
+
+<span class="c"># get the commit history</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">ch</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="c"># get the list of committers</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Commiters:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c"># print out everyone&#39;s contributions</span>
+<span class="n">attr</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;lines&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;committer&#39;</span><span class="p">])</span>
+<span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s">&#39;lines&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
+    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
+<span class="p">})</span>
+<span class="k">print</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>If you&#8217;d like to contribute, let me know, or just submit a pull request. We have no specific long term goals or guidelines
+at this stage.</p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This is BSD licensed (see License.md)</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="repository.html" class="btn btn-neutral float-right" title="Repository" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Will McGinnis.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
