@@ -1,8 +1,17 @@
+"""
+.. module:: project
+   :platform: Unix, Windows
+   :synopsis: A module for examining collections of git repositories as a whole
+
+.. moduleauthor:: Will McGinnis <will@pedalwrencher.com>
+
+
+"""
+
 import os
-import sys
-from git import Repo, GitCommandError
 import numpy as np
-from pandas import DataFrame, set_option
+from pandas import DataFrame
+from git import GitCommandError
 from gitpandas.repository import Repository
 
 __author__ = 'willmcginnis'
@@ -10,15 +19,13 @@ __author__ = 'willmcginnis'
 
 class ProjectDirectory(object):
     """
-    An object that refers to a directory full of git repos, for bulk analysis
+    An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
+    git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
+    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd
+    :return:
     """
     def __init__(self, working_dir=None):
-        """
-
-        :param dir:
-        :return:
-        """
         if working_dir is not None:
             self.project_dir = working_dir
         else:
@@ -29,10 +36,28 @@ class ProjectDirectory(object):
 
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
         """
+        Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
+        are appended to each other, resulting in one large data frame of size <limit>.  If a limit is provided, it is
+        divided by the number of repositories in the project directory to find out how many commits to pull from each
+        project. Future implementations will use date ordering across all projects to get the true most recent N commits
+        across the project.
 
-        :param branch:
-        :param limit:
-        :return:
+        Included in that DataFrame will be the columns:
+
+         * date (index)
+         * author
+         * committer
+         * message
+         * lines
+         * insertions
+         * deletions
+         * net
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
         """
 
         if limit is not None:
@@ -51,10 +76,17 @@ class ProjectDirectory(object):
 
     def blame(self, extensions=None, ignore_dir=None):
         """
+        Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
+        name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
+        method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
+        file extensions. The DataFrame will have the columns:
 
-        :param extensions:
-        :param ignore_dir:
-        :return:
+         * committer
+         * loc
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
         """
 
         df = DataFrame(columns=['loc'])
@@ -73,8 +105,12 @@ class ProjectDirectory(object):
 
     def branches(self):
         """
+        Returns a data frame of all branches in origin.  The DataFrame will have the columns:
 
-        :return:
+         * repository
+         * branch
+
+        :returns: DataFrame
         """
 
         df = DataFrame(columns=['repository', 'branch'])
@@ -90,8 +126,12 @@ class ProjectDirectory(object):
 
     def tags(self):
         """
+        Returns a data frame of all tags in origin.  The DataFrame will have the columns:
 
-        :return:
+         * repository
+         * tag
+
+        :returns: DataFrame
         """
 
         df = DataFrame(columns=['repository', 'tag'])
@@ -107,9 +147,21 @@ class ProjectDirectory(object):
 
     def repo_information(self):
         """
-        Returns a dataframe with the properties of all repositories in the project directory.
+        Returns a DataFrame with the properties of all repositories in the project directory. The returned DataFrame
+        will have the columns:
 
-        :return: df
+         * local_directory
+         * branches
+         * bare
+         * remotes
+         * description
+         * references
+         * heads
+         * submodules
+         * tags
+         * active_branch
+
+        :return: DataFrame
         """
 
         data = [[repo.git_dir,

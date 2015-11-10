@@ -16,8 +16,12 @@ repos, and any analysis is aggregated up from all of those into a single output 
 Current functionality includes:
 
  * Commit history with extension and directory filtering
+ * Edited files history with extension and directory filtering
  * Blame with extension and directory filtering
- 
+ * Branches 
+ * Tags
+ * ProjectDirectory-level general information table
+  
 Please see examples for more detailed usage.
 
 Installation

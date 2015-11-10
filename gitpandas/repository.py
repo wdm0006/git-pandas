@@ -1,9 +1,20 @@
-from git import Repo, GitCommandError
+"""
+.. module:: repository
+   :platform: Unix, Windows
+   :synopsis: A module for examining a single git repository
+
+.. moduleauthor:: Will McGinnis <will@pedalwrencher.com>
+
+
+"""
+
+
 import os
-from pandas import DataFrame, to_datetime, set_option
-import datetime
 import sys
+import datetime
 import numpy as np
+from git import Repo, GitCommandError
+from pandas import DataFrame, to_datetime
 
 __author__ = 'willmcginnis'
 
