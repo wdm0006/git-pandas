@@ -128,11 +128,20 @@
            <div itemprop="articleBody">
             
   <h1>Source code for gitpandas.project</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: project</span>
+<span class="sd">   :platform: Unix, Windows</span>
+<span class="sd">   :synopsis: A module for examining collections of git repositories as a whole</span>
+
+<span class="sd">.. moduleauthor:: Will McGinnis &lt;will@pedalwrencher.com&gt;</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span><span class="p">,</span> <span class="n">GitCommandError</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">set_option</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">GitCommandError</span>
 <span class="kn">from</span> <span class="nn">gitpandas.repository</span> <span class="kn">import</span> <span class="n">Repository</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;willmcginnis&#39;</span>
@@ -140,15 +149,13 @@
 
 <div class="viewcode-block" id="ProjectDirectory"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory">[docs]</a><span class="k">class</span> <span class="nc">ProjectDirectory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    An object that refers to a directory full of git repos, for bulk analysis</span>
+<span class="sd">    An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of</span>
+<span class="sd">    git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.</span>
 
+<span class="sd">    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd</span>
+<span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">working_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param dir:</span>
-<span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">working_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span> <span class="o">=</span> <span class="n">working_dir</span>
         <span class="k">else</span><span class="p">:</span>
@@ -159,10 +166,28 @@
 
 <div class="viewcode-block" id="ProjectDirectory.commit_history"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.commit_history">[docs]</a>    <span class="k">def</span> <span class="nf">commit_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories</span>
+<span class="sd">        are appended to each other, resulting in one large data frame of size &lt;limit&gt;.  If a limit is provided, it is</span>
+<span class="sd">        divided by the number of repositories in the project directory to find out how many commits to pull from each</span>
+<span class="sd">        project. Future implementations will use date ordering across all projects to get the true most recent N commits</span>
+<span class="sd">        across the project.</span>
 
-<span class="sd">        :param branch:</span>
-<span class="sd">        :param limit:</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Included in that DataFrame will be the columns:</span>
+
+<span class="sd">         * date (index)</span>
+<span class="sd">         * author</span>
+<span class="sd">         * committer</span>
+<span class="sd">         * message</span>
+<span class="sd">         * lines</span>
+<span class="sd">         * insertions</span>
+<span class="sd">         * deletions</span>
+<span class="sd">         * net</span>
+
+<span class="sd">        :param branch: the branch to return commits for</span>
+<span class="sd">        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit</span>
+<span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
+<span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -181,10 +206,17 @@
 </div>
 <div class="viewcode-block" id="ProjectDirectory.blame"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.blame">[docs]</a>    <span class="k">def</span> <span class="nf">blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer</span>
+<span class="sd">        name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history</span>
+<span class="sd">        method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain</span>
+<span class="sd">        file extensions. The DataFrame will have the columns:</span>
 
-<span class="sd">        :param extensions:</span>
-<span class="sd">        :param ignore_dir:</span>
-<span class="sd">        :return:</span>
+<span class="sd">         * committer</span>
+<span class="sd">         * loc</span>
+
+<span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
+<span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;loc&#39;</span><span class="p">])</span>
@@ -203,8 +235,12 @@
 </div>
 <div class="viewcode-block" id="ProjectDirectory.branches"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.branches">[docs]</a>    <span class="k">def</span> <span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a data frame of all branches in origin.  The DataFrame will have the columns:</span>
 
-<span class="sd">        :return:</span>
+<span class="sd">         * repository</span>
+<span class="sd">         * branch</span>
+
+<span class="sd">        :returns: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;branch&#39;</span><span class="p">])</span>
@@ -220,8 +256,12 @@
 </div>
 <div class="viewcode-block" id="ProjectDirectory.tags"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.tags">[docs]</a>    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a data frame of all tags in origin.  The DataFrame will have the columns:</span>
 
-<span class="sd">        :return:</span>
+<span class="sd">         * repository</span>
+<span class="sd">         * tag</span>
+
+<span class="sd">        :returns: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;tag&#39;</span><span class="p">])</span>
@@ -237,9 +277,21 @@
 </div>
 <div class="viewcode-block" id="ProjectDirectory.repo_information"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.repo_information">[docs]</a>    <span class="k">def</span> <span class="nf">repo_information</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns a dataframe with the properties of all repositories in the project directory.</span>
+<span class="sd">        Returns a DataFrame with the properties of all repositories in the project directory. The returned DataFrame</span>
+<span class="sd">        will have the columns:</span>
 
-<span class="sd">        :return: df</span>
+<span class="sd">         * local_directory</span>
+<span class="sd">         * branches</span>
+<span class="sd">         * bare</span>
+<span class="sd">         * remotes</span>
+<span class="sd">         * description</span>
+<span class="sd">         * references</span>
+<span class="sd">         * heads</span>
+<span class="sd">         * submodules</span>
+<span class="sd">         * tags</span>
+<span class="sd">         * active_branch</span>
+
+<span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[[</span><span class="n">repo</span><span class="o">.</span><span class="n">git_dir</span><span class="p">,</span>

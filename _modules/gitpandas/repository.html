@@ -128,12 +128,23 @@
            <div itemprop="articleBody">
             
   <h1>Source code for gitpandas.repository</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span><span class="p">,</span> <span class="n">GitCommandError</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: repository</span>
+<span class="sd">   :platform: Unix, Windows</span>
+<span class="sd">   :synopsis: A module for examining a single git repository</span>
+
+<span class="sd">.. moduleauthor:: Will McGinnis &lt;will@pedalwrencher.com&gt;</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">to_datetime</span><span class="p">,</span> <span class="n">set_option</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span><span class="p">,</span> <span class="n">GitCommandError</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">to_datetime</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;willmcginnis&#39;</span>
 
