@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Project &mdash; git-pandas 0.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="git-pandas 0.0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Repository" href="repository.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> git-pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Project</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">git-pandas</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Project</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/project.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-gitpandas.project">
+<span id="project"></span><h1>Project<a class="headerlink" href="#module-gitpandas.project" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="gitpandas.project.ProjectDirectory">
+<em class="property">class </em><code class="descclassname">gitpandas.project.</code><code class="descname">ProjectDirectory</code><span class="sig-paren">(</span><em>working_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that refers to a directory full of git repos, for bulk analysis</p>
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.blame">
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>extensions</strong> &#8211; </li>
+<li><strong>ignore_dir</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.branches">
+<code class="descname">branches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.branches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.branches" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.commit_history">
+<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.commit_history" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; </li>
+<li><strong>limit</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.repo_information">
+<code class="descname">repo_information</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.repo_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.repo_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataframe with the properties of all repositories in the project directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">df</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.tags" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="repository.html" class="btn btn-neutral" title="Repository" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Will McGinnis.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
