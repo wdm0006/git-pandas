@@ -31,12 +31,8 @@ A repository is just 1 git repo:
 
 .. code-block:: python
 
-    from git import Repo
-    import os
-    from pandas import DataFrame, to_datetime, set_option
-    import datetime
-    import sys
-    import numpy as np
+    from gitpandas import Repository
+    from pandas import set_option
 
     set_option('display.height', 1000)
     set_option('display.max_rows', 500)
@@ -97,12 +93,8 @@ A project is a collection of repos:
 
 .. code-block:: python
 
-    import os
-    import sys
-    from git import Repo, GitCommandError
-    import numpy as np
-    from pandas import DataFrame, set_option
-    from gitpandas.repository import Repository
+    from pandas import set_option
+    from gitpandas import ProjectDirectory
 
     set_option('display.height', 1000)
     set_option('display.max_rows', 500)
@@ -116,7 +108,7 @@ A project is a collection of repos:
     print(ch.head(5))
 
     # get the list of committers
-    print('\nCommiters:')
+    print('\nCommitters:')
     print(''.join([str(x) + '\n' for x in set(ch['committer'].values)]))
     print('\n')
 
