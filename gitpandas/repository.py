@@ -10,20 +10,14 @@ __author__ = 'willmcginnis'
 
 class Repository(object):
     """
-    The base class for a generic git repository, from which to gather statistics.
+    The base class for a generic git repository, from which to gather statistics.  The object encapulates a single
+    gitpython Repo instance.
 
+    :param working_dir: the directory of the git repository, meaning a .git directory is in it (default None=cwd)
+    :return:
     """
 
-    branches = []
-
     def __init__(self, working_dir=None):
-        """
-        Constructor
-
-        :param working_dir: the directory of the git repository (default None=cwd)
-        :return:
-        """
-
         if working_dir is not None:
             self.git_dir = working_dir
         else:
@@ -34,23 +28,50 @@ class Repository(object):
     def is_bare(self):
         """
         Returns a boolean for if the repo is bare or not
-        :return:
+
+        :return: bool
         """
+
         return self.repo.bare
 
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
         """
-        Returns a df of commits for a given branch
+        Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
+        the columns:
 
-        :param branch:
-        :return:
+         * date (index)
+         * author
+         * committer
+         * message
+         * lines
+         * insertions
+         * deletions
+         * net
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
         """
 
-        # setup the dataset of commits
+        # setup the data-set of commits
         if limit is None:
-            ds = [[x.author.name, x.committer.name, x.committed_date, x.message, self.check_extension(x.stats.files, extensions, ignore_dir)] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+            ds = [[
+                      x.author.name,
+                      x.committer.name,
+                      x.committed_date,
+                      x.message,
+                      self.__check_extension(x.stats.files, extensions, ignore_dir)
+                  ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
         else:
-            ds = [[x.author.name, x.committer.name, x.committed_date, x.message, self.check_extension(x.stats.files, extensions, ignore_dir)] for x in self.repo.iter_commits(branch, max_count=limit)]
+            ds = [[
+                      x.author.name,
+                      x.committer.name,
+                      x.committed_date,
+                      x.message,
+                      self.__check_extension(x.stats.files, extensions, ignore_dir)
+                  ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
         # aggregate stats
         ds = [x[:-1] + [sum([x[-1][key]['lines'] for key in x[-1].keys()]),
@@ -70,17 +91,42 @@ class Repository(object):
 
     def file_change_history(self, branch, limit=None, extensions=None, ignore_dir=None):
         """
-        Returns a df of commits for a given branch
+        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
+        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
+        many file changes). Included in the DataFrame will be the columns:
 
-        :param branch:
-        :return:
+         * date (index)
+         * author
+         * committer
+         * message
+         * filename
+         * insertions
+         * deletions
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
         """
 
         # setup the dataset of commits
         if limit is None:
-            ds = [[x.author.name, x.committer.name, x.committed_date, x.message, self.check_extension(x.stats.files, extensions, ignore_dir)] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+            ds = [[
+                      x.author.name,
+                      x.committer.name,
+                      x.committed_date,
+                      x.message,
+                      self.__check_extension(x.stats.files, extensions, ignore_dir)
+                  ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
         else:
-            ds = [[x.author.name, x.committer.name, x.committed_date, x.message, self.check_extension(x.stats.files, extensions, ignore_dir)] for x in self.repo.iter_commits(branch, max_count=limit)]
+            ds = [[
+                      x.author.name,
+                      x.committer.name,
+                      x.committed_date,
+                      x.message,
+                      self.__check_extension(x.stats.files, extensions, ignore_dir)
+                  ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
         ds = [x[:-1] + [fn, x[-1][fn]['insertions'], x[-1][fn]['deletions']] for x in ds for fn in x[-1].keys() if len(x[-1].keys()) > 0]
 
@@ -94,7 +140,15 @@ class Repository(object):
         return df
 
     @staticmethod
-    def check_extension(files, extensions, ignore_dir):
+    def __check_extension(files, extensions, ignore_dir):
+        """
+        Internal method to filter a list of file changes by extension and ignore_dirs.
+
+        :param files:
+        :param extensions: a list of file extensions to return commits for
+        :param ignore_dir: a list of directory names to ignore
+        :return: dict
+        """
         if extensions is None:
             return files
 
@@ -111,7 +165,17 @@ class Repository(object):
 
     def blame(self, extensions=None, ignore_dir=None):
         """
+        Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
+        name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
+        method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
+        file extensions. The DataFrame will have the columns:
 
+         * committer
+         * loc
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
         """
 
         if ignore_dir is None:
@@ -136,11 +200,62 @@ class Repository(object):
 
         return blames
 
+    def branches(self):
+        """
+        Returns a data frame of all branches in origin.  The DataFrame will have the columns:
+
+         * repository
+         * branch
+
+        :returns: DataFrame
+        """
+
+        branches = self.repo.branches
+        df = DataFrame(list(branches), columns=['branch'])
+        df['repository'] = self._repo_name()
+
+        return df
+
+    def tags(self):
+        """
+        Returns a data frame of all tags in origin.  The DataFrame will have the columns:
+
+         * repository
+         * tag
+
+        :returns: DataFrame
+        """
+
+        branches = self.repo.tags
+        df = DataFrame(list(branches), columns=['tag'])
+        df['repository'] = self._repo_name()
+
+        return df
+
+    def _repo_name(self):
+        """
+        Returns the name of the repository, using the local directory name.
+
+        :returns: str
+        """
+
+        return self.repo.git_dir.split(os.sep)[-2]
+
     def __str__(self):
-        return '%s' % (self.git_dir, )
+        """
+        A pretty name for the repository object.
+
+        :returns: str
+        """
+        return 'git repository: %s at: %s' % (self._repo_name(), self.git_dir, )
 
     def __repr__(self):
-        return '%s' % (self.git_dir, )
+        """
+        A unique name for the repository object.
+
+        :returns: str
+        """
+        return str(self.git_dir)
 
 
 class GitFlowRepository(Repository):
@@ -149,4 +264,5 @@ class GitFlowRepository(Repository):
     """
     def __init__(self):
         super(Repository, self).__init__()
+
 

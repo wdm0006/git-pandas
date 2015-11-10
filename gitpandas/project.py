@@ -71,6 +71,40 @@ class ProjectDirectory(object):
 
         return df
 
+    def branches(self):
+        """
+
+        :return:
+        """
+
+        df = DataFrame(columns=['repository', 'branch'])
+
+        for repo in self.repos:
+            try:
+                df = df.append(repo.branches())
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
+
+        return df
+
+    def tags(self):
+        """
+
+        :return:
+        """
+
+        df = DataFrame(columns=['repository', 'tag'])
+
+        for repo in self.repos:
+            try:
+                df = df.append(repo.tags())
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
+
+        return df
+
     def repo_information(self):
         """
         Returns a dataframe with the properties of all repositories in the project directory.
