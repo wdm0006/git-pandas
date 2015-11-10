@@ -31,6 +31,10 @@ To install use:
 
     pip install git-pandas
     
+Documentation
+-------------
+
+Docs can be found here: [http://wdm0006.github.io/git-pandas/](http://wdm0006.github.io/git-pandas/)
 
 Examples / Usage
 ----------------
