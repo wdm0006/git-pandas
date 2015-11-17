@@ -268,6 +268,29 @@ class Repository(object):
         """
         return str(self.git_dir)
 
+    def bus_factor(self, extensions=None, ignore_dir=None):
+        """
+        An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
+        the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
+        least 50% of the codebase's LOC
+        :param branch:
+        :return:
+        """
+
+        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir)
+        blame = blame.sort_values(by=['loc'], ascending=False)
+
+        total = blame['loc'].sum()
+        cumulative = 0
+        tc = 0
+        for idx in range(blame.shape[0]):
+            cumulative += blame.ix[idx, 'loc']
+            tc += 1
+            if cumulative >= total / 2:
+                break
+
+        return tc
+
 
 class GitFlowRepository(Repository):
     """
