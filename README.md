@@ -1,7 +1,7 @@
 Git-Pandas
 ==========
 
-v0.0.2
+v0.0.3
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:
@@ -21,6 +21,7 @@ Current functionality includes:
  * Branches 
  * Tags
  * ProjectDirectory-level general information table
+ * Approximate bus factor for projects and repos
   
 Please see examples for more detailed usage.
 
