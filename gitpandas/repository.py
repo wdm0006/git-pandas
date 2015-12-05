@@ -245,7 +245,7 @@ class Repository(object):
                 df = df.ix[range(0, df.shape[0], skip)]
                 df.reset_index()
             else:
-                df = df.ix[0]
+                df = df.ix[[0]]
                 df.reset_index()
 
         return df
