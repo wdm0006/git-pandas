@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Project &mdash; git-pandas 0.0.1 documentation</title>
+  <title>Project &mdash; git-pandas 0.0.4 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.1 documentation" href="index.html"/>
+    <link rel="top" title="git-pandas 0.0.4 documentation" href="index.html"/>
         <link rel="prev" title="Repository" href="repository.html"/> 
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.0.1
+                0.0.4
               </div>
             
           
@@ -127,8 +127,226 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="project">
-<h1>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-gitpandas.project">
+<span id="project"></span><h1>Project<a class="headerlink" href="#module-gitpandas.project" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-project"></span><dl class="class">
+<dt id="gitpandas.project.ProjectDirectory">
+<em class="property">class </em><code class="descclassname">gitpandas.project.</code><code class="descname">ProjectDirectory</code><span class="sig-paren">(</span><em>working_dir=None</em>, <em>ignore=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
+git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>working_dir</strong> &#8211; (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.blame">
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
+name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
+method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
+file extensions. The DataFrame will have the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>committer</li>
+<li>loc</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.branches">
+<code class="descname">branches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.branches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.branches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a data frame of all branches in origin.  The DataFrame will have the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>repository</li>
+<li>branch</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.bus_factor">
+<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
+the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
+least 50% of the codebase&#8217;s LOC
+:param branch:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.commit_history">
+<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.commit_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
+are appended to each other, resulting in one large data frame of size &lt;limit&gt;.  If a limit is provided, it is
+divided by the number of repositories in the project directory to find out how many commits to pull from each
+project. Future implementations will use date ordering across all projects to get the true most recent N commits
+across the project.</p>
+<p>Included in that DataFrame will be the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>date (index)</li>
+<li>author</li>
+<li>committer</li>
+<li>message</li>
+<li>lines</li>
+<li>insertions</li>
+<li>deletions</li>
+<li>net</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; the branch to return commits for</li>
+<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.cumulative_blame">
+<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>by='committer'</em>, <em>limit=None</em>, <em>skip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.cumulative_blame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
+collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
+returned in 3 forms (switched with the by parameter, default &#8216;committer&#8217;):</p>
+<blockquote>
+<div><ul class="simple">
+<li>committer: one column per committer</li>
+<li>project: one column per project</li>
+<li>raw: one column per committed per project</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; </li>
+<li><strong>extensions</strong> &#8211; </li>
+<li><strong>ignore_dir</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.repo_information">
+<code class="descname">repo_information</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.repo_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.repo_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame with the properties of all repositories in the project directory. The returned DataFrame
+will have the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>local_directory</li>
+<li>branches</li>
+<li>bare</li>
+<li>remotes</li>
+<li>description</li>
+<li>references</li>
+<li>heads</li>
+<li>submodules</li>
+<li>tags</li>
+<li>active_branch</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.revs">
+<code class="descname">revs</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>skip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.revs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.revs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dataframe of all revision tags and their timestamps for each project. It will have the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>date</li>
+<li>repository</li>
+<li>rev</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.tags">
+<code class="descname">tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a data frame of all tags in origin.  The DataFrame will have the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>repository</li>
+<li>tag</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -170,7 +388,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.1',
+            VERSION:'0.0.4',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
