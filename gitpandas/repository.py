@@ -228,6 +228,9 @@ class Repository(object):
          * date
          * rev
 
+        :param branch: (optional, default 'master') the branch to work in
+        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
+        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
         :return: DataFrame
 
         """
@@ -252,11 +255,16 @@ class Repository(object):
 
     def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None):
         """
+        Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
+        blamed to each committer at each timestamp as data.
 
-        :param branch:
-        :param extensions:
-        :param ignore_dir:
-        :return:
+        :param branch: (optional, default 'master') the branch to work in
+        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
+        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
+
         """
 
         if limit is None:
