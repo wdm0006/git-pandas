@@ -13,6 +13,7 @@ import os
 import sys
 import datetime
 import numpy as np
+import logging
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
 
@@ -28,13 +29,19 @@ class Repository(object):
     :return:
     """
 
-    def __init__(self, working_dir=None):
+    def __init__(self, working_dir=None, verbose=False):
+        self.verbose = verbose
+        self.log = logging.getLogger('gitpandas')
+
         if working_dir is not None:
             self.git_dir = working_dir
         else:
             self.git_dir = os.getcwd()
 
         self.repo = Repo(self.git_dir)
+
+        if self.verbose:
+            print('Repository [%s] instantiated at directory: %s' % (self._repo_name(), self.git_dir))
 
     def is_bare(self):
         """
@@ -160,11 +167,14 @@ class Repository(object):
         :param ignore_dir: a list of directory names to ignore
         :return: dict
         """
+
         if extensions is None:
             return files
 
         if ignore_dir is None:
             ignore_dir = []
+        else:
+            ignore_dir = [os.sep + str(x).replace('/', '').replace('\\', '') + os.sep for x in ignore_dir]
 
         out = {}
         for key in files.keys():
@@ -174,7 +184,7 @@ class Repository(object):
 
         return out
 
-    def blame(self, extensions=None, ignore_dir=None):
+    def blame(self, extensions=None, ignore_dir=None, rev='HEAD'):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
@@ -202,7 +212,7 @@ class Repository(object):
 
                 for file in filenames:
                     try:
-                        blames.append(self.repo.blame('HEAD', str(file).replace(self.git_dir + '/', '')))
+                        blames.append(self.repo.blame(rev, str(file).replace(self.git_dir + '/', '')))
                     except GitCommandError as err:
                         pass
 
@@ -210,6 +220,78 @@ class Repository(object):
         blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
 
         return blames
+
+    def revs(self, branch='master', limit=None, skip=None):
+        """
+        Returns a dataframe of all revision tags and their timestamps. It will have the columns:
+
+         * date
+         * rev
+
+        :return: DataFrame
+
+        """
+
+        if limit is None:
+            limit = sys.maxsize
+        elif skip is not None:
+            limit = limit * skip
+
+        ds = [[x.committed_date, x.name_rev.split(' ')[0]] for x in self.repo.iter_commits(branch, max_count=limit)]
+        df = DataFrame(ds, columns=['date', 'rev'])
+
+        if skip is not None:
+            if df.shape[0] >= skip:
+                df = df.ix[range(0, df.shape[0], skip)]
+                df.reset_index()
+            else:
+                df = df.ix[0]
+                df.reset_index()
+
+        return df
+
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None):
+        """
+
+        :param branch:
+        :param extensions:
+        :param ignore_dir:
+        :return:
+        """
+
+        if limit is None:
+            limit = sys.maxsize
+
+        revs = self.revs(branch=branch, limit=limit, skip=skip)
+
+        # get the commit history to stub out committers (hacky and slow)
+        committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
+        for committer in committers:
+            revs[committer] = 0
+
+        if self.verbose:
+            print('Beginning processing for cumulative blame:')
+
+        # now populate that table with some actual values
+        for idx, row in revs.iterrows():
+            if self.verbose:
+                print('%s. [%s] getting blame for rev: %s' % (str(idx), datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), row.rev, ))
+
+            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev)
+            for committer in committers:
+                try:
+                    loc = blame.loc[committer, 'loc']
+                    revs.set_value(idx, committer, loc)
+                except KeyError:
+                    pass
+
+        del revs['rev']
+
+        revs['date'] = to_datetime(revs['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
+        revs.set_index(keys=['date'], drop=True, inplace=True)
+
+        revs = revs.fillna(0.0)
+        return revs
 
     def branches(self):
         """
@@ -250,7 +332,10 @@ class Repository(object):
         :returns: str
         """
 
-        return self.repo.git_dir.split(os.sep)[-2]
+        reponame = self.repo.git_dir.split(os.sep)[-2]
+        if reponame.strip() == '':
+            return 'unknown_repo'
+        return reponame
 
     def __str__(self):
         """

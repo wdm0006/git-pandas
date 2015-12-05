@@ -8,9 +8,10 @@
 
 """
 
+import sys
 import os
 import numpy as np
-from pandas import DataFrame
+import pandas as pd
 from git import GitCommandError
 from gitpandas.repository import Repository
 
@@ -22,17 +23,21 @@ class ProjectDirectory(object):
     An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
     git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
-    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd
+    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
     :return:
     """
-    def __init__(self, working_dir=None):
-        if working_dir is not None:
-            self.project_dir = working_dir
+    def __init__(self, working_dir=None, ignore=None, verbose=True):
+        if working_dir is None:
+            self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(os.getcwd()) if '.git' in x[0]])
+        elif isinstance(working_dir, list):
+            self.repo_dirs = working_dir
         else:
-            self.project_dir = os.getcwd()
+            self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(working_dir) if '.git' in x[0]])
 
-        self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(self.project_dir) if '.git' in x[0]])
-        self.repos = [Repository(r) for r in self.repo_dirs]
+        self.repos = [Repository(r, verbose=verbose) for r in self.repo_dirs]
+
+        if ignore is not None:
+            self.repos = [x for x in self.repos if x._repo_name not in ignore]
 
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
         """
@@ -63,7 +68,7 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
-        df = DataFrame(columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
+        df = pd.DataFrame(columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         for repo in self.repos:
             try:
@@ -71,6 +76,8 @@ class ProjectDirectory(object):
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
                 pass
+
+        df.reset_index()
 
         return df
 
@@ -89,7 +96,7 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        df = DataFrame(columns=['loc'])
+        df = pd.DataFrame(columns=['loc'])
 
         for repo in self.repos:
             try:
@@ -113,7 +120,7 @@ class ProjectDirectory(object):
         :returns: DataFrame
         """
 
-        df = DataFrame(columns=['repository', 'branch'])
+        df = pd.DataFrame(columns=['repository', 'branch'])
 
         for repo in self.repos:
             try:
@@ -122,7 +129,101 @@ class ProjectDirectory(object):
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
                 pass
 
+        df.reset_index()
+
         return df
+
+    def revs(self, branch='master', limit=None, skip=None):
+        """
+        Returns a dataframe of all revision tags and their timestamps for each project. It will have the columns:
+
+         * date
+         * repository
+         * rev
+
+        :return: DataFrame
+
+        """
+
+        if limit is None:
+            limit = sys.maxsize
+
+        df = pd.DataFrame(columns=['repository', 'rev'])
+
+        for repo in self.repos:
+            try:
+                revs = repo.revs(branch=branch, limit=limit, skip=skip)
+                revs['repository'] = repo._repo_name()
+                df = df.append(revs)
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
+
+        df.reset_index()
+
+        return df
+
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, by='committer', limit=None, skip=None):
+        """
+        Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
+        collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
+        returned in 3 forms (switched with the by parameter, default 'committer'):
+
+         * committer: one column per committer
+         * project: one column per project
+         * raw: one column per committed per project
+
+        :param branch:
+        :param extensions:
+        :param ignore_dir:
+        :return: DataFrame
+
+        """
+
+        if limit is None:
+            limit = sys.maxsize
+
+        blames = []
+        for repo in self.repos:
+            try:
+                blame = repo.cumulative_blame(branch=branch, extensions=extensions, ignore_dir=ignore_dir, limit=limit, skip=skip)
+                blames.append((repo._repo_name(), blame))
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
+
+        global_blame = blames[0][1]
+        global_blame.columns = [x + '__' + str(blames[0][0]) for x in global_blame.columns.values]
+        blames = blames[1:]
+        for reponame, blame in blames:
+            blame.columns = [x + '__' + reponame for x in blame.columns.values]
+            global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how='outer')
+
+        global_blame.fillna(method='pad', inplace=True)
+        global_blame.fillna(0.0, inplace=True)
+
+        if by == 'committer':
+            committers = [(str(x).split('__')[0].lower().strip(), x) for x in global_blame.columns.values]
+            committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in set([x[0] for x in committers])}
+
+            for committer in committer_mapping.keys():
+                global_blame[committer] = 0
+                for col in committer_mapping.get(committer, []):
+                    global_blame[committer] += global_blame[col]
+
+            global_blame = global_blame.reindex(columns=list(committer_mapping.keys()))
+        elif by == 'project':
+            projects = [(str(x).split('__')[1].lower().strip(), x) for x in global_blame.columns.values]
+            project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in set([x[0] for x in projects])}
+
+            for project in project_mapping.keys():
+                global_blame[project] = 0
+                for col in project_mapping.get(project, []):
+                    global_blame[project] += global_blame[col]
+
+            global_blame = global_blame.reindex(columns=list(project_mapping.keys()))
+
+        return global_blame
 
     def tags(self):
         """
@@ -134,7 +235,7 @@ class ProjectDirectory(object):
         :returns: DataFrame
         """
 
-        df = DataFrame(columns=['repository', 'tag'])
+        df = pd.DataFrame(columns=['repository', 'tag'])
 
         for repo in self.repos:
             try:
@@ -142,6 +243,8 @@ class ProjectDirectory(object):
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
                 pass
+
+        df.reset_index()
 
         return df
 
@@ -175,7 +278,7 @@ class ProjectDirectory(object):
                  repo.repo.tags,
                  repo.repo.active_branch] for repo in self.repos]
 
-        df = DataFrame(data, columns=[
+        df = pd.DataFrame(data, columns=[
             'local_directory',
             'branches',
             'bare',

@@ -1,7 +1,9 @@
 Git-Pandas
 ==========
 
-v0.0.3
+v0.0.4
+
+![Cumulative Blame Stravalib](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/stravalib_cumulative_blame.png)
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:
@@ -23,7 +25,8 @@ Current functionality includes:
  * ProjectDirectory-level general information table
  * Approximate bus factor for projects and repos
   
-Please see examples for more detailed usage.
+Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
+function on stravalib.
 
 Installation
 ------------
