@@ -1,5 +1,5 @@
 """
-.. module:: project
+.. module:: project directory
    :platform: Unix, Windows
    :synopsis: A module for examining collections of git repositories as a whole
 
@@ -38,6 +38,29 @@ class ProjectDirectory(object):
 
         if ignore is not None:
             self.repos = [x for x in self.repos if x._repo_name not in ignore]
+
+    def _repo_name(self):
+        """
+        Returns a DataFrame of the repo names present in this project directory
+
+        :return: DataFrame
+
+        """
+
+        ds = [[x._repo_name()] for x in self.repos]
+        df = pd.DataFrame(ds, columns=['repository'])
+        return df
+
+    def is_bare(self):
+        """
+        Returns a dataframe of repo names and whether or not they are bare.
+
+        :return:
+        """
+
+        ds = [[x._repo_name(), x.is_bare()] for x in self.repos]
+        df = pd.DataFrame(ds, columns=['repository', 'is_bare'])
+        return df
 
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
         """

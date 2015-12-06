@@ -53,3 +53,6 @@ There are a number of issues on the near term horizon that would be great to hav
  6. Change-rate Metrics: metrics such as net-lines-added per day, lines-changed per day, etc. on a per-file basis as a 
  single large dataframe could be useful for identifying areas to focus testing on (areas with unusually high change in 
  code). 
+ 7. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the 
+ results of other functions across multiple branches.
+ 8. Verbose Mode: add logging in more functions when verbose is set to True.

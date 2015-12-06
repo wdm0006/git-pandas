@@ -312,7 +312,7 @@ class Repository(object):
         """
 
         branches = self.repo.branches
-        df = DataFrame(list(branches), columns=['branch'])
+        df = DataFrame([x.name for x in list(branches)], columns=['branch'])
         df['repository'] = self._repo_name()
 
         return df
@@ -327,8 +327,8 @@ class Repository(object):
         :returns: DataFrame
         """
 
-        branches = self.repo.tags
-        df = DataFrame(list(branches), columns=['tag'])
+        tags = self.repo.tags
+        df = DataFrame([x.name for x in list(tags)], columns=['tag'])
         df['repository'] = self._repo_name()
 
         return df
