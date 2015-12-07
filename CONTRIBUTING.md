@@ -35,6 +35,14 @@ Git-pandas is still a very young project, but we do have a few guiding principle
  2. Write detailed docstrings in sphinx format
  3. Slow or potentially memory intensive functions should have a limit option
 
+Running Tests
+=============
+
+Test coverage is admittedly pretty bad right now, so help out by writing tests for new code. To run the tests, use:
+
+    $ nosetests --with-coverage
+    $ coverage html
+    
 Easy Issues / Getting Started
 =============================
 

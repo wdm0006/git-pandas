@@ -55,11 +55,85 @@ class ProjectDirectory(object):
         """
         Returns a dataframe of repo names and whether or not they are bare.
 
-        :return:
+        :return: DataFrame
         """
 
         ds = [[x._repo_name(), x.is_bare()] for x in self.repos]
         df = pd.DataFrame(ds, columns=['repository', 'is_bare'])
+        return df
+
+    def has_coverage(self):
+        """
+        Returns a DataFrame of repo names and whether or not they have a .coverage file that can be parsed
+
+        :return: DataFrame
+        """
+
+        ds = [[x._repo_name(), x.has_coverage()] for x in self.repos]
+        df = pd.DataFrame(ds, columns=['repository', 'has_coverage'])
+        return df
+
+    def coverage(self):
+        """
+        Will return a DataFrame with coverage information (if available) for each repo in the project).
+
+        If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which
+        will contain the columns:
+
+         * repository
+         * filename
+         * lines_covered
+         * total_lines
+         * coverage
+
+        If it can't be found or parsed, an empty DataFrame of that form will be returned.
+
+        :return: DataFrame
+        """
+
+        df = pd.DataFrame(columns=['filename', 'lines_covered', 'total_lines', 'coverage', 'repository'])
+
+        for repo in self.repos:
+            try:
+                cov = repo.coverage()
+                cov['repository'] = repo._repo_name()
+                df = df.append(cov)
+            except GitCommandError as err:
+                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                pass
+
+        df.reset_index()
+
+        return df
+
+    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
+        """
+        This function will return a DataFrame containing some basic aggregations of the file change history data, and
+        optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+        project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
+        a high change rate and poor test coverage, then it is a great candidate for writing more tests.
+
+        :param branch: (optional, default=master) the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
+        :return: DataFrame
+        """
+
+        df = pd.DataFrame(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate', 'repository'])
+
+        for repo in self.repos:
+            try:
+                fcr = repo.coverage(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage)
+                fcr['repository'] = repo._repo_name()
+                df = df.append(fcr)
+            except GitCommandError as err:
+                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                pass
+
+        df.reset_index()
+
         return df
 
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
@@ -72,6 +146,7 @@ class ProjectDirectory(object):
 
         Included in that DataFrame will be the columns:
 
+         * repository
          * date (index)
          * author
          * committer
@@ -95,7 +170,9 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                df = df.append(repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir))
+                ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+                ch['repository'] = repo._repo_name()
+                df = df.append(ch)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
                 pass
@@ -245,6 +322,8 @@ class ProjectDirectory(object):
                     global_blame[project] += global_blame[col]
 
             global_blame = global_blame.reindex(columns=list(project_mapping.keys()))
+
+        global_blame = global_blame[~global_blame.index.duplicated()]
 
         return global_blame
 

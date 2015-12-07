@@ -87,6 +87,6 @@ if __name__ == '__main__':
     set_option('display.max_columns', 500)
     set_option('display.width', 1000)
 
-    path = None
+    path = os.path.abspath('../../git-pandas')
     project(path)
     repository(path)

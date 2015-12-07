@@ -13,6 +13,7 @@ import os
 import sys
 import datetime
 import numpy as np
+import json
 import logging
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
@@ -52,7 +53,65 @@ class Repository(object):
 
         return self.repo.bare
 
-    def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
+    def has_coverage(self):
+        """
+        Returns a boolean for is a parseable .coverage file can be found in the repository
+
+        :return: bool
+
+        """
+
+        if os.path.exists(self.git_dir + os.sep + '.coverage'):
+            try:
+                with open(self.git_dir + os.sep + '.coverage', 'r') as f:
+                    blob = f.read()
+                    blob = blob.split('!')[2]
+                    _ = json.loads(blob)
+                return True
+            except:
+                return False
+        else:
+            return False
+
+    def coverage(self):
+        """
+        If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which
+        will contain the columns:
+
+         * filename
+         * lines_covered
+         * total_lines
+         * coverage
+
+        If it can't be found or parsed, an empty DataFrame of that form will be returned.
+
+        :return: DataFrame
+        """
+
+        if not self.has_coverage():
+            return DataFrame(columns=['filename', 'lines_covered', 'total_lines', 'coverage'])
+
+        with open(self.git_dir + os.sep + '.coverage', 'r') as f:
+            blob = f.read()
+            blob = blob.split('!')[2]
+            cov = json.loads(blob)
+
+        ds = []
+        for filename in cov['lines'].keys():
+            idx = 0
+            with open(filename, 'r') as f:
+                for idx, l in enumerate(f):
+                    pass
+            num_lines = idx + 1
+            short_filename = filename.split(self.git_dir + os.sep)[1]
+            ds.append([short_filename, len(cov['lines'][filename]), num_lines])
+
+        df = DataFrame(ds, columns=['filename', 'lines_covered', 'total_lines'])
+        df['coverage'] = df['lines_covered'] / df['total_lines']
+
+        return df
+
+    def commit_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
         the columns:
@@ -107,7 +166,7 @@ class Repository(object):
 
         return df
 
-    def file_change_history(self, branch, limit=None, extensions=None, ignore_dir=None):
+    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -156,6 +215,73 @@ class Repository(object):
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         return df
+
+    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
+        """
+        This function will return a DataFrame containing some basic aggregations of the file change history data, and
+        optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+        project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
+        a high change rate and poor test coverage, then it is a great candidate for writing more tests.
+
+        :param branch: (optional, default=master) the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
+        :return: DataFrame
+        """
+
+        fch = self.file_change_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+        fch.reset_index(level=0, inplace=True)
+
+        file_history = fch.groupby('filename').agg(
+            {
+                'insertions': [np.sum, np.max, np.mean],
+                'deletions': [np.sum, np.max, np.mean],
+                'message': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                'committer': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                'author': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                'date': [np.max, np.min]
+            }
+        )
+
+        file_history.columns = [' '.join(col).strip() for col in file_history.columns.values]
+
+        file_history = file_history.rename(columns={
+            'message <lambda>': 'messages',
+            'committer <lambda>': 'committers',
+            'insertions sum': 'total_insertions',
+            'insertions amax': 'max_insertions',
+            'insertions mean': 'mean_insertions',
+            'author <lambda>': 'authors',
+            'date amax': 'max_date',
+            'date amin': 'min_date',
+            'deletions sum': 'total_deletions',
+            'deletions amax': 'max_deletions',
+            'deletions mean': 'mean_deletions'
+        })
+
+        # get some building block values for later use
+        file_history['net_change'] = file_history['total_insertions'] - file_history['total_deletions']
+        file_history['abs_change'] = file_history['total_insertions'] + file_history['total_deletions']
+        file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
+        file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.item() / (24 * 3600 * 10e9) + 0.01))
+
+        # calculate metrics
+        file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
+        file_history['abs_rate_of_change'] = file_history['abs_change'] / file_history['delta_days']
+        file_history['edit_rate'] = file_history['abs_rate_of_change'] - file_history['net_rate_of_change']
+        file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(','))))
+
+        # reindex
+        file_history = file_history.reindex(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
+        file_history.sort_values(by=['edit_rate'], inplace=True)
+
+        if coverage and self.has_coverage():
+            file_history = file_history.merge(self.coverage(), left_index=True, right_on='filename', how='outer')
+            file_history.set_index(keys=['filename'], drop=True, inplace=True)
+
+        return file_history
 
     @staticmethod
     def __check_extension(files, extensions, ignore_dir):
