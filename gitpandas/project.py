@@ -99,7 +99,7 @@ class ProjectDirectory(object):
                 cov['repository'] = repo._repo_name()
                 df = df.append(cov)
             except GitCommandError as err:
-                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                print('Warning! Repo: %s seems to not have coverage' % (repo, ))
                 pass
 
         df.reset_index()
