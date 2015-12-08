@@ -125,7 +125,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                fcr = repo.coverage(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage)
+                fcr = repo.file_change_rates(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage)
                 fcr['repository'] = repo._repo_name()
                 df = df.append(fcr)
             except GitCommandError as err:
