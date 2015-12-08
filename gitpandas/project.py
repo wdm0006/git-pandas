@@ -121,7 +121,10 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        df = pd.DataFrame(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate', 'repository'])
+        columns = ['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate', 'repository']
+        if coverage:
+            columns += ['lines_covered', 'total_lines', 'coverage']
+        df = pd.DataFrame(columns=columns)
 
         for repo in self.repos:
             try:
