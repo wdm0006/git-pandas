@@ -103,7 +103,12 @@ class Repository(object):
                 for idx, l in enumerate(f):
                     pass
             num_lines = idx + 1
-            short_filename = filename.split(self.git_dir + os.sep)[1]
+
+            try:
+                short_filename = filename.split(self.git_dir + os.sep)[1]
+            except IndexError as e:
+                short_filename = filename
+
             ds.append([short_filename, len(cov['lines'][filename]), num_lines])
 
         df = DataFrame(ds, columns=['filename', 'lines_covered', 'total_lines'])
