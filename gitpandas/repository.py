@@ -105,7 +105,7 @@ class Repository(object):
             num_lines = idx + 1
 
             try:
-                if filename[-1] == os.sep:
+                if self.git_dir[-1] == os.sep:
                     short_filename = filename.split(self.git_dir)[1]
                 else:
                     short_filename = filename.split(self.git_dir + os.sep)[1]
