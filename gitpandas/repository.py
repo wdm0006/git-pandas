@@ -367,7 +367,7 @@ class Repository(object):
 
         return blames
 
-    def revs(self, branch='master', limit=None, skip=None):
+    def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
 
@@ -377,14 +377,19 @@ class Repository(object):
         :param branch: (optional, default 'master') the branch to work in
         :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
         :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
+        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :return: DataFrame
 
         """
 
-        if limit is None:
-            limit = sys.maxsize
-        elif skip is not None:
-            limit = limit * skip
+        if limit is None and skip is None and num_datapoints is not None:
+            limit = sum(1 for _ in self.repo.iter_commits())
+            skip = int(float(limit) / num_datapoints)
+        else:
+            if limit is None:
+                limit = sys.maxsize
+            elif skip is not None:
+                limit = limit * skip
 
         ds = [[x.committed_date, x.name_rev.split(' ')[0]] for x in self.repo.iter_commits(branch, max_count=limit)]
         df = DataFrame(ds, columns=['date', 'rev'])
@@ -399,7 +404,7 @@ class Repository(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None):
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None):
         """
         Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
         blamed to each committer at each timestamp as data.
@@ -409,14 +414,12 @@ class Repository(object):
         :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :return: DataFrame
 
         """
 
-        if limit is None:
-            limit = sys.maxsize
-
-        revs = self.revs(branch=branch, limit=limit, skip=skip)
+        revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
         # get the commit history to stub out committers (hacky and slow)
         committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
