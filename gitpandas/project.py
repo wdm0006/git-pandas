@@ -248,9 +248,6 @@ class ProjectDirectory(object):
 
         """
 
-        if limit is None:
-            limit = sys.maxsize
-
         df = pd.DataFrame(columns=['repository', 'rev'])
 
         for repo in self.repos:
@@ -282,9 +279,6 @@ class ProjectDirectory(object):
         :return: DataFrame
 
         """
-
-        if limit is None:
-            limit = sys.maxsize
 
         blames = []
         for repo in self.repos:
