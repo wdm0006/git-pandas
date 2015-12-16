@@ -32,6 +32,7 @@ Current functionality includes:
 Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
 function on stravalib.
 
+
 Installation
 ------------
 

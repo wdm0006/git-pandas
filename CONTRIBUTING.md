@@ -48,19 +48,13 @@ Easy Issues / Getting Started
 
 There are a number of issues on the near term horizon that would be great to have help with.
 
- 1. Testing: we have no testing whatsoever as is, beyond examples. So setting up proper unit testing with some dummy git
- repositories is a pretty critical near-term goal.
- 2. Diff: it would be really nice to be able to call a function with 2 revs and return the diff as a dataframe. So columns
- for line number, filename, path, change, author, timestamp, etc. 
- 3. Docs: We have a lot of examples, but they are largely not present in the documentation.  Adding some plotting to the 
- examples using pyplot and putting them into the docs would help out new users a lot.
- 4. Docs Deployment: currently we host the docs on Github pages, which has a kind of awkward deployment process. Anyone 
- with experience automating this (or scripting even) would be very useful.
- 5. File-level tracking: it would be really cool to be able to get a dataframe of one file's history in great detail. It
- likely would be a subset of the existing file change history function.
- 6. Change-rate Metrics: metrics such as net-lines-added per day, lines-changed per day, etc. on a per-file basis as a 
- single large dataframe could be useful for identifying areas to focus testing on (areas with unusually high change in 
- code). 
- 7. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the 
- results of other functions across multiple branches.
+ 1. Testing: we have no testing whatsoever as is, beyond examples. So setting up proper unit testing with some dummy git repositories is a pretty critical near-term goal.
+ 2. Diff: it would be really nice to be able to call a function with 2 revs and return the diff as a dataframe. So columns for line number, filename, path, change, author, timestamp, etc. 
+ 3. Docs: We have a lot of examples, but they are largely not present in the documentation.  Adding some plotting to the examples using pyplot and putting them into the docs would help out new users a lot.
+ 4. Docs Deployment: currently we host the docs on Github pages, which has a kind of awkward deployment process. Anyone with experience automating this (or scripting even) would be very useful.
+ 5. File-level tracking: it would be really cool to be able to get a dataframe of one file's history in great detail. It likely would be a subset of the existing file change history function.
+ 7. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the  results of other functions across multiple branches.
  8. Verbose Mode: add logging in more functions when verbose is set to True.
+ 9. Better project name estimation from cloned repositories (currently uses temp directory name)
+ 10. Heirarchical bus factor: what's the bus factor of a file, directory, repo, project directory, etc
+ 11. Language analytics: what languages do we use most, what are bus factors of those languages? Who should we hire next?

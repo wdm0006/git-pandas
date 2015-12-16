@@ -447,6 +447,12 @@ class Repository(object):
         revs['date'] = to_datetime(revs['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
         revs.set_index(keys=['date'], drop=True, inplace=True)
 
+        # drop 0 cols
+        for col in revs.columns.values:
+            if col != 'col':
+                if revs[col].sum() == 0:
+                    del revs[col]
+
         revs = revs.fillna(0.0)
         return revs
 
