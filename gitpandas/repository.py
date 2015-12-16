@@ -15,6 +15,8 @@ import datetime
 import numpy as np
 import json
 import logging
+import tempfile
+import shutil
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
 
@@ -33,16 +35,34 @@ class Repository(object):
     def __init__(self, working_dir=None, verbose=False):
         self.verbose = verbose
         self.log = logging.getLogger('gitpandas')
-
+        self.__delete_hook = False
         if working_dir is not None:
-            self.git_dir = working_dir
+            if working_dir[:3] == 'git':
+                if self.verbose:
+                    print('cloning repository: %s into a temporary location' % (working_dir, ))
+
+                dir_path = tempfile.mkdtemp()
+                self.repo = Repo.clone_from(working_dir, dir_path)
+                self.git_dir = dir_path
+                self.__delete_hook = True
+            else:
+                self.git_dir = working_dir
+                self.repo = Repo(self.git_dir)
         else:
             self.git_dir = os.getcwd()
-
-        self.repo = Repo(self.git_dir)
+            self.repo = Repo(self.git_dir)
 
         if self.verbose:
             print('Repository [%s] instantiated at directory: %s' % (self._repo_name(), self.git_dir))
+
+    def __del__(self):
+        """
+        On delete, clean up any temporary repositories still hanging around
+
+        :return:
+        """
+        if self.__delete_hook:
+            shutil.rmtree(self.git_dir)
 
     def is_bare(self):
         """
@@ -103,15 +123,7 @@ class Repository(object):
                 for idx, l in enumerate(f):
                     pass
             num_lines = idx + 1
-
-            try:
-                if self.git_dir[-1] == os.sep:
-                    short_filename = filename.split(self.git_dir)[1]
-                else:
-                    short_filename = filename.split(self.git_dir + os.sep)[1]
-            except IndexError as e:
-                short_filename = filename
-
+            short_filename = filename.split(self.git_dir + os.sep)[1]
             ds.append([short_filename, len(cov['lines'][filename]), num_lines])
 
         df = DataFrame(ds, columns=['filename', 'lines_covered', 'total_lines'])
