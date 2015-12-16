@@ -236,7 +236,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def revs(self, branch='master', limit=None, skip=None):
+    def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
         """
         Returns a dataframe of all revision tags and their timestamps for each project. It will have the columns:
 
@@ -255,7 +255,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                revs = repo.revs(branch=branch, limit=limit, skip=skip)
+                revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
                 revs['repository'] = repo._repo_name()
                 df = df.append(revs)
             except GitCommandError as err:
@@ -266,7 +266,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, by='committer', limit=None, skip=None):
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, by='committer', limit=None, skip=None, num_datapoints=None):
         """
         Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
         collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
@@ -289,7 +289,7 @@ class ProjectDirectory(object):
         blames = []
         for repo in self.repos:
             try:
-                blame = repo.cumulative_blame(branch=branch, extensions=extensions, ignore_dir=ignore_dir, limit=limit, skip=skip)
+                blame = repo.cumulative_blame(branch=branch, extensions=extensions, ignore_dir=ignore_dir, limit=limit, skip=skip, num_datapoints=num_datapoints)
                 blames.append((repo._repo_name(), blame))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
