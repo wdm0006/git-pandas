@@ -139,7 +139,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None):
+    def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
         are appended to each other, resulting in one large data frame of size <limit>.  If a limit is provided, it is
@@ -173,7 +173,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+                ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
                 ch['repository'] = repo._repo_name()
                 df = df.append(ch)
             except GitCommandError as err:

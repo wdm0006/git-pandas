@@ -12,6 +12,7 @@
 import os
 import sys
 import datetime
+import time
 import numpy as np
 import json
 import logging
@@ -131,7 +132,7 @@ class Repository(object):
 
         return df
 
-    def commit_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
+    def commit_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
         the columns:
@@ -154,13 +155,29 @@ class Repository(object):
 
         # setup the data-set of commits
         if limit is None:
-            ds = [[
-                      x.author.name,
-                      x.committer.name,
-                      x.committed_date,
-                      x.message,
-                      self.__check_extension(x.stats.files, extensions, ignore_dir)
-                  ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+            if days is None:
+                ds = [[
+                          x.author.name,
+                          x.committer.name,
+                          x.committed_date,
+                          x.message,
+                          self.__check_extension(x.stats.files, extensions, ignore_dir)
+                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+            else:
+                ds = []
+                c_date = time.time()
+                commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
+                dlim = time.time() - days * 24 * 3600
+                while c_date > dlim:
+                    x = commits.__next__()
+                    ds.append([
+                              x.author.name,
+                              x.committer.name,
+                              x.committed_date,
+                              x.message,
+                              self.__check_extension(x.stats.files, extensions, ignore_dir)
+                    ])
+                    c_date = x.committed_date
         else:
             ds = [[
                       x.author.name,
