@@ -446,6 +446,7 @@ class Repository(object):
 
         revs['date'] = to_datetime(revs['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
         revs.set_index(keys=['date'], drop=True, inplace=True)
+        revs = revs.fillna(0.0)
 
         # drop 0 cols
         for col in revs.columns.values:
@@ -453,7 +454,15 @@ class Repository(object):
                 if revs[col].sum() == 0:
                     del revs[col]
 
-        revs = revs.fillna(0.0)
+        # drop 0 rows
+        keep_idx = []
+        committers = [x for x in revs.columns.values if x != 'date']
+        for idx, row in revs.iterrows():
+            if sum([row[x] for x in committers]) > 0:
+                keep_idx.append(idx)
+
+        revs = revs.ix[keep_idx]
+
         return revs
 
     def branches(self):
