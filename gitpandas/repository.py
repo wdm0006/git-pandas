@@ -347,7 +347,7 @@ class Repository(object):
 
         return out
 
-    def blame(self, extensions=None, ignore_dir=None, rev='HEAD'):
+    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
@@ -359,6 +359,8 @@ class Repository(object):
 
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param rev:
+        :param committer: (optional, defualt=True) true if committer should be reported, false if author
         :return: DataFrame
         """
 
@@ -380,7 +382,10 @@ class Repository(object):
                         pass
 
         blames = [item for sublist in blames for item in sublist]
-        blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+        if committer:
+            blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+        else:
+            blames = DataFrame([[x[0].author.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
 
         return blames
 
@@ -421,7 +426,7 @@ class Repository(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None):
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True):
         """
         Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
         blamed to each committer at each timestamp as data.
@@ -432,6 +437,7 @@ class Repository(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
+        :param committer: (optional, defualt=True) true if committer should be reported, false if author
         :return: DataFrame
 
         """
@@ -451,7 +457,7 @@ class Repository(object):
             if self.verbose:
                 print('%s. [%s] getting blame for rev: %s' % (str(idx), datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), row.rev, ))
 
-            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev)
+            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev, committer=committer)
             for committer in committers:
                 try:
                     loc = blame.loc[committer, 'loc']
