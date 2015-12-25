@@ -24,7 +24,7 @@ setup(
       'Programming Language :: Python :: 3',
     ],
     keywords='git pandas data analysis',
-    packages=find_packages(exclude=['tests*å']),
+    packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     author='Will McGinnis',
     install_requires=[
