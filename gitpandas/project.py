@@ -24,6 +24,8 @@ class ProjectDirectory(object):
     git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
     :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
+    :param ignore: (optional, default=None), a list of directories to ignore when searching for git repos.
+    :param verbose: (default=True), if True, will print out verbose logging to terminal
     :return:
     """
     def __init__(self, working_dir=None, ignore=None, verbose=True):
@@ -163,6 +165,7 @@ class ProjectDirectory(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return if limit is None
         :return: DataFrame
         """
 
@@ -245,8 +248,12 @@ class ProjectDirectory(object):
          * repository
          * rev
 
-        :return: DataFrame
+        :param branch: (optional, default 'master') the branch to work in
+        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
+        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
+        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
 
+        :return: DataFrame
         """
 
         df = pd.DataFrame(columns=['repository', 'rev'])
@@ -274,10 +281,14 @@ class ProjectDirectory(object):
          * project: one column per project
          * raw: one column per committed per project
 
-        :param branch:
-        :param extensions:
-        :param ignore_dir:
-        :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param branch: (optional, default 'master') the branch to work in
+        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
+        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
+        :param committer: (optional, default=True) true if committer should be reported, false if author
+        :param by: (optional, default='committer') whether to arrange the output by committer or project
         :return: DataFrame
 
         """
@@ -399,7 +410,10 @@ class ProjectDirectory(object):
         An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
         the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
         least 50% of the codebase's LOC
-        :param branch:
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+
         :return:
         """
 

@@ -150,6 +150,7 @@ class Repository(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return, if limit is None
         :return: DataFrame
         """
 
@@ -359,7 +360,7 @@ class Repository(object):
 
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
-        :param rev:
+        :param rev: (optional, default=HEAD) the specific revision to blame
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
         :return: DataFrame
         """
@@ -553,7 +554,9 @@ class Repository(object):
         An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
         the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
         least 50% of the codebase's LOC
-        :param branch:
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :return:
         """
 
