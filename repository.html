@@ -84,6 +84,12 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a></li>
 </ul>
 
             
@@ -153,7 +159,7 @@ gitpython Repo instance.</p>
 </table>
 <dl class="method">
 <dt id="gitpandas.repository.Repository.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
 name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
 method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
@@ -171,6 +177,8 @@ file extensions. The DataFrame will have the columns:</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>rev</strong> &#8211; (optional, default=HEAD) the specific revision to blame</li>
+<li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
 </ul>
 </td>
 </tr>
@@ -206,14 +214,27 @@ file extensions. The DataFrame will have the columns:</p>
 <code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.bus_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
 the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
-least 50% of the codebase&#8217;s LOC
-:param branch:
-:return:</p>
+least 50% of the codebase&#8217;s LOC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.commit_history">
-<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
 the columns:</p>
 <blockquote>
@@ -237,6 +258,7 @@ the columns:</p>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
 </ul>
 </td>
 </tr>
@@ -248,8 +270,32 @@ the columns:</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="gitpandas.repository.Repository.coverage">
+<code class="descname">coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which
+will contain the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>filename</li>
+<li>lines_covered</li>
+<li>total_lines</li>
+<li>coverage</li>
+</ul>
+</div></blockquote>
+<p>If it can&#8217;t be found or parsed, an empty DataFrame of that form will be returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="gitpandas.repository.Repository.cumulative_blame">
-<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>limit=None</em>, <em>skip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.cumulative_blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.cumulative_blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
 blamed to each committer at each timestamp as data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -262,6 +308,8 @@ blamed to each committer at each timestamp as data.</p>
 <li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
+<li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
 </ul>
 </td>
 </tr>
@@ -274,7 +322,7 @@ blamed to each committer at each timestamp as data.</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.file_change_history">
-<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
 the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
 many file changes). Included in the DataFrame will be the columns:</p>
@@ -309,6 +357,47 @@ many file changes). Included in the DataFrame will be the columns:</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="gitpandas.repository.Repository.file_change_rates">
+<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will return a DataFrame containing some basic aggregations of the file change history data, and
+optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
+a high change rate and poor test coverage, then it is a great candidate for writing more tests.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; (optional, default=master) the branch to return commits for</li>
+<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>coverage</strong> &#8211; (optional, default=False) a bool for whether or not to attempt to join in coverage data.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.repository.Repository.has_coverage">
+<code class="descname">has_coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.has_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.has_coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean for is a parseable .coverage file can be found in the repository</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="gitpandas.repository.Repository.is_bare">
 <code class="descname">is_bare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.is_bare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.is_bare" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a boolean for if the repo is bare or not</p>
@@ -324,7 +413,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.revs">
-<code class="descname">revs</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>skip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.revs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.revs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">revs</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.revs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.revs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dataframe of all revision tags and their timestamps. It will have the columns:</p>
 <blockquote>
 <div><ul class="simple">
@@ -340,6 +429,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 <li><strong>branch</strong> &#8211; (optional, default &#8216;master&#8217;) the branch to work in</li>
 <li><strong>limit</strong> &#8211; (optional, default None), the maximum number of revisions to return, None for no limit</li>
 <li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
+<li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
 </ul>
 </td>
 </tr>

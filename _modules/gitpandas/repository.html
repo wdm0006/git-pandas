@@ -83,6 +83,12 @@
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../attributes.html">Repository Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../commit_history.html">Commit History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bus_factor.html">Bus Factor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cumulative_blame.html">Cumulative Blame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coverage.html">Coverage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../file_change_rates.html">File Change Rates</a></li>
 </ul>
 
             
@@ -142,8 +148,12 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">git</span> <span class="kn">import</span> <span class="n">Repo</span><span class="p">,</span> <span class="n">GitCommandError</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">to_datetime</span>
 
@@ -162,16 +172,34 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">working_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;gitpandas&#39;</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">__delete_hook</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">if</span> <span class="n">working_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">=</span> <span class="n">working_dir</span>
+            <span class="k">if</span> <span class="n">working_dir</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;git&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&#39;cloning repository: </span><span class="si">%s</span><span class="s"> into a temporary location&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="p">))</span>
+
+                <span class="n">dir_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repo</span><span class="o">.</span><span class="n">clone_from</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">dir_path</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">=</span> <span class="n">dir_path</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__delete_hook</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">=</span> <span class="n">working_dir</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="k">print</span><span class="p">(</span><span class="s">&#39;Repository [</span><span class="si">%s</span><span class="s">] instantiated at directory: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        On delete, clean up any temporary repositories still hanging around</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__delete_hook</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Repository.is_bare"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.is_bare">[docs]</a>    <span class="k">def</span> <span class="nf">is_bare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -182,7 +210,65 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">bare</span>
 </div>
-<div class="viewcode-block" id="Repository.commit_history"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.commit_history">[docs]</a>    <span class="k">def</span> <span class="nf">commit_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Repository.has_coverage"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.has_coverage">[docs]</a>    <span class="k">def</span> <span class="nf">has_coverage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a boolean for is a parseable .coverage file can be found in the repository</span>
+
+<span class="sd">        :return: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s">&#39;.coverage&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s">&#39;.coverage&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">blob</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                    <span class="n">blob</span> <span class="o">=</span> <span class="n">blob</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">_</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Repository.coverage"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.coverage">[docs]</a>    <span class="k">def</span> <span class="nf">coverage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which</span>
+<span class="sd">        will contain the columns:</span>
+
+<span class="sd">         * filename</span>
+<span class="sd">         * lines_covered</span>
+<span class="sd">         * total_lines</span>
+<span class="sd">         * coverage</span>
+
+<span class="sd">        If it can&#39;t be found or parsed, an empty DataFrame of that form will be returned.</span>
+
+<span class="sd">        :return: DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_coverage</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="s">&#39;lines_covered&#39;</span><span class="p">,</span> <span class="s">&#39;total_lines&#39;</span><span class="p">,</span> <span class="s">&#39;coverage&#39;</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s">&#39;.coverage&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">blob</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;!&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">cov</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+
+        <span class="n">ds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">cov</span><span class="p">[</span><span class="s">&#39;lines&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                    <span class="k">pass</span>
+            <span class="n">num_lines</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">short_filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">short_filename</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="s">&#39;lines&#39;</span><span class="p">][</span><span class="n">filename</span><span class="p">]),</span> <span class="n">num_lines</span><span class="p">])</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="s">&#39;lines_covered&#39;</span><span class="p">,</span> <span class="s">&#39;total_lines&#39;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s">&#39;coverage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;lines_covered&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;total_lines&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">df</span>
+</div>
+<div class="viewcode-block" id="Repository.commit_history"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.commit_history">[docs]</a>    <span class="k">def</span> <span class="nf">commit_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be</span>
 <span class="sd">        the columns:</span>
@@ -200,18 +286,35 @@
 <span class="sd">        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit</span>
 <span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
 <span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :param days: (optional, default=None) number of days to return, if limit is None</span>
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c"># setup the data-set of commits</span>
         <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="p">[[</span>
-                      <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                      <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                      <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
-                      <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
-                      <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="p">)</span>
-                  <span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">days</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="p">[[</span>
+                          <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
+                          <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="p">)</span>
+                      <span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ds</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">c_date</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="n">commits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">)</span>
+                <span class="n">dlim</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">days</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span>
+                <span class="k">while</span> <span class="n">c_date</span> <span class="o">&gt;</span> <span class="n">dlim</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">commits</span><span class="o">.</span><span class="n">__next__</span><span class="p">()</span>
+                    <span class="n">ds</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
+                              <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                              <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                              <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
+                              <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="p">)</span>
+                    <span class="p">])</span>
+                    <span class="n">c_date</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ds</span> <span class="o">=</span> <span class="p">[[</span>
                       <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
@@ -237,7 +340,7 @@
 
         <span class="k">return</span> <span class="n">df</span>
 </div>
-<div class="viewcode-block" id="Repository.file_change_history"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.file_change_history">[docs]</a>    <span class="k">def</span> <span class="nf">file_change_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Repository.file_change_history"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.file_change_history">[docs]</a>    <span class="k">def</span> <span class="nf">file_change_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to</span>
 <span class="sd">        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate</span>
@@ -287,6 +390,73 @@
 
         <span class="k">return</span> <span class="n">df</span>
 </div>
+<div class="viewcode-block" id="Repository.file_change_rates"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.file_change_rates">[docs]</a>    <span class="k">def</span> <span class="nf">file_change_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">coverage</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will return a DataFrame containing some basic aggregations of the file change history data, and</span>
+<span class="sd">        optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the</span>
+<span class="sd">        project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has</span>
+<span class="sd">        a high change rate and poor test coverage, then it is a great candidate for writing more tests.</span>
+
+<span class="sd">        :param branch: (optional, default=master) the branch to return commits for</span>
+<span class="sd">        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit</span>
+<span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
+<span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.</span>
+<span class="sd">        :return: DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">fch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">)</span>
+        <span class="n">fch</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">file_history</span> <span class="o">=</span> <span class="n">fch</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">],</span>
+                <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">],</span>
+                <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]),</span>
+                <span class="s">&#39;committer&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]),</span>
+                <span class="s">&#39;author&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;&quot;&#39;</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]),</span>
+                <span class="s">&#39;date&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="n">file_history</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">file_history</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+
+        <span class="n">file_history</span> <span class="o">=</span> <span class="n">file_history</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">&#39;message &lt;lambda&gt;&#39;</span><span class="p">:</span> <span class="s">&#39;messages&#39;</span><span class="p">,</span>
+            <span class="s">&#39;committer &lt;lambda&gt;&#39;</span><span class="p">:</span> <span class="s">&#39;committers&#39;</span><span class="p">,</span>
+            <span class="s">&#39;insertions sum&#39;</span><span class="p">:</span> <span class="s">&#39;total_insertions&#39;</span><span class="p">,</span>
+            <span class="s">&#39;insertions amax&#39;</span><span class="p">:</span> <span class="s">&#39;max_insertions&#39;</span><span class="p">,</span>
+            <span class="s">&#39;insertions mean&#39;</span><span class="p">:</span> <span class="s">&#39;mean_insertions&#39;</span><span class="p">,</span>
+            <span class="s">&#39;author &lt;lambda&gt;&#39;</span><span class="p">:</span> <span class="s">&#39;authors&#39;</span><span class="p">,</span>
+            <span class="s">&#39;date amax&#39;</span><span class="p">:</span> <span class="s">&#39;max_date&#39;</span><span class="p">,</span>
+            <span class="s">&#39;date amin&#39;</span><span class="p">:</span> <span class="s">&#39;min_date&#39;</span><span class="p">,</span>
+            <span class="s">&#39;deletions sum&#39;</span><span class="p">:</span> <span class="s">&#39;total_deletions&#39;</span><span class="p">,</span>
+            <span class="s">&#39;deletions amax&#39;</span><span class="p">:</span> <span class="s">&#39;max_deletions&#39;</span><span class="p">,</span>
+            <span class="s">&#39;deletions mean&#39;</span><span class="p">:</span> <span class="s">&#39;mean_deletions&#39;</span>
+        <span class="p">})</span>
+
+        <span class="c"># get some building block values for later use</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;net_change&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;total_insertions&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;total_deletions&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;abs_change&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;total_insertions&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;total_deletions&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;delta_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;max_date&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;min_date&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;delta_days&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;delta_time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mf">10e9</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.01</span><span class="p">))</span>
+
+        <span class="c"># calculate metrics</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;net_rate_of_change&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;net_change&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;delta_days&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;abs_rate_of_change&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;abs_change&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;delta_days&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;edit_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;abs_rate_of_change&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;net_rate_of_change&#39;</span><span class="p">]</span>
+        <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;unique_committers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_history</span><span class="p">[</span><span class="s">&#39;committers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">))))</span>
+
+        <span class="c"># reindex</span>
+        <span class="n">file_history</span> <span class="o">=</span> <span class="n">file_history</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;unique_committers&#39;</span><span class="p">,</span> <span class="s">&#39;abs_rate_of_change&#39;</span><span class="p">,</span> <span class="s">&#39;net_rate_of_change&#39;</span><span class="p">,</span> <span class="s">&#39;net_change&#39;</span><span class="p">,</span> <span class="s">&#39;abs_change&#39;</span><span class="p">,</span> <span class="s">&#39;edit_rate&#39;</span><span class="p">])</span>
+        <span class="n">file_history</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;edit_rate&#39;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">coverage</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_coverage</span><span class="p">():</span>
+            <span class="n">file_history</span> <span class="o">=</span> <span class="n">file_history</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coverage</span><span class="p">(),</span> <span class="n">left_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s">&#39;outer&#39;</span><span class="p">)</span>
+            <span class="n">file_history</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">file_history</span>
+</div>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__check_extension</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -314,7 +484,7 @@
 
         <span class="k">return</span> <span class="n">out</span>
 
-<div class="viewcode-block" id="Repository.blame"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.blame">[docs]</a>    <span class="k">def</span> <span class="nf">blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rev</span><span class="o">=</span><span class="s">&#39;HEAD&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Repository.blame"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.blame">[docs]</a>    <span class="k">def</span> <span class="nf">blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rev</span><span class="o">=</span><span class="s">&#39;HEAD&#39;</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer</span>
 <span class="sd">        name, so it will be the sum of all contributions to the repository by each committer. As with the commit history</span>
@@ -326,6 +496,8 @@
 
 <span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
 <span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :param rev: (optional, default=HEAD) the specific revision to blame</span>
+<span class="sd">        :param committer: (optional, defualt=True) true if committer should be reported, false if author</span>
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -347,11 +519,14 @@
                         <span class="k">pass</span>
 
         <span class="n">blames</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">blames</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
-        <span class="n">blames</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">blames</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;committer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s">&#39;loc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">committer</span><span class="p">:</span>
+            <span class="n">blames</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">blames</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;committer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s">&#39;loc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">blames</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">blames</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;committer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s">&#39;loc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">})</span>
 
         <span class="k">return</span> <span class="n">blames</span>
 </div>
-<div class="viewcode-block" id="Repository.revs"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.revs">[docs]</a>    <span class="k">def</span> <span class="nf">revs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Repository.revs"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.revs">[docs]</a>    <span class="k">def</span> <span class="nf">revs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a dataframe of all revision tags and their timestamps. It will have the columns:</span>
 
@@ -361,14 +536,19 @@
 <span class="sd">        :param branch: (optional, default &#39;master&#39;) the branch to work in</span>
 <span class="sd">        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit</span>
 <span class="sd">        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</span>
+<span class="sd">        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn&#39;t, then num_datapoints evenly spaced revs will be used</span>
 <span class="sd">        :return: DataFrame</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
-        <span class="k">elif</span> <span class="n">skip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="o">*</span> <span class="n">skip</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">skip</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">())</span>
+            <span class="n">skip</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_datapoints</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">limit</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
+            <span class="k">elif</span> <span class="n">skip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="o">*</span> <span class="n">skip</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">name_rev</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">limit</span><span class="p">)]</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;date&#39;</span><span class="p">,</span> <span class="s">&#39;rev&#39;</span><span class="p">])</span>
@@ -383,7 +563,7 @@
 
         <span class="k">return</span> <span class="n">df</span>
 </div>
-<div class="viewcode-block" id="Repository.cumulative_blame"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.cumulative_blame">[docs]</a>    <span class="k">def</span> <span class="nf">cumulative_blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Repository.cumulative_blame"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.cumulative_blame">[docs]</a>    <span class="k">def</span> <span class="nf">cumulative_blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines</span>
 <span class="sd">        blamed to each committer at each timestamp as data.</span>
@@ -393,14 +573,13 @@
 <span class="sd">        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</span>
 <span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
 <span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn&#39;t, then num_datapoints evenly spaced revs will be used</span>
+<span class="sd">        :param committer: (optional, defualt=True) true if committer should be reported, false if author</span>
 <span class="sd">        :return: DataFrame</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
-
-        <span class="n">revs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revs</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+        <span class="n">revs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revs</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="n">num_datapoints</span><span class="p">)</span>
 
         <span class="c"># get the commit history to stub out committers (hacky and slow)</span>
         <span class="n">committers</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">)}</span>
@@ -415,7 +594,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">. [</span><span class="si">%s</span><span class="s">] getting blame for rev: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&#39;</span><span class="p">),</span> <span class="n">row</span><span class="o">.</span><span class="n">rev</span><span class="p">,</span> <span class="p">))</span>
 
-            <span class="n">blame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">rev</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">rev</span><span class="p">)</span>
+            <span class="n">blame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">rev</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">rev</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">committer</span> <span class="ow">in</span> <span class="n">committers</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">loc</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">committer</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">]</span>
@@ -427,8 +606,23 @@
 
         <span class="n">revs</span><span class="p">[</span><span class="s">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_datetime</span><span class="p">(</span><span class="n">revs</span><span class="p">[</span><span class="s">&#39;date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
         <span class="n">revs</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;date&#39;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
         <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c"># drop 0 cols</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s">&#39;col&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+
+        <span class="c"># drop 0 rows</span>
+        <span class="n">keep_idx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">committers</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s">&#39;date&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">keep_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+        <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">keep_idx</span><span class="p">]</span>
+
         <span class="k">return</span> <span class="n">revs</span>
 </div>
 <div class="viewcode-block" id="Repository.branches"><a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.branches">[docs]</a>    <span class="k">def</span> <span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -442,7 +636,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">branches</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">branches</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;branch&#39;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">branches</span><span class="p">)],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;branch&#39;</span><span class="p">])</span>
         <span class="n">df</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">df</span>
@@ -457,8 +651,8 @@
 <span class="sd">        :returns: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">tags</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">branches</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;tag&#39;</span><span class="p">])</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">tags</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tags</span><span class="p">)],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;tag&#39;</span><span class="p">])</span>
         <span class="n">df</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">df</span>
@@ -496,7 +690,9 @@
 <span class="sd">        An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in</span>
 <span class="sd">        the repository&#39;s primary branch.  The factor is the fewest number of contributors whose contributions make up at</span>
 <span class="sd">        least 50% of the codebase&#39;s LOC</span>
-<span class="sd">        :param branch:</span>
+
+<span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
+<span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 

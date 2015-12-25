@@ -83,6 +83,12 @@
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a></li>
 </ul>
 
             
@@ -129,133 +135,92 @@
             
   <div class="section" id="git-pandas">
 <h1>Git-Pandas<a class="headerlink" href="#git-pandas" title="Permalink to this headline">¶</a></h1>
+<p>v0.0.4</p>
 <p>A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Repository()</li>
-<li>ProjectDirectory()</li>
+<li>Repository</li>
+<li>ProjectDirectory</li>
 </ul>
 </div></blockquote>
 <p>A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
 in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
 repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).</p>
+<p>This is a pre-v1.0.0 project, so the interfaces and functionality may change.</p>
 <p>Current functionality includes:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Commit history with extension and directory filtering</li>
+<li>Edited files history with extension and directory filtering</li>
 <li>Blame with extension and directory filtering</li>
+<li>Branches</li>
+<li>Tags</li>
+<li>ProjectDirectory-level general information table</li>
+<li>Approximate bus factor</li>
+<li>Cumulative Blame as a time series</li>
 </ul>
 </div></blockquote>
-<p>Please see examples for more detailed usage.</p>
-<div class="section" id="examples-usage">
-<h2>Examples / Usage<a class="headerlink" href="#examples-usage" title="Permalink to this headline">¶</a></h2>
-<p>A repository is just 1 git repo:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">set_option</span>
-
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.height&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-
-<span class="c"># build an example repository object and try some things out</span>
-<span class="nb">dir</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
-<span class="n">ignore_dirs</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s">&#39;docs&#39;</span><span class="p">,</span>
-    <span class="s">&#39;tests&#39;</span><span class="p">,</span>
-    <span class="s">&#39;Data&#39;</span>
-<span class="p">]</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
-
-<span class="c"># is it bare?</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repo bare?&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-
-<span class="c"># get the commit history</span>
-<span class="n">ch</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">],</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dirs</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">ch</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
-
-<span class="c"># get the list of committers</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Commiters:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-
-<span class="c"># print out everyone&#39;s contributions</span>
-<span class="n">attr</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;lines&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;committer&#39;</span><span class="p">])</span>
-<span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
-    <span class="s">&#39;lines&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
-<span class="p">})</span>
-<span class="k">print</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
-
-<span class="c"># get the file change history</span>
-<span class="n">fh</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dirs</span><span class="p">)</span>
-<span class="n">fh</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fh</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
-
-<span class="c"># print out unique extensions</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Extensions Found:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">fh</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-
-<span class="c"># agg by extension</span>
-<span class="n">etns</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ext&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;ext&#39;</span><span class="p">])</span>
-<span class="n">etns</span> <span class="o">=</span> <span class="n">etns</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
-    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
-<span class="p">})</span>
-<span class="k">print</span><span class="p">(</span><span class="n">etns</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>A project is a collection of repos:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">set_option</span>
-<span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
-
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.height&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">set_option</span><span class="p">(</span><span class="s">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;/foo/bar/&#39;</span><span class="p">)</span>
-
-<span class="c"># get the commit history</span>
-<span class="n">ch</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="s">&#39;develop&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">ch</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
-
-<span class="c"># get the list of committers</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Committers:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
-
-<span class="c"># print out everyone&#39;s contributions</span>
-<span class="n">attr</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;lines&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s">&#39;committer&#39;</span><span class="p">])</span>
-<span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span>
-    <span class="s">&#39;lines&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s">&#39;insertions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">,</span>
-    <span class="s">&#39;deletions&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
-<span class="p">})</span>
-<span class="k">print</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Please see examples for more detailed usage. The image above is generated using the repository object&#8217;s cumulative blame
+function on stravalib.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>To install use:</p>
+<blockquote>
+<div>pip install git-pandas</div></blockquote>
 </div>
 <div class="section" id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
-<p>If you&#8217;d like to contribute, let me know, or just submit a pull request. We have no specific long term goals or guidelines
-at this stage.</p>
+<p>We are looking for contributors, so if you are interested, please review our contributor guidelines in CONTRIBUTING.md,
+which includes some proposed starter issues, or if you have an idea of your own, send us a pull request.</p>
 </div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>This is BSD licensed (see License.md)</p>
+<p>This is BSD licensed (see LICENSE.md)</p>
+</div>
+</div>
+<div class="section" id="detailed-documentation">
+<h1>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
+those two classes. We have stubbed out more pages which will eventually have detailed examples and sample code, but not
+yet. If you are interested in helping out, please find us on github.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#repository-name">Repository Name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#tags">Tags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#branches">Branches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#revisions">Revisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#blame">Blame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attributes.html#is-bare">Is Bare</a></li>
 </ul>
-</div>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="commit_history.html#id1">Commit History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commit_history.html#file-change-history">File Change History</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bus_factor.html#id1">Bus Factor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cumulative_blame.html#id1">Cumulative Blame</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coverage.html#has-coverage">Has Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverage.html#id1">Coverage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="file_change_rates.html#id1">File Change Rates</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
