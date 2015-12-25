@@ -1,11 +1,15 @@
-v0.0.4
+v0.0.5
 ======
 
- * Added cumulative blame and revision history
  * Added file change rates table with risk metrics
  * Added basic functionality with coverage files
  * Added limited time window based dataset functionality
  * Expanded docs
+ 
+v0.0.4
+======
+
+ * Added cumulative blame and revision history
  
 v0.0.3
 ======

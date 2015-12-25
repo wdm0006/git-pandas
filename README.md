@@ -1,7 +1,7 @@
 Git-Pandas
 ==========
 
-v0.0.4
+v0.0.5
 
 ![Cumulative Blame Stravalib](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/stravalib_cumulative_blame.png)
 
