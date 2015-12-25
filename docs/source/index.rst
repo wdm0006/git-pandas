@@ -54,6 +54,14 @@ License
 
 This is BSD licensed (see LICENSE.md)
 
+
+Detailed Documentation
+======================
+
+Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
+those two classes. We have stubbed out more pages which will eventually have detailed examples and sample code, but not
+yet. If you are interested in helping out, please find us on github.
+
 Contents:
 
 .. toctree::

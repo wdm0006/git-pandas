@@ -55,6 +55,5 @@ There are a number of issues on the near term horizon that would be great to hav
  5. File-level tracking: it would be really cool to be able to get a dataframe of one file's history in great detail. It likely would be a subset of the existing file change history function.
  7. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the  results of other functions across multiple branches.
  8. Verbose Mode: add logging in more functions when verbose is set to True.
- 9. Better project name estimation from cloned repositories (currently uses temp directory name)
- 10. Heirarchical bus factor: what's the bus factor of a file, directory, repo, project directory, etc
- 11. Language analytics: what languages do we use most, what are bus factors of those languages? Who should we hire next?
+ 9. Heirarchical bus factor: what's the bus factor of a file, directory, repo, project directory, etc
+ 10. Language analytics: what languages do we use most, what are bus factors of those languages? Who should we hire next?
