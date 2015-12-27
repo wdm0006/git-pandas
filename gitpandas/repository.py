@@ -502,12 +502,21 @@ class Repository(object):
 
          * repository
          * branch
+         * local
 
         :returns: DataFrame
         """
 
-        branches = self.repo.branches
-        df = DataFrame([x.name for x in list(branches)], columns=['branch'])
+        # first pull the local branches
+        local_branches = self.repo.branches
+        data = [[x.name, True] for x in list(local_branches)]
+
+        # then the remotes
+        remote_branches = self.repo.git.branch(all=True).split('\n')
+        remote_branches = {x.split('/')[-1] for x in remote_branches if 'remotes' in x}
+        data += [[x, False] for x in remote_branches]
+
+        df = DataFrame(data, columns=['branch', 'local'])
         df['repository'] = self._repo_name()
 
         return df

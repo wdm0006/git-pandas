@@ -20,6 +20,7 @@ class TestProperties(unittest.TestCase):
         repo = Repository(working_dir='git://github.com/wdm0006/git-pandas.git', verbose=True)
         branches = list(repo.branches()['branch'].values)
         self.assertIn('master', branches)
+        self.assertIn('gh-pages', branches)
 
     def test_tags(self):
         repo = Repository(working_dir='git://github.com/wdm0006/git-pandas.git', verbose=True)

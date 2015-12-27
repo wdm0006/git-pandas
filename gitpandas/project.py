@@ -222,19 +222,20 @@ class ProjectDirectory(object):
         Returns a data frame of all branches in origin.  The DataFrame will have the columns:
 
          * repository
+         * local
          * branch
 
         :returns: DataFrame
         """
 
-        df = pd.DataFrame(columns=['repository', 'branch'])
+        df = pd.DataFrame(columns=['repository', 'local', 'branch'])
 
         for repo in self.repos:
-            try:
-                df = df.append(repo.branches())
-            except GitCommandError as err:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                pass
+            # try:
+            df = df.append(repo.branches())
+            # except GitCommandError as err:
+            #     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+            #     pass
 
         df.reset_index()
 
