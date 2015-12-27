@@ -10,6 +10,6 @@ before_script:
   - git config --global user.email "will@pedalwrencher.com"
   - git config --global user.name "will"
 script:
-  - nosetests --with-coverage
+  - nosetests --with-coverage --cover-package=gitpandas
 after_success:
   - coveralls
