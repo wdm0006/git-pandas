@@ -141,3 +141,11 @@ class TestLocalProperties(unittest.TestCase):
         cblame = self.repo.cumulative_blame()
         self.assertEqual(cblame.shape[0], 6)
         self.assertEqual(cblame[cblame.columns.values[0]].sum(), 36)
+
+        revs = self.repo.revs(num_datapoints=2)
+        self.assertEqual(revs.shape[0], 2)
+        revs = self.repo.revs(limit=2)
+        self.assertEqual(revs.shape[0], 2)
+        revs = self.repo.revs()
+        self.assertEqual(revs.shape[0], 6)
+
