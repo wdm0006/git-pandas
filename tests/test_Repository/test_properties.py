@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import shutil
 import unittest
 from gitpandas import Repository
@@ -67,7 +68,7 @@ class TestLocalProperties(unittest.TestCase):
             f.write('Sample README for a sample project\n')
 
         # commit it
-        grepo.git.add(all=True)
+        grepo.git.add('README.md')
         grepo.git.commit(m='first commit')
 
         # now add some other files:
@@ -75,6 +76,7 @@ class TestLocalProperties(unittest.TestCase):
             with open(repo_dir + os.sep + 'file_%d.py' % (idx, ), 'w') as f:
                 f.write('import sys\nimport os\n')
 
+            time.sleep(2.0)
             grepo.git.add(all=True)
             grepo.git.commit(m='adding file_%d.py' % (idx, ))
 
@@ -125,6 +127,17 @@ class TestLocalProperties(unittest.TestCase):
         self.assertEqual(fcr['unique_committers'].sum(), 6)
         self.assertEqual(fcr['net_change'].sum(), 11)
 
+        # we know this repo doesnt have coverage
         self.assertFalse(self.repo.has_coverage())
 
+        # we know this repo only has one committer
         self.assertEqual(self.repo.bus_factor(), 1)
+
+        # lets do some blaming
+        blame = self.repo.blame(extensions=['py'])
+        self.assertEqual(blame['loc'].sum(), 10)
+        self.assertEqual(blame.shape[0], 1)
+
+        cblame = self.repo.cumulative_blame()
+        self.assertEqual(cblame.shape[0], 6)
+        self.assertEqual(cblame[cblame.columns.values[0]].sum(), 36)
