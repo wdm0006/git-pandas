@@ -6,7 +6,7 @@
 Git-Pandas
 ==========
 
-v0.0.4
+v0.0.6
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:
@@ -20,21 +20,6 @@ repos, and any analysis is aggregated up from all of those into a single output 
 
 
 This is a pre-v1.0.0 project, so the interfaces and functionality may change.
-
-Current functionality includes:
-
- * Commit history with extension and directory filtering
- * Edited files history with extension and directory filtering
- * Blame with extension and directory filtering
- * Branches
- * Tags
- * ProjectDirectory-level general information table
- * Approximate bus factor
- * Cumulative Blame as a time series
-
-Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
-function on stravalib.
-
 
 Installation
 ------------
@@ -59,8 +44,8 @@ Detailed Documentation
 ======================
 
 Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
-those two classes. We have stubbed out more pages which will eventually have detailed examples and sample code, but not
-yet. If you are interested in helping out, please find us on github.
+those two classes, as well as instructions on how to create the objects.  For detailed examples, check out the use-cases
+page.
 
 Contents:
 
@@ -69,12 +54,8 @@ Contents:
 
    repository
    project
-   attributes
-   commit_history
-   bus_factor
-   cumulative_blame
-   coverage
-   file_change_rates
+   usecases
+   contributors
 
 
 Indices and tables

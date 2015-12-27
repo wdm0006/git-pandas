@@ -1,5 +1,5 @@
 """
-.. module:: project directory
+.. module:: projectdirectory
    :platform: Unix, Windows
    :synopsis: A module for examining collections of git repositories as a whole
 
