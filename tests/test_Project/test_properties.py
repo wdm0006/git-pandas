@@ -20,7 +20,6 @@ class TestProperties(unittest.TestCase):
         projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
         branches = list(projectd.branches()['branch'].values)
         self.assertIn('master', branches)
-        self.assertIn('gh-pages', branches)
 
     def test_tags(self):
         projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)

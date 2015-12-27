@@ -37,6 +37,7 @@ class Repository(object):
         self.verbose = verbose
         self.log = logging.getLogger('gitpandas')
         self.__delete_hook = False
+        self._git_repo_name = None
         if working_dir is not None:
             if working_dir[:3] == 'git':
                 if self.verbose:
@@ -44,6 +45,12 @@ class Repository(object):
 
                 dir_path = tempfile.mkdtemp()
                 self.repo = Repo.clone_from(working_dir, dir_path)
+
+                # Trying to get all remote branches into the local copy
+                # self.repo.git.fetch(all=True)
+                # self.repo.git.pull(all=True)
+
+                self._git_repo_name = working_dir.split(os.sep)[-1].split('.')[0]
                 self.git_dir = dir_path
                 self.__delete_hook = True
             else:
@@ -528,10 +535,13 @@ class Repository(object):
         :returns: str
         """
 
-        reponame = self.repo.git_dir.split(os.sep)[-2]
-        if reponame.strip() == '':
-            return 'unknown_repo'
-        return reponame
+        if self._git_repo_name is not None:
+            return self._git_repo_name
+        else:
+            reponame = self.repo.git_dir.split(os.sep)[-2]
+            if reponame.strip() == '':
+                return 'unknown_repo'
+            return reponame
 
     def __str__(self):
         """
