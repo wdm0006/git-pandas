@@ -13,27 +13,23 @@ class TestProperties(unittest.TestCase):
     """
 
     def test_repo_name(self):
-        repo_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        projectd = ProjectDirectory(working_dir=[repo_path], verbose=True)
+        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
         self.assertIn('git-pandas', list(projectd._repo_name()['repository'].values))
 
     def test_branches(self):
-        repo_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        projectd = ProjectDirectory(working_dir=[repo_path], verbose=True)
+        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
         branches = list(projectd.branches()['branch'].values)
         self.assertIn('master', branches)
         self.assertIn('gh-pages', branches)
 
     def test_tags(self):
-        repo_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        projectd = ProjectDirectory(working_dir=[repo_path], verbose=True)
+        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
         tags = list(projectd.tags()['tag'].values)
         self.assertIn('0.0.1', tags)
         self.assertIn('0.0.2', tags)
 
     def test_is_bare(self):
-        repo_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        projectd = ProjectDirectory(working_dir=[repo_path], verbose=True)
+        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
         for x in projectd.is_bare()['is_bare'].values:
             self.assertFalse(x)
 
