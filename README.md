@@ -1,7 +1,8 @@
 Git-Pandas
 ==========
 
-v0.0.5
+![travis status](https://travis-ci.org/wdm0006/git-pandas.svg?branch=master)
+
 
 ![Cumulative Blame Stravalib](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/stravalib_cumulative_blame.png)
 
@@ -35,6 +36,8 @@ function on stravalib.
 
 Installation
 ------------
+
+Currently supports python 3.2+, may support python 2 in the future.
 
 To install use:
 
