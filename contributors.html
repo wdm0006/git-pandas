@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Contributing Code &mdash; git-pandas 0.0.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+        <link rel="prev" title="Use Cases" href="usecases.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> git-pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Contributing Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-contribute">How to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#guidelines">Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-tests">Running Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#easy-issues-getting-started">Easy Issues / Getting Started</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">git-pandas</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Contributing Code</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/contributors.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="contributing-code">
+<h1>Contributing Code<a class="headerlink" href="#contributing-code" title="Permalink to this headline">¶</a></h1>
+<p>Git-pandas is a python library for analyzing git repositories with pandas.  Our goal is twofold:</p>
+<blockquote>
+<div><ul class="simple">
+<li>To make the analysis of git repositories or collections of repositories simple, fast, and pleasant.</li>
+<li>To give developers interested in data analysis a simple interface to datasets that they understand and have already (git data)</li>
+</ul>
+</div></blockquote>
+<p>With that in mind, we welcome and in fact would love some help.</p>
+<div class="section" id="how-to-contribute">
+<h2>How to Contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
+<p>The preferred workflow to contribute to git-pandas is:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Fork this repository into your own github account.</li>
+<li>Clone the fork on your account onto your local disk:</li>
+</ol>
+</div></blockquote>
+<div class="highlight-shell"><div class="highlight"><pre>   git clone git@github.com:YourLogin/git-pandas.git
+   <span class="nb">cd </span>git-pandas
+
+
+3. Create a branch <span class="k">for</span> your new awesome feature, <span class="k">do</span> not work in the master branch:
+</pre></div>
+</div>
+<div class="highlight-shell"><div class="highlight"><pre>   git checkout -b new-awesome-feature
+
+
+4. Write some code, or docs, or tests.
+5. When you are <span class="k">done</span>, submit a pull request.
+</pre></div>
+</div>
+</div>
+<div class="section" id="guidelines">
+<h2>Guidelines<a class="headerlink" href="#guidelines" title="Permalink to this headline">¶</a></h2>
+<p>Git-pandas is still a very young project, but we do have a few guiding principles:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Maintain feature and API parity between Repository and ProjectDirectory</li>
+<li>Write detailed docstrings in sphinx format</li>
+<li>Slow or potentially memory intensive functions should have a limit option</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="running-tests">
+<h2>Running Tests<a class="headerlink" href="#running-tests" title="Permalink to this headline">¶</a></h2>
+<p>Test coverage is admittedly pretty bad right now, so help out by writing tests for new code. To run the tests, use:</p>
+<div class="highlight-shell"><div class="highlight"><pre>nosetests --with-coverage
+coverage html
+</pre></div>
+</div>
+</div>
+<div class="section" id="easy-issues-getting-started">
+<h2>Easy Issues / Getting Started<a class="headerlink" href="#easy-issues-getting-started" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of issues on the near term horizon that would be great to have help with.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Testing: we have no testing whatsoever as is, beyond examples. So setting up proper unit testing with some dummy git repositories is a pretty critical near-term goal.</li>
+<li>Diff: it would be really nice to be able to call a function with 2 revs and return the diff as a dataframe. So columns for line number, filename, path, change, author, timestamp, etc.</li>
+<li>Docs: We have a lot of examples, but they are largely not present in the documentation.  Adding some plotting to the examples using pyplot and putting them into the docs would help out new users a lot.</li>
+<li>Docs Deployment: currently we host the docs on Github pages, which has a kind of awkward deployment process. Anyone with experience automating this (or scripting even) would be very useful.</li>
+<li>File-level tracking: it would be really cool to be able to get a dataframe of one file&#8217;s history in great detail. It likely would be a subset of the existing file change history function.</li>
+<li>Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the  results of other functions across multiple branches.</li>
+<li>Verbose Mode: add logging in more functions when verbose is set to True.</li>
+<li>Heirarchical bus factor: what&#8217;s the bus factor of a file, directory, repo, project directory, etc.</li>
+<li>Language analytics: what languages do we use most, what are bus factors of those languages? Who should we hire next?</li>
+</ol>
+</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="usecases.html" class="btn btn-neutral" title="Use Cases" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Will McGinnis.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Use Cases &mdash; git-pandas 0.0.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+        <link rel="next" title="Contributing Code" href="contributors.html"/>
+        <link rel="prev" title="Project Directory" href="project.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> git-pandas
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-name">Repository Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tags">Tags</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#branches">Branches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#revisions">Revisions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blame">Blame</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#is-bare">Is Bare</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#commit-history">Commit History</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Commit History</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-change-history">File Change History</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bus-factor">Bus Factor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Bus Factor</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cumulative-blame">Cumulative Blame</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Cumulative Blame</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#coverage">Coverage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#has-coverage">Has Coverage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Coverage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#file-change-rates">File Change Rates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">File Change Rates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">git-pandas</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Use Cases</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/usecases.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="use-cases">
+<h1>Use Cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h1>
+<p>Git-Pandas aims to at the most basic level provide a pandas-based interface to the data contained in git
+repositories. Beyond that, there are many specific use cases pertaining to the management and analysis of
+multi-repo projects and organizations that git-pandas can help with.  Here we will outline some of the various
+use-cases that git-pandas is good at, and how you can use it in your projects or organizations.</p>
+<div class="section" id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>At the most basic level, git-pandas allows a panda&#8217;s based interaction with the basic attributes of a repo.</dt>
+<dd><p class="first">This includes:</p>
+<ul class="last simple">
+<li>estimated repository name</li>
+<li>tags</li>
+<li>branches</li>
+<li>revs</li>
+<li>blame</li>
+<li>is_bare</li>
+</ul>
+</dd>
+</dl>
+<p>For detailed usage and examples:</p>
+<div class="section" id="repository-name">
+<h3>Repository Name<a class="headerlink" href="#repository-name" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="tags">
+<h3>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="branches">
+<h3>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="revisions">
+<h3>Revisions<a class="headerlink" href="#revisions" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="blame">
+<h3>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="is-bare">
+<h3>Is Bare<a class="headerlink" href="#is-bare" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="commit-history">
+<h2>Commit History<a class="headerlink" href="#commit-history" title="Permalink to this headline">¶</a></h2>
+<p>One of the simplest datasets to be pulled from a repository or collection of repositories is the
+commit history.  This is done via:</p>
+<blockquote>
+<div><ul class="simple">
+<li>commit history</li>
+<li>file change history</li>
+</ul>
+</div></blockquote>
+<div class="section" id="id1">
+<h3>Commit History<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="file-change-history">
+<h3>File Change History<a class="headerlink" href="#file-change-history" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="bus-factor">
+<h2>Bus Factor<a class="headerlink" href="#bus-factor" title="Permalink to this headline">¶</a></h2>
+<p>One major block of functionality is to do bus factor analysis on repos and collections of repos.
+This includes at the highest level, and in hierarchical terms (in the future). This functionality is
+accessed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li>bus factor</li>
+</ul>
+</div></blockquote>
+<div class="section" id="id2">
+<h3>Bus Factor<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="cumulative-blame">
+<h2>Cumulative Blame<a class="headerlink" href="#cumulative-blame" title="Permalink to this headline">¶</a></h2>
+<p>Another major block of functionality in git-pandas is the cumulative blame interface.  This allows you to
+track and visualize the share of a project borne by individual committers or repositories over time.</p>
+<p>It is accessed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li>cumulative_blame</li>
+</ul>
+</div></blockquote>
+<div class="section" id="id3">
+<h3>Cumulative Blame<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="coverage">
+<h2>Coverage<a class="headerlink" href="#coverage" title="Permalink to this headline">¶</a></h2>
+<p>If a .coverage file is available, we have experimental support for integrating that data in with the git data.
+This functionality is accessed by:</p>
+<blockquote>
+<div><ul class="simple">
+<li>has_coverage</li>
+<li>coverage</li>
+</ul>
+</div></blockquote>
+<div class="section" id="has-coverage">
+<h3>Has Coverage<a class="headerlink" href="#has-coverage" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id4">
+<h3>Coverage<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="file-change-rates">
+<h2>File Change Rates<a class="headerlink" href="#file-change-rates" title="Permalink to this headline">¶</a></h2>
+<p>File change rate, or risk, is a specialized dataframe aimed at identifying files which are likely to have bugs in them.
+If coverage data is available, that can be included in this table.</p>
+<blockquote>
+<div><ul class="simple">
+<li>file_change_rates</li>
+</ul>
+</div></blockquote>
+<div class="section" id="id5">
+<h3>File Change Rates<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="contributors.html" class="btn btn-neutral float-right" title="Contributing Code" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="project.html" class="btn btn-neutral" title="Project Directory" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Will McGinnis.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

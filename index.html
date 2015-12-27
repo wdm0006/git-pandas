@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Git-Pandas &mdash; git-pandas 0.0.4 documentation</title>
+  <title>Git-Pandas &mdash; git-pandas 0.0.5 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.4 documentation" href="#"/>
+    <link rel="top" title="git-pandas 0.0.5 documentation" href="#"/>
         <link rel="next" title="Repository" href="repository.html"/> 
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.0.4
+                0.0.5
               </div>
             
           
@@ -82,13 +82,9 @@
             
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
 </ul>
 
             
@@ -135,7 +131,7 @@
             
   <div class="section" id="git-pandas">
 <h1>Git-Pandas<a class="headerlink" href="#git-pandas" title="Permalink to this headline">¶</a></h1>
-<p>v0.0.4</p>
+<p>v0.0.6</p>
 <p>A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:</p>
 <blockquote>
@@ -148,21 +144,6 @@ two primary objects:</p>
 in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
 repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).</p>
 <p>This is a pre-v1.0.0 project, so the interfaces and functionality may change.</p>
-<p>Current functionality includes:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Commit history with extension and directory filtering</li>
-<li>Edited files history with extension and directory filtering</li>
-<li>Blame with extension and directory filtering</li>
-<li>Branches</li>
-<li>Tags</li>
-<li>ProjectDirectory-level general information table</li>
-<li>Approximate bus factor</li>
-<li>Cumulative Blame as a time series</li>
-</ul>
-</div></blockquote>
-<p>Please see examples for more detailed usage. The image above is generated using the repository object&#8217;s cumulative blame
-function on stravalib.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>To install use:</p>
@@ -182,42 +163,38 @@ which includes some proposed starter issues, or if you have an idea of your own,
 <div class="section" id="detailed-documentation">
 <h1>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
-those two classes. We have stubbed out more pages which will eventually have detailed examples and sample code, but not
-yet. If you are interested in helping out, please find us on github.</p>
+those two classes, as well as instructions on how to create the objects.  For detailed examples, check out the use-cases
+page.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#repository-name">Repository Name</a></li>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#tags">Tags</a></li>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#branches">Branches</a></li>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#revisions">Revisions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#blame">Blame</a></li>
-<li class="toctree-l2"><a class="reference internal" href="attributes.html#is-bare">Is Bare</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#explicit-local">Explicit Local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#explicit-remote">Explicit Remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#module-gitpandas.repository">Detailed API Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="commit_history.html#id1">Commit History</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commit_history.html#file-change-history">File Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#directory-of-repositories">Directory Of Repositories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#explicit-local">Explicit Local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#explicit-remote">Explicit Remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#module-gitpandas.project">Detailed API Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bus_factor.html#id1">Bus Factor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#attributes">Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#commit-history">Commit History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#bus-factor">Bus Factor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#cumulative-blame">Cumulative Blame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#coverage">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#file-change-rates">File Change Rates</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cumulative_blame.html#id1">Cumulative Blame</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="coverage.html#has-coverage">Has Coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="coverage.html#id1">Coverage</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="file_change_rates.html#id1">File Change Rates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#how-to-contribute">How to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#guidelines">Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#running-tests">Running Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#easy-issues-getting-started">Easy Issues / Getting Started</a></li>
 </ul>
 </li>
 </ul>
@@ -271,7 +248,7 @@ yet. If you are interested in helping out, please find us on github.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.4',
+            VERSION:'0.0.5',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

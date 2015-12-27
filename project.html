@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Project &mdash; git-pandas 0.0.4 documentation</title>
+  <title>Project Directory &mdash; git-pandas 0.0.5 documentation</title>
   
 
   
@@ -30,8 +30,8 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.4 documentation" href="index.html"/>
-        <link rel="next" title="Repository Attributes" href="attributes.html"/>
+    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+        <link rel="next" title="Use Cases" href="usecases.html"/>
         <link rel="prev" title="Repository" href="repository.html"/> 
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.0.4
+                0.0.5
               </div>
             
           
@@ -83,13 +83,15 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="attributes.html">Repository Attributes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commit_history.html">Commit History</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bus_factor.html">Bus Factor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cumulative_blame.html">Cumulative Blame</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coverage.html">Coverage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="file_change_rates.html">File Change Rates</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#directory-of-repositories">Directory Of Repositories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#explicit-local">Explicit Local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#explicit-remote">Explicit Remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gitpandas.project">Detailed API Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
 </ul>
 
             
@@ -120,7 +122,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Project</li>
+    <li>Project Directory</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -134,9 +136,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-gitpandas.project">
-<span id="project"></span><h1>Project<a class="headerlink" href="#module-gitpandas.project" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+  <div class="section" id="project-directory">
+<h1>Project Directory<a class="headerlink" href="#project-directory" title="Permalink to this headline">¶</a></h1>
+<p>The ProjectDirectory object represents a collection of git repositories (perhaps in a single directory).  It can be
+created in 3 main ways:</p>
+<blockquote>
+<div><ul class="simple">
+<li>By specifying the directory in which the repositories live locally</li>
+<li>By explicitly passing a list of local directories for each git repository</li>
+<li>By explicitly passing remote git repositories to be cloned locally in temporary directories.</li>
+</ul>
+</div></blockquote>
+<p>Once constructed, all work out equally, and as long as all are specified explicitly, you can even mix remote and local
+repositories.</p>
+<p>Using each method:</p>
+<div class="section" id="directory-of-repositories">
+<h2>Directory Of Repositories<a class="headerlink" href="#directory-of-repositories" title="Permalink to this headline">¶</a></h2>
+<p>To create a ProjectDirectory object from a directory that contains multiple repositories simply use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;/path/to/dir/&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Where ignore can be a list of directories to explicitly ignore. This method uses os.walk to search the
+passed directory for any .git directories, so even if a repository is many directories deep below the passed
+working dir, it will be included.  To check what repositories are included in your object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="explicit-local">
+<h2>Explicit Local<a class="headerlink" href="#explicit-local" title="Permalink to this headline">¶</a></h2>
+<p>Explicit local directories are passed by using a list rather than a string for working dir:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/path/to/repo1/&#39;</span><span class="p">,</span> <span class="s">&#39;/path/to/repo2/&#39;</span><span class="p">],</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, the subdirectories of the directories passed are not searched, so every directory passed
+must have a .git directory in it.</p>
+</div>
+<div class="section" id="explicit-remote">
+<h2>Explicit Remote<a class="headerlink" href="#explicit-remote" title="Permalink to this headline">¶</a></h2>
+<p>Explicit local directories are passed by using a list rather than a string for working dir:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/user/repo.git&#39;</span><span class="p">],</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As mentioned, you can mix explicit remote and explicit local repositories, the remote repos will be cloned
+into temporary directories and treated as local ones under the hood. Because of this, for large repos, it
+can be relatively slow to create ProjectDirectory objects with many explicit remote repositories.</p>
+</div>
+<div class="section" id="module-gitpandas.project">
+<span id="detailed-api-documentation"></span><h2>Detailed API Documentation<a class="headerlink" href="#module-gitpandas.project" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-projectdirectory"></span><dl class="class">
 <dt id="gitpandas.project.ProjectDirectory">
 <em class="property">class </em><code class="descclassname">gitpandas.project.</code><code class="descname">ProjectDirectory</code><span class="sig-paren">(</span><em>working_dir=None</em>, <em>ignore=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
@@ -472,6 +523,7 @@ will have the columns:</p>
 </dd></dl>
 
 </div>
+</div>
 
 
            </div>
@@ -480,7 +532,7 @@ will have the columns:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="attributes.html" class="btn btn-neutral float-right" title="Repository Attributes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="usecases.html" class="btn btn-neutral float-right" title="Use Cases" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="repository.html" class="btn btn-neutral" title="Repository" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -514,7 +566,7 @@ will have the columns:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.4',
+            VERSION:'0.0.5',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
