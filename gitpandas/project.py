@@ -8,7 +8,7 @@
 
 """
 
-import sys
+import math
 import os
 import numpy as np
 import pandas as pd
@@ -187,6 +187,46 @@ class ProjectDirectory(object):
 
         return df
 
+    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
+        """
+        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
+        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
+        many file changes). Included in the DataFrame will be the columns:
+
+         * repository
+         * date (index)
+         * author
+         * committer
+         * message
+         * filename
+         * insertions
+         * deletions
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :return: DataFrame
+        """
+
+        if limit is not None:
+            limit = int(limit / len(self.repo_dirs))
+
+        df = pd.DataFrame(columns=['repository', 'date', 'author', 'committer', 'message', 'filename', 'insertions', 'deletions'])
+
+        for repo in self.repos:
+            try:
+                ch = repo.file_change_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+                ch['repository'] = repo._repo_name()
+                df = df.append(ch)
+            except GitCommandError as err:
+                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                pass
+
+        df.reset_index()
+
+        return df
+
     def blame(self, extensions=None, ignore_dir=None, committer=True):
         """
         Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
@@ -256,6 +296,12 @@ class ProjectDirectory(object):
 
         :return: DataFrame
         """
+
+        if limit is not None:
+            limit = math.floor(float(limit) / len(self.repos))
+
+        if num_datapoints is not None:
+            num_datapoints = math.floor(float(num_datapoints) / len(self.repos))
 
         df = pd.DataFrame(columns=['repository', 'rev'])
 

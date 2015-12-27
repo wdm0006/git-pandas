@@ -83,6 +83,7 @@ class TestLocalProperties(unittest.TestCase):
         self.repo = Repository(working_dir=repo_dir, verbose=True)
 
     def tearDown(self):
+        self.repo.__del__()
         project_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos'
         shutil.rmtree(project_dir)
 
