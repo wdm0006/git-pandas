@@ -1,7 +1,7 @@
 Git-Pandas
 ==========
 
-![travis status](https://travis-ci.org/wdm0006/git-pandas.svg?branch=master)
+![travis status](https://travis-ci.org/wdm0006/git-pandas.svg?branch=master) [![PyPI version](https://badge.fury.io/py/git-pandas.svg)](https://badge.fury.io/py/git-pandas)
 
 
 ![Cumulative Blame Stravalib](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/stravalib_cumulative_blame.png)

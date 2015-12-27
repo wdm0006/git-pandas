@@ -430,3 +430,12 @@ class ProjectDirectory(object):
                 break
 
         return tc
+
+    def __del__(self):
+        """
+
+        :return:
+        """
+
+        for repo in self.repos:
+            repo.__del__()

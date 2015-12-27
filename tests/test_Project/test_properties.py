@@ -12,24 +12,26 @@ class TestProperties(unittest.TestCase):
 
     """
 
+    def setUp(self):
+        self.projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
+
+    def tearDown(self):
+        self.projectd.__del__()
+
     def test_repo_name(self):
-        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
-        self.assertIn('git-pandas', list(projectd._repo_name()['repository'].values))
+        self.assertIn('git-pandas', list(self.projectd._repo_name()['repository'].values))
 
     def test_branches(self):
-        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
-        branches = list(projectd.branches()['branch'].values)
+        branches = list(self.projectd.branches()['branch'].values)
         self.assertIn('master', branches)
         self.assertIn('gh-pages', branches)
 
     def test_tags(self):
-        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
-        tags = list(projectd.tags()['tag'].values)
+        tags = list(self.projectd.tags()['tag'].values)
         self.assertIn('0.0.1', tags)
         self.assertIn('0.0.2', tags)
 
     def test_is_bare(self):
-        projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
-        for x in projectd.is_bare()['is_bare'].values:
+        for x in self.projectd.is_bare()['is_bare'].values:
             self.assertFalse(x)
 

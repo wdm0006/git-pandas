@@ -45,11 +45,6 @@ class Repository(object):
 
                 dir_path = tempfile.mkdtemp()
                 self.repo = Repo.clone_from(working_dir, dir_path)
-
-                # Trying to get all remote branches into the local copy
-                # self.repo.git.fetch(all=True)
-                # self.repo.git.pull(all=True)
-
                 self._git_repo_name = working_dir.split(os.sep)[-1].split('.')[0]
                 self.git_dir = dir_path
                 self.__delete_hook = True
@@ -70,7 +65,8 @@ class Repository(object):
         :return:
         """
         if self.__delete_hook:
-            shutil.rmtree(self.git_dir)
+            if os.path.exists(self.git_dir):
+                shutil.rmtree(self.git_dir)
 
     def is_bare(self):
         """
@@ -177,7 +173,11 @@ class Repository(object):
                 commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
-                    x = commits.__next__()
+                    try:
+                        x = commits.__next__()
+                    except StopIteration as e:
+                        break
+
                     ds.append([
                               x.author.name,
                               x.committer.name,
