@@ -46,7 +46,7 @@ def repository(path):
     print('\n')
 
     # get the commit history
-    ch = r.commit_history('develop', limit=None, extensions=['py'], ignore_dir=ignore_dirs)
+    ch = r.commit_history('HEAD', limit=None, extensions=['py'], ignore_dir=ignore_dirs)
     print(ch.head(5))
 
     # get the list of committers
@@ -64,7 +64,7 @@ def repository(path):
     print(attr)
 
     # get the file change history
-    fh = r.file_change_history('develop', limit=None, ignore_dir=ignore_dirs)
+    fh = r.file_change_history('HEAD', limit=None, ignore_dir=ignore_dirs)
     fh['ext'] = fh['filename'].map(lambda x: x.split('.')[-1])
     print(fh.head(50))
 

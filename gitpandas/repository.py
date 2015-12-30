@@ -239,6 +239,7 @@ class Repository(object):
                       x.committer.name,
                       x.committed_date,
                       x.message,
+                      x.name_rev.split()[0],
                       self.__check_extension(x.stats.files, extensions, ignore_dir)
                   ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
         else:
@@ -247,13 +248,14 @@ class Repository(object):
                       x.committer.name,
                       x.committed_date,
                       x.message,
+                      x.name_rev.split()[0],
                       self.__check_extension(x.stats.files, extensions, ignore_dir)
                   ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
         ds = [x[:-1] + [fn, x[-1][fn]['insertions'], x[-1][fn]['deletions']] for x in ds for fn in x[-1].keys() if len(x[-1].keys()) > 0]
 
         # make it a pandas dataframe
-        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'filename', 'insertions', 'deletions'])
+        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
@@ -592,6 +594,19 @@ class Repository(object):
                 break
 
         return tc
+
+    def file_owner(self, rev, filename):
+        """
+        """
+        try:
+            blame = self.repo.blame(rev, os.path.join(self.git_dir, filename))
+            blame = DataFrame([[x[0].committer.name, len(x[1])] for x in blame], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+            if blame.shape[0] > 0:
+                return blame['loc'].idxmax()
+            else:
+                return None
+        except GitCommandError as e:
+            return None
 
 
 class GitFlowRepository(Repository):

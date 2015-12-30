@@ -1,0 +1,67 @@
+from gitpandas import Repository
+import numpy as np
+import lifelines
+import pandas as pd
+import matplotlib.pyplot as plt
+
+__author__ = 'willmcginnis'
+
+
+if __name__ == '__main__':
+    threshold = 5
+    repo = Repository(working_dir='git://github.com/CamDavidsonPilon/lifelines.git')
+    fch = repo.file_change_history(limit=None, extensions=['py'])
+
+    fch['file_owner'] = ''
+    fch['pre_refactor'] = fch['insertions'] - fch['deletions']
+    fch['refactor'] = 0
+    fch['timestamp'] = fch.index.astype(np.int64) // 10**9
+    fch = fch.reindex()
+    fch = fch.reset_index()
+
+    # add in the file owner and whether or not each item is a refactor
+    for idx, row in fch.iterrows():
+        fch.set_value(idx, 'file_owner', repo.file_owner(row.rev, row.filename))
+        if abs(row.pre_refactor) > threshold:
+            fch.set_value(idx, 'refactor', 1)
+        else:
+            fch.set_value(idx, 'refactor', 0)
+
+    # add in the time since column
+    fch['time_since_refactor'] = 0
+    fch['time_until_refactor'] = 0
+    for idx, row in fch.iterrows():
+        ts = None
+        chunk = fch[(fch['timestamp'] < row.timestamp) & (fch['refactor'] == 1) & (fch['filename'] == row.filename)]
+        if chunk.shape[0] > 0:
+            ts = row.timestamp - chunk['timestamp'].max()
+        fch.set_value(idx, 'time_since_refactor', ts)
+
+        ts = None
+        chunk = fch[(fch['timestamp'] > row.timestamp) & (fch['refactor'] == 1) & (fch['filename'] == row.filename)]
+        if chunk.shape[0] > 0:
+            ts = chunk['timestamp'].min()
+        else:
+            ts = fch['timestamp'].max()
+
+        fch.set_value(idx, 'time_until_refactor', ts - row.timestamp)
+
+    fch.to_csv('test.csv')
+
+    fch = pd.read_csv('test.csv')
+
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    for filename in set(fch['file_owner'].values):
+        sample = fch[fch['file_owner'] == filename]
+        if sample.shape[0] > 20:
+            print('Evaluating %s' % (filename, ))
+            kmf = lifelines.KaplanMeierFitter()
+            kmf.fit(sample['time_until_refactor'].values, label=filename)
+
+            ax = kmf.survival_function_.plot(ax=ax)
+
+    plt.title('Survival function of file owners')
+    plt.show()
+
+
