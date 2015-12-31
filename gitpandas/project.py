@@ -468,7 +468,7 @@ class ProjectDirectory(object):
         if by == 'file':
             raise NotImplementedError('File-wise bus factor')
         elif by == 'projectd':
-            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, by=by)
+            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, by='repository')
             blame = blame.sort_values(by=['loc'], ascending=False)
 
             total = blame['loc'].sum()
