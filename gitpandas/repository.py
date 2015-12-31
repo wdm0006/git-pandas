@@ -357,7 +357,7 @@ class Repository(object):
 
         return out
 
-    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True):
+    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True, by='repository'):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
@@ -371,6 +371,7 @@ class Repository(object):
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param rev: (optional, default=HEAD) the specific revision to blame
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param by: (optional, default=repository) whether to group by repository or by file
         :return: DataFrame
         """
 
@@ -387,15 +388,21 @@ class Repository(object):
 
                 for file in filenames:
                     try:
-                        blames.append(self.repo.blame(rev, str(file).replace(self.git_dir + '/', '')))
+                        blames.append([x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))])
                     except GitCommandError as err:
                         pass
 
         blames = [item for sublist in blames for item in sublist]
         if committer:
-            blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+            if by == 'repository':
+                blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+            elif by == 'file':
+                blames = DataFrame([[x[0].committer.name, len(x[1]), x[2]] for x in blames], columns=['committer', 'loc', 'file']).groupby(['committer', 'file']).agg({'loc': np.sum})
         else:
-            blames = DataFrame([[x[0].author.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+            if by == 'repository':
+                blames = DataFrame([[x[0].author.name, len(x[1])] for x in blames], columns=['author', 'loc']).groupby('author').agg({'loc': np.sum})
+            elif by == 'file':
+                blames = DataFrame([[x[0].author.name, len(x[1]), x[2]] for x in blames], columns=['author', 'loc', 'file']).groupby(['author', 'file']).agg({'loc': np.sum})
 
         return blames
 
@@ -570,7 +577,7 @@ class Repository(object):
         """
         return str(self.git_dir)
 
-    def bus_factor(self, extensions=None, ignore_dir=None):
+    def bus_factor(self, by='repository', extensions=None, ignore_dir=None):
         """
         An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
         the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
@@ -578,10 +585,14 @@ class Repository(object):
 
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param by: (optional, default=repository) whether to group by repository or by file
         :return:
         """
 
-        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir)
+        if by == 'file':
+            raise NotImplementedError('File-wise bus factor')
+
+        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, by=by)
         blame = blame.sort_values(by=['loc'], ascending=False)
 
         total = blame['loc'].sum()
@@ -593,7 +604,7 @@ class Repository(object):
             if cumulative >= total / 2:
                 break
 
-        return tc
+        return DataFrame([[self._repo_name(), tc]], columns=['repository', 'bus factor'])
 
     def file_owner(self, rev, filename):
         """

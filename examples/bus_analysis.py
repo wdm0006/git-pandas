@@ -19,4 +19,5 @@ if __name__ == '__main__':
     flask_ch = flask_repo.commit_history('master', limit=None, extensions=['py'])
 
     print('\tflask committers: %d' % (len(set(flask_ch['committer'].values))))
-    print('\tflask bus count: %d' % (flask_repo.bus_factor(extensions=['py'])))
+    print('\tflask bus count:')
+    print(flask_repo.bus_factor(extensions=['py']))

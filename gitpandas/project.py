@@ -227,7 +227,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def blame(self, extensions=None, ignore_dir=None, committer=True):
+    def blame(self, extensions=None, ignore_dir=None, committer=True, by='repository'):
         """
         Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
@@ -239,7 +239,8 @@ class ProjectDirectory(object):
 
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
-        :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param committer: (optional, default=True) true if committer should be reported, false if author
+        :param by: (optional, default=repository) whether to group by repository or by file
         :return: DataFrame
         """
 
@@ -247,7 +248,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer))
+                df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
@@ -452,7 +453,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def bus_factor(self, extensions=None, ignore_dir=None):
+    def bus_factor(self, extensions=None, ignore_dir=None, by='projectd'):
         """
         An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
         the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
@@ -464,18 +465,32 @@ class ProjectDirectory(object):
         :return:
         """
 
-        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir)
+        if by == 'file':
+            raise NotImplementedError('File-wise bus factor')
+        elif by == 'projectd':
+            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, by=by)
+            blame = blame.sort_values(by=['loc'], ascending=False)
 
-        total = blame['loc'].sum()
-        cumulative = 0
-        tc = 0
-        for idx in range(blame.shape[0]):
-            cumulative += blame.ix[idx, 'loc']
-            tc += 1
-            if cumulative >= total / 2:
-                break
+            total = blame['loc'].sum()
+            cumulative = 0
+            tc = 0
+            for idx in range(blame.shape[0]):
+                cumulative += blame.ix[idx, 'loc']
+                tc += 1
+                if cumulative >= total / 2:
+                    break
 
-        return tc
+            return pd.DataFrame([['projectd', tc]], columns=['projectd', 'bus factor'])
+        elif by == 'repository':
+            df = pd.DataFrame(columns=['repository', 'bus factor'])
+            for repo in self.repos:
+                try:
+                    df = df.append(repo.bus_factor(extensions=extensions, ignore_dir=ignore_dir, by=by))
+                except GitCommandError as err:
+                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                    pass
+            df.reset_index()
+            return df
 
     def __del__(self):
         """

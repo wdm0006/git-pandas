@@ -132,7 +132,7 @@ class TestLocalProperties(unittest.TestCase):
         self.assertFalse(self.repo.has_coverage())
 
         # we know this repo only has one committer
-        self.assertEqual(self.repo.bus_factor(), 1)
+        self.assertEqual(self.repo.bus_factor(by='repository')['bus factor'].values[0], 1)
 
         # lets do some blaming
         blame = self.repo.blame(extensions=['py'])
