@@ -364,7 +364,7 @@ class ProjectDirectory(object):
         if by == 'committer':
             committers = [(str(x).split('__')[0].lower().strip(), x) for x in global_blame.columns.values]
 
-            if sys.version_info.major == 2:
+            if sys.version_info[0] == 2:
                 committer_mapping = dict([(c, [x[1] for x in committers if x[0] == c]) for c in set([x[0] for x in committers])])
             else:
                 committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
@@ -378,7 +378,7 @@ class ProjectDirectory(object):
         elif by == 'project':
             projects = [(str(x).split('__')[1].lower().strip(), x) for x in global_blame.columns.values]
 
-            if sys.version_info.major == 2:
+            if sys.version_info[0] == 2:
                 project_mapping = dict([(c, [x[1] for x in projects if x[0] == c]) for c in set([x[0] for x in projects])])
             else:
                 project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
