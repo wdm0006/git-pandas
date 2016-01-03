@@ -18,8 +18,6 @@ from gitpandas.repository import Repository
 
 __author__ = 'willmcginnis'
 
-_PY2 = sys.version_info.major == 2
-
 
 class ProjectDirectory(object):
     """
@@ -275,11 +273,11 @@ class ProjectDirectory(object):
         df = pd.DataFrame(columns=['repository', 'local', 'branch'])
 
         for repo in self.repos:
-            # try:
-            df = df.append(repo.branches())
-            # except GitCommandError as err:
-            #     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-            #     pass
+            try:
+                df = df.append(repo.branches())
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
 
         df.reset_index()
 
@@ -365,7 +363,11 @@ class ProjectDirectory(object):
 
         if by == 'committer':
             committers = [(str(x).split('__')[0].lower().strip(), x) for x in global_blame.columns.values]
-            committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in set([x[0] for x in committers])}
+
+            if sys.version_info.major == 2:
+                committer_mapping = dict([(c, [x[1] for x in committers if x[0] == c]) for c in set([x[0] for x in committers])])
+            else:
+                committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
 
             for committer in committer_mapping.keys():
                 global_blame[committer] = 0
@@ -375,7 +377,11 @@ class ProjectDirectory(object):
             global_blame = global_blame.reindex(columns=list(committer_mapping.keys()))
         elif by == 'project':
             projects = [(str(x).split('__')[1].lower().strip(), x) for x in global_blame.columns.values]
-            project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in set([x[0] for x in projects])}
+
+            if sys.version_info.major == 2:
+                project_mapping = dict([(c, [x[1] for x in projects if x[0] == c]) for c in set([x[0] for x in projects])])
+            else:
+                project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
 
             for project in project_mapping.keys():
                 global_blame[project] = 0
