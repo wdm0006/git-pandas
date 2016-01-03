@@ -23,6 +23,8 @@ from pandas import DataFrame, to_datetime
 
 __author__ = 'willmcginnis'
 
+_PY2 = sys.version_info.major == 2
+
 
 class Repository(object):
     """
@@ -174,7 +176,10 @@ class Repository(object):
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
-                        x = commits.__next__()
+                        if _PY2:
+                            x = commits.next()
+                        else:
+                            x = commits.__next__()
                     except StopIteration as e:
                         break
 

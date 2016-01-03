@@ -9,6 +9,7 @@
 """
 
 import math
+import sys
 import os
 import numpy as np
 import pandas as pd
@@ -16,6 +17,8 @@ from git import GitCommandError
 from gitpandas.repository import Repository
 
 __author__ = 'willmcginnis'
+
+_PY2 = sys.version_info.major == 2
 
 
 class ProjectDirectory(object):
