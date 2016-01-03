@@ -37,7 +37,7 @@ function on stravalib.
 Installation
 ------------
 
-To install use:
+Git-pandas supports python 2.7+ and 3.3+. To install use:
 
     pip install git-pandas
     

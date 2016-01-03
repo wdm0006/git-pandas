@@ -6,6 +6,7 @@ v0.0.6
  * Added rev to file change history table
  * Added file-wise blame using by='file' parameter
  * Bus Factor returns a dataframe
+ * Now supporting python 2.7+ and 3.3+
 
 v0.0.5
 ======
