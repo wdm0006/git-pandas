@@ -467,7 +467,11 @@ class Repository(object):
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
         # get the commit history to stub out committers (hacky and slow)
-        committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
+        if _PY2:
+            committers = set([x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)])
+        else:
+            committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
+
         for committer in committers:
             revs[committer] = 0
 
@@ -527,7 +531,11 @@ class Repository(object):
 
         # then the remotes
         remote_branches = self.repo.git.branch(all=True).split('\n')
-        remote_branches = {x.split('/')[-1] for x in remote_branches if 'remotes' in x}
+        if _PY2:
+            remote_branches = set([x.split('/')[-1] for x in remote_branches if 'remotes' in x])
+        else:
+            remote_branches = {x.split('/')[-1] for x in remote_branches if 'remotes' in x}
+
         data += [[x, False] for x in remote_branches]
 
         df = DataFrame(data, columns=['branch', 'local'])
