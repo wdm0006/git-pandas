@@ -437,6 +437,9 @@ class Repository(object):
         df = DataFrame(ds, columns=['date', 'rev'])
 
         if skip is not None:
+            if skip == 0:
+                skip = 1
+                
             if df.shape[0] >= skip:
                 df = df.ix[range(0, df.shape[0], skip)]
                 df.reset_index()
