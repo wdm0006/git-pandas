@@ -382,18 +382,16 @@ class Repository(object):
             ignore_dir = []
 
         blames = []
-        for roots, dirs, files in os.walk(self.git_dir):
-            if '.git' not in roots and sum([1 if x in roots else 0 for x in ignore_dir]) == 0:
+        file_names = [x for x in self.repo.git.log(pretty='format:', name_only=True, diff_filter='A').split('\n') if x.strip() != '']
+        for file in file_names:
+            if sum([1 if x in file else 0 for x in ignore_dir]) == 0:
                 if extensions is not None:
-                    filenames = [roots + os.sep + x for x in files if x.split('.')[-1] in extensions]
-                else:
-                    filenames = [roots + os.sep + x for x in files]
-
-                for file in filenames:
-                    try:
-                        blames.append([x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))])
-                    except GitCommandError as err:
-                        pass
+                    if file.split('.')[-1] not in extensions:
+                        continue
+                try:
+                    blames.append([x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))])
+                except GitCommandError as err:
+                    pass
 
         blames = [item for sublist in blames for item in sublist]
         if committer:
@@ -439,7 +437,7 @@ class Repository(object):
         if skip is not None:
             if skip == 0:
                 skip = 1
-                
+
             if df.shape[0] >= skip:
                 df = df.ix[range(0, df.shape[0], skip)]
                 df.reset_index()
