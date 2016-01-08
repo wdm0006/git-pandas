@@ -249,12 +249,12 @@ commit history.  This is done via:
 Commit History
 ^^^^^^^^^^^^^^
 
-
+TODO
 
 File Change History
 ^^^^^^^^^^^^^^^^^^^
 
-
+TODO
 
 Bus Factor
 ----------
@@ -269,7 +269,7 @@ accessed by:
 Bus Factor
 ^^^^^^^^^^
 
-
+TODO
 
 Cumulative Blame
 ----------------
@@ -285,6 +285,7 @@ It is accessed by:
 Cumulative Blame
 ^^^^^^^^^^^^^^^^
 
+TODO
 
 Coverage
 --------
@@ -299,11 +300,12 @@ This functionality is accessed by:
 Has Coverage
 ^^^^^^^^^^^^
 
-
+TODO
 
 Coverage
 ^^^^^^^^
 
+TODO
 
 File Change Rates
 -----------------
@@ -316,3 +318,4 @@ If coverage data is available, that can be included in this table.
 File Change Rates
 ^^^^^^^^^^^^^^^^^
 
+TODO
