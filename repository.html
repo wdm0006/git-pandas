@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Repository &mdash; git-pandas 0.0.5 documentation</title>
+  <title>Repository &mdash; git-pandas 0.0.6 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+    <link rel="top" title="git-pandas 0.0.6 documentation" href="index.html"/>
         <link rel="next" title="Project Directory" href="project.html"/>
         <link rel="prev" title="Git-Pandas" href="index.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.0.5
+                0.0.6
               </div>
             
           
@@ -188,7 +188,7 @@ gitpython Repo instance.</p>
 </table>
 <dl class="method">
 <dt id="gitpandas.repository.Repository.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em>, <em>by='repository'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
 name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
 method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
@@ -208,6 +208,7 @@ file extensions. The DataFrame will have the columns:</p>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>rev</strong> &#8211; (optional, default=HEAD) the specific revision to blame</li>
 <li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
+<li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
 </ul>
 </td>
 </tr>
@@ -226,6 +227,7 @@ file extensions. The DataFrame will have the columns:</p>
 <div><ul class="simple">
 <li>repository</li>
 <li>branch</li>
+<li>local</li>
 </ul>
 </div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
@@ -240,7 +242,7 @@ file extensions. The DataFrame will have the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.bus_factor">
-<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.bus_factor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>by='repository'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.bus_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
 the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
 least 50% of the codebase&#8217;s LOC</p>
@@ -251,6 +253,7 @@ least 50% of the codebase&#8217;s LOC</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
 </ul>
 </td>
 </tr>
@@ -413,6 +416,11 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 </dd></dl>
 
 <dl class="method">
+<dt id="gitpandas.repository.Repository.file_owner">
+<code class="descname">file_owner</code><span class="sig-paren">(</span><em>rev</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_owner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="gitpandas.repository.Repository.has_coverage">
 <code class="descname">has_coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.has_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.has_coverage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a boolean for is a parseable .coverage file can be found in the repository</p>
@@ -535,7 +543,7 @@ a high change rate and poor test coverage, then it is a great candidate for writ
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.5',
+            VERSION:'0.0.6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

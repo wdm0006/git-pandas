@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Project Directory &mdash; git-pandas 0.0.5 documentation</title>
+  <title>Project Directory &mdash; git-pandas 0.0.6 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+    <link rel="top" title="git-pandas 0.0.6 documentation" href="index.html"/>
         <link rel="next" title="Use Cases" href="usecases.html"/>
         <link rel="prev" title="Repository" href="repository.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.0.5
+                0.0.6
               </div>
             
           
@@ -210,7 +210,7 @@ git-pandas repository objects, created by os.walk-ing a directory to file all ch
 </table>
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>committer=True</em>, <em>by='repository'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
 name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
 method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
@@ -228,7 +228,8 @@ file extensions. The DataFrame will have the columns:</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
-<li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
+<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
+<li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
 </ul>
 </td>
 </tr>
@@ -246,6 +247,7 @@ file extensions. The DataFrame will have the columns:</p>
 <blockquote>
 <div><ul class="simple">
 <li>repository</li>
+<li>local</li>
 <li>branch</li>
 </ul>
 </div></blockquote>
@@ -261,7 +263,7 @@ file extensions. The DataFrame will have the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.bus_factor">
-<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>by='projectd'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
 the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
 least 50% of the codebase&#8217;s LOC</p>
@@ -376,6 +378,43 @@ returned in 3 forms (switched with the by parameter, default &#8216;committer&#8
 <li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
 <li><strong>by</strong> &#8211; (optional, default=&#8217;committer&#8217;) whether to arrange the output by committer or project</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.project.ProjectDirectory.file_change_history">
+<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
+the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
+many file changes). Included in the DataFrame will be the columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>repository</li>
+<li>date (index)</li>
+<li>author</li>
+<li>committer</li>
+<li>message</li>
+<li>filename</li>
+<li>insertions</li>
+<li>deletions</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; the branch to return commits for</li>
+<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 </ul>
 </td>
 </tr>
@@ -566,7 +605,7 @@ will have the columns:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.5',
+            VERSION:'0.0.6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

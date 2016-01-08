@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Use Cases &mdash; git-pandas 0.0.5 documentation</title>
+  <title>Use Cases &mdash; git-pandas 0.0.6 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.5 documentation" href="index.html"/>
+    <link rel="top" title="git-pandas 0.0.6 documentation" href="index.html"/>
         <link rel="next" title="Contributing Code" href="contributors.html"/>
         <link rel="prev" title="Project Directory" href="project.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.0.5
+                0.0.6
               </div>
             
           
@@ -85,13 +85,14 @@
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Use Cases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#repository-name">Repository Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#is-bare">Is Bare</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tags">Tags</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#branches">Branches</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#revisions">Revisions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#blame">Blame</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#is-bare">Is Bare</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#commit-history">Commit History</a><ul>
@@ -184,24 +185,193 @@ use-cases that git-pandas is good at, and how you can use it in your projects or
 </ul>
 </dd>
 </dl>
-<p>For detailed usage and examples:</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>The following examples exhibit the basic functionality of the ProjectDirectory and Repository objects, for gathering
+the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the attributes
+directory. For more detailed information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="section" id="repository-name">
 <h3>Repository Name<a class="headerlink" href="#repository-name" title="Permalink to this headline">¶</a></h3>
+<p>To access the approximate repository name of each:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Names:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Name:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+</pre></div>
 </div>
-<div class="section" id="tags">
-<h3>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h3>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Directory Names:
+   repository
+0  git-pandas
+1   lifelines
+
+Repository Name:
+git-pandas
+</pre></div>
 </div>
-<div class="section" id="branches">
-<h3>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="revisions">
-<h3>Revisions<a class="headerlink" href="#revisions" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="blame">
-<h3>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h3>
 </div>
 <div class="section" id="is-bare">
 <h3>Is Bare<a class="headerlink" href="#is-bare" title="Permalink to this headline">¶</a></h3>
+<p>To find out if the repositories are bare:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Is Bare:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Is Bare:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Directory Is Bare:
+   repository is_bare
+0  git-pandas   False
+1   lifelines   False
+
+Repository Is Bare:
+False
+</pre></div>
+</div>
+</div>
+<div class="section" id="tags">
+<h3>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h3>
+<p>To access the tags of each:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Tags:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">tags</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Tags:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">tags</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Tags:
+    repository       tag
+0   git-pandas     0.0.1
+1   git-pandas     0.0.2
+2   git-pandas     0.0.3
+3   git-pandas     0.0.4
+4   git-pandas     0.0.5
+0    lifelines     0.4.3
+1    lifelines     0.6.0
+2    lifelines    ignore
+3    lifelines      v0.4
+4    lifelines    v0.4.1
+5    lifelines    v0.4.2
+6    lifelines    v0.4.4
+7    lifelines  v0.4.4.1
+8    lifelines    v0.5.0
+9    lifelines    v0.5.1
+10   lifelines    v0.6.0
+11   lifelines    v0.7.0
+12   lifelines    v0.8.0
+
+Repository Tags:
+     tag  repository
+0  0.0.1  git-pandas
+1  0.0.2  git-pandas
+2  0.0.3  git-pandas
+3  0.0.4  git-pandas
+4  0.0.5  git-pandas
+</pre></div>
+</div>
+</div>
+<div class="section" id="branches">
+<h3>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h3>
+<p>To access the branches of each:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Branches:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">branches</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Branches:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Branches:
+    branch   local   repository
+0   master    True   git-pandas
+1   master    False  git-pandas
+2   gh-pages  False  git-pandas
+0   master    True   lifelines
+1   0.6.0     False  lifelines
+...
+
+Repository Branches:
+     branch  local  repository
+0  gh-pages   True  git-pandas
+1    master   True  git-pandas
+2    master  False  git-pandas
+3  gh-pages  False  git-pandas
+</pre></div>
+</div>
+</div>
+<div class="section" id="revisions">
+<h3>Revisions<a class="headerlink" href="#revisions" title="Permalink to this headline">¶</a></h3>
+<p>To access the revisions of each:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Revisions:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Revisions:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Directory Revisions:
+           date  repository                                       rev
+0    1451844740  git-pandas  5cbf630d723f9ebdd0e164eb58a6fe952f1cb92c
+1    1451843631  git-pandas  0b72b01b2b4a0cf673f457e016cdcdde8fe82f15
+2    1451842103  git-pandas  4376d9451d1ff32089d0dd1bffa3de56fe35604d
+3    1451842081  git-pandas  ebfdadc6d09d613b948dadef986bd9cbea4240a2
+...
+0    1450720064   lifelines  e689d8d910b65cd2c2188c74e33ef2f722d361a4
+1    1450719167   lifelines  773670a6261326d96556816f48e159cbceaeeb2d
+2    1450718313   lifelines  d42a010cfa368975c0beaa251db8db2cacdf9be1
+3    1450718269   lifelines  a1543344f91918e2f3456cf15d1895ac6448f8a5
+...
+
+Repository Revisions:
+          date                                       rev
+0   1451844740  5cbf630d723f9ebdd0e164eb58a6fe952f1cb92c
+1   1451843631  0b72b01b2b4a0cf673f457e016cdcdde8fe82f15
+2   1451842103  4376d9451d1ff32089d0dd1bffa3de56fe35604d
+3   1451842081  ebfdadc6d09d613b948dadef986bd9cbea4240a2
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="blame">
+<h3>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h3>
+<p>To access the current blame of each:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Blame:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Blame:&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>Which will yield:</p>
+<div class="highlight-none"><div class="highlight"><pre>Project Directory Blame:
+                         loc
+Cameron Davidson-Pilon  5537
+Will McGinnis           1789
+Jonas Kalderstam         434
+Will Mcginnis            316
+CamDavidsonPilon         236
+Ben Kuhn                  94
+Nick Evans                20
+Andrew Gartland           14
+Kyle                       9
+xantares                   6
+Niels Bantilan             5
+Ben Rifkind                1
+Nick Furlotte              1
+
+Repository Blame:
+                loc
+committer
+Will McGinnis  1750
+Will Mcginnis   316
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="commit-history">
@@ -216,9 +386,11 @@ commit history.  This is done via:</p>
 </div></blockquote>
 <div class="section" id="id1">
 <h3>Commit History<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 <div class="section" id="file-change-history">
 <h3>File Change History<a class="headerlink" href="#file-change-history" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 <div class="section" id="bus-factor">
@@ -233,6 +405,7 @@ accessed by:</p>
 </div></blockquote>
 <div class="section" id="id2">
 <h3>Bus Factor<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 <div class="section" id="cumulative-blame">
@@ -247,6 +420,7 @@ track and visualize the share of a project borne by individual committers or rep
 </div></blockquote>
 <div class="section" id="id3">
 <h3>Cumulative Blame<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 <div class="section" id="coverage">
@@ -261,9 +435,11 @@ This functionality is accessed by:</p>
 </div></blockquote>
 <div class="section" id="has-coverage">
 <h3>Has Coverage<a class="headerlink" href="#has-coverage" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 <div class="section" id="id4">
 <h3>Coverage<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 <div class="section" id="file-change-rates">
@@ -277,6 +453,7 @@ If coverage data is available, that can be included in this table.</p>
 </div></blockquote>
 <div class="section" id="id5">
 <h3>File Change Rates<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
 </div>
 </div>
 </div>
@@ -322,7 +499,7 @@ If coverage data is available, that can be included in this table.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.0.5',
+            VERSION:'0.0.6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

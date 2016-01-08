@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>gitpandas.project &mdash; git-pandas 0.0.5 documentation</title>
+  <title>gitpandas.project &mdash; git-pandas 0.0.6 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="git-pandas 0.0.5 documentation" href="../../index.html"/>
+    <link rel="top" title="git-pandas 0.0.6 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.0.5
+                0.0.6
               </div>
             
           
@@ -140,6 +140,7 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -319,7 +320,47 @@
 
         <span class="k">return</span> <span class="n">df</span>
 </div>
-<div class="viewcode-block" id="ProjectDirectory.blame"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.blame">[docs]</a>    <span class="k">def</span> <span class="nf">blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ProjectDirectory.file_change_history"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.file_change_history">[docs]</a>    <span class="k">def</span> <span class="nf">file_change_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="s">&#39;master&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to</span>
+<span class="sd">        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate</span>
+<span class="sd">        many file changes). Included in the DataFrame will be the columns:</span>
+
+<span class="sd">         * repository</span>
+<span class="sd">         * date (index)</span>
+<span class="sd">         * author</span>
+<span class="sd">         * committer</span>
+<span class="sd">         * message</span>
+<span class="sd">         * filename</span>
+<span class="sd">         * insertions</span>
+<span class="sd">         * deletions</span>
+
+<span class="sd">        :param branch: the branch to return commits for</span>
+<span class="sd">        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit</span>
+<span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
+<span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
+<span class="sd">        :return: DataFrame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_dirs</span><span class="p">))</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;date&#39;</span><span class="p">,</span> <span class="s">&#39;author&#39;</span><span class="p">,</span> <span class="s">&#39;committer&#39;</span><span class="p">,</span> <span class="s">&#39;message&#39;</span><span class="p">,</span> <span class="s">&#39;rev&#39;</span><span class="p">,</span> <span class="s">&#39;filename&#39;</span><span class="p">,</span> <span class="s">&#39;insertions&#39;</span><span class="p">,</span> <span class="s">&#39;deletions&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ch</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">)</span>
+                <span class="n">ch</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">()</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">GitCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&#39;Warning! Repo: </span><span class="si">%s</span><span class="s"> seems to not have the branch: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">branch</span><span class="p">))</span>
+                <span class="k">pass</span>
+
+        <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">df</span>
+</div>
+<div class="viewcode-block" id="ProjectDirectory.blame"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.blame">[docs]</a>    <span class="k">def</span> <span class="nf">blame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;repository&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer</span>
 <span class="sd">        name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history</span>
@@ -331,7 +372,8 @@
 
 <span class="sd">        :param extensions: (optional, default=None) a list of file extensions to return commits for</span>
 <span class="sd">        :param ignore_dir: (optional, default=None) a list of directory names to ignore</span>
-<span class="sd">        :param committer: (optional, defualt=True) true if committer should be reported, false if author</span>
+<span class="sd">        :param committer: (optional, default=True) true if committer should be reported, false if author</span>
+<span class="sd">        :param by: (optional, default=repository) whether to group by repository or by file</span>
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -339,7 +381,7 @@
 
         <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">))</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="n">by</span><span class="p">))</span>
             <span class="k">except</span> <span class="n">GitCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="k">print</span><span class="p">(</span><span class="s">&#39;Warning! Repo: </span><span class="si">%s</span><span class="s"> couldnt be blamed&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="p">))</span>
                 <span class="k">pass</span>
@@ -354,12 +396,13 @@
 <span class="sd">        Returns a data frame of all branches in origin.  The DataFrame will have the columns:</span>
 
 <span class="sd">         * repository</span>
+<span class="sd">         * local</span>
 <span class="sd">         * branch</span>
 
 <span class="sd">        :returns: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;branch&#39;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;local&#39;</span><span class="p">,</span> <span class="s">&#39;branch&#39;</span><span class="p">])</span>
 
         <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -387,6 +430,12 @@
 
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">num_datapoints</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">num_datapoints</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;rev&#39;</span><span class="p">])</span>
 
@@ -446,7 +495,11 @@
 
         <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s">&#39;committer&#39;</span><span class="p">:</span>
             <span class="n">committers</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
-            <span class="n">committer_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span><span class="p">])}</span>
+
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">committer_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span><span class="p">])])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">committer_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">committers</span><span class="p">}}</span>
 
             <span class="k">for</span> <span class="n">committer</span> <span class="ow">in</span> <span class="n">committer_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">global_blame</span><span class="p">[</span><span class="n">committer</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -456,7 +509,11 @@
             <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">committer_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
         <span class="k">elif</span> <span class="n">by</span> <span class="o">==</span> <span class="s">&#39;project&#39;</span><span class="p">:</span>
             <span class="n">projects</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
-            <span class="n">project_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">])}</span>
+
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">project_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">])])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">project_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">{</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">}}</span>
 
             <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">project_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">global_blame</span><span class="p">[</span><span class="n">project</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -537,7 +594,7 @@
 
         <span class="k">return</span> <span class="n">df</span>
 </div>
-<div class="viewcode-block" id="ProjectDirectory.bus_factor"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.bus_factor">[docs]</a>    <span class="k">def</span> <span class="nf">bus_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ProjectDirectory.bus_factor"><a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.bus_factor">[docs]</a>    <span class="k">def</span> <span class="nf">bus_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;projectd&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in</span>
 <span class="sd">        the repository&#39;s primary branch.  The factor is the fewest number of contributors whose contributions make up at</span>
@@ -549,18 +606,41 @@
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">blame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s">&#39;file&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&#39;File-wise bus factor&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">by</span> <span class="o">==</span> <span class="s">&#39;projectd&#39;</span><span class="p">:</span>
+            <span class="n">blame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s">&#39;repository&#39;</span><span class="p">)</span>
+            <span class="n">blame</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;loc&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
-        <span class="n">total</span> <span class="o">=</span> <span class="n">blame</span><span class="p">[</span><span class="s">&#39;loc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="n">cumulative</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">tc</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">blame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="n">cumulative</span> <span class="o">+=</span> <span class="n">blame</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">]</span>
-            <span class="n">tc</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">cumulative</span> <span class="o">&gt;=</span> <span class="n">total</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">break</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">blame</span><span class="p">[</span><span class="s">&#39;loc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">cumulative</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">tc</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">blame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">cumulative</span> <span class="o">+=</span> <span class="n">blame</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="s">&#39;loc&#39;</span><span class="p">]</span>
+                <span class="n">tc</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">cumulative</span> <span class="o">&gt;=</span> <span class="n">total</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">break</span>
 
-        <span class="k">return</span> <span class="n">tc</span></div></div>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="s">&#39;projectd&#39;</span><span class="p">,</span> <span class="n">tc</span><span class="p">]],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;projectd&#39;</span><span class="p">,</span> <span class="s">&#39;bus factor&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">by</span> <span class="o">==</span> <span class="s">&#39;repository&#39;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;repository&#39;</span><span class="p">,</span> <span class="s">&#39;bus factor&#39;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">,</span> <span class="n">ignore_dir</span><span class="o">=</span><span class="n">ignore_dir</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="n">by</span><span class="p">))</span>
+                <span class="k">except</span> <span class="n">GitCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Warning! Repo: </span><span class="si">%s</span><span class="s"> couldn</span><span class="se">\&#39;</span><span class="s">t be inspected&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="p">))</span>
+                    <span class="k">pass</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">df</span>
+</div>
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+            <span class="n">repo</span><span class="o">.</span><span class="n">__del__</span><span class="p">()</span></div>
 </pre></div>
 
            </div>
@@ -594,7 +674,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.0.5',
+            VERSION:'0.0.6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
