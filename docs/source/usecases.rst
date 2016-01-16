@@ -20,11 +20,11 @@ At the most basic level, git-pandas allows a panda's based interaction with the 
  * is_bare
 
 
-Examples
---------
+Example Setup
+^^^^^^^^^^^^^
 
 The following examples exhibit the basic functionality of the ProjectDirectory and Repository objects, for gathering
-the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the attributes
+the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the examples
 directory. For more detailed information, please check the API reference in previous sections.
 
 For the following examples, we will use 2 objects, defined by:
@@ -245,6 +245,19 @@ commit history.  This is done via:
  * commit history
  * file change history
 
+Example Setup
+^^^^^^^^^^^^^
+
+In this section, we use the example: commit_history.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.
+
+For the following examples, we will use 2 objects, defined by:
+
+.. code-block:: python
+
+    from gitpandas import Repository, ProjectDirectory
+    p = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    r = Repository(working_dir='git://github.com/wdm0006/git-pandas.git')
 
 Commit History
 ^^^^^^^^^^^^^^
@@ -265,6 +278,20 @@ accessed by:
 
  * bus factor
 
+Example Setup
+^^^^^^^^^^^^^
+
+In this section, we use the example: bus_factor.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.
+
+For the following examples, we will use 2 objects, defined by:
+
+.. code-block:: python
+
+    from gitpandas import Repository, ProjectDirectory
+    p = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    r = Repository(working_dir='git://github.com/wdm0006/git-pandas.git')
+
 
 Bus Factor
 ^^^^^^^^^^
@@ -281,6 +308,20 @@ It is accessed by:
 
  * cumulative_blame
 
+Example Setup
+^^^^^^^^^^^^^
+
+In this section, we use the example: cumulative_blame.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.
+
+For the following examples, we will use 2 objects, defined by:
+
+.. code-block:: python
+
+    from gitpandas import Repository, ProjectDirectory
+    p = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    r = Repository(working_dir='git://github.com/wdm0006/git-pandas.git')
+
 
 Cumulative Blame
 ^^^^^^^^^^^^^^^^
@@ -296,6 +337,19 @@ This functionality is accessed by:
  * has_coverage
  * coverage
 
+Example Setup
+^^^^^^^^^^^^^
+
+In this section, we use the example: coverage_data.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.
+
+For the following examples, we will use 2 objects, defined by:
+
+.. code-block:: python
+
+    from gitpandas import Repository, ProjectDirectory
+    p = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    r = Repository(working_dir='git://github.com/wdm0006/git-pandas.git')
 
 Has Coverage
 ^^^^^^^^^^^^
@@ -314,6 +368,20 @@ File change rate, or risk, is a specialized dataframe aimed at identifying files
 If coverage data is available, that can be included in this table.
 
  * file_change_rates
+
+Example Setup
+^^^^^^^^^^^^^
+
+In this section, we use the example: file_change_rates.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.
+
+For the following examples, we will use 2 objects, defined by:
+
+.. code-block:: python
+
+    from gitpandas import Repository, ProjectDirectory
+    p = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    r = Repository(working_dir='git://github.com/wdm0006/git-pandas.git')
 
 File Change Rates
 ^^^^^^^^^^^^^^^^^

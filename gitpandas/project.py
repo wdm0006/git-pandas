@@ -112,7 +112,7 @@ class ProjectDirectory(object):
     def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
-        optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+        optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
         project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
         a high change rate and poor test coverage, then it is a great candidate for writing more tests.
 

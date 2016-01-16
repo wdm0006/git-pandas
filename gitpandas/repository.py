@@ -269,7 +269,7 @@ class Repository(object):
     def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
-        optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+        optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
         project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
         a high change rate and poor test coverage, then it is a great candidate for writing more tests.
 
@@ -618,12 +618,19 @@ class Repository(object):
 
         return DataFrame([[self._repo_name(), tc]], columns=['repository', 'bus factor'])
 
-    def file_owner(self, rev, filename):
+    def file_owner(self, rev, filename, committer=True):
         """
+        Returns the owner (by majority blame) of a given file in a given rev. Returns the committers' name.
+
         """
         try:
+            if committer:
+                cm = 'committer'
+            else:
+                cm = 'author'
+
             blame = self.repo.blame(rev, os.path.join(self.git_dir, filename))
-            blame = DataFrame([[x[0].committer.name, len(x[1])] for x in blame], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+            blame = DataFrame([[x[0].committer.name, len(x[1])] for x in blame], columns=[cm, 'loc']).groupby(cm).agg({'loc': np.sum})
             if blame.shape[0] > 0:
                 return blame['loc'].idxmax()
             else:
