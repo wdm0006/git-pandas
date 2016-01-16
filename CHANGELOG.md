@@ -1,3 +1,10 @@
+v1.0.0
+======
+
+ * Stable API
+ * Punchcard dataframe added
+ * Plotting helpers added to library under utilities module
+
 v0.0.6
 ======
 

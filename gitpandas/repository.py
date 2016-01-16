@@ -631,6 +631,53 @@ class Repository(object):
         except GitCommandError as e:
             return None
 
+    def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None):
+        """
+        Returns a pandas DataFrame containing all of the data for a punchcard.
+
+         * day_of_week
+         * hour_of_day
+         * author / committer
+         * lines
+         * insertions
+         * deletions
+         * net
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return, if limit is None
+        :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author'
+        :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
+        :return: DataFrame
+        """
+
+        ch = self.commit_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
+
+        # add in the date fields
+        ch['day_of_week'] = ch.index.map(lambda x: x.weekday())
+        ch['hour_of_day'] = ch.index.map(lambda x: x.hour)
+
+        aggs = ['hour_of_day', 'day_of_week']
+        if by is not None:
+            aggs.append(by)
+
+        punch_card = ch.groupby(aggs).agg({
+            'lines': np.sum,
+            'insertions': np.sum,
+            'deletions': np.sum,
+            'net': np.sum
+        })
+        punch_card.reset_index(inplace=True)
+
+        # normalize all cols
+        if normalize is not None:
+            for col in ['lines', 'insertions', 'deletions', 'net']:
+                punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
+
+        return punch_card
+
 
 class GitFlowRepository(Repository):
     """

@@ -501,6 +501,65 @@ class ProjectDirectory(object):
             df.reset_index()
             return df
 
+    def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None):
+        """
+        Returns a pandas DataFrame containing all of the data for a punchcard.
+
+         * day_of_week
+         * hour_of_day
+         * author / committer
+         * lines
+         * insertions
+         * deletions
+         * net
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return, if limit is None
+        :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author', 'repository'
+        :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
+        :return: DataFrame
+        """
+
+        df = pd.DataFrame()
+
+        if by == 'repository':
+            repo_by = None
+        else:
+            repo_by = by
+
+        for repo in self.repos:
+            try:
+                chunk = repo.punchcard(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, by=repo_by, normalize=None)
+                chunk['repository'] = repo._repo_name()
+                df = df.append(chunk)
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                pass
+
+        df.reset_index()
+
+        aggs = ['hour_of_day', 'day_of_week']
+        if by is not None:
+            aggs.append(by)
+
+        punch_card = df.groupby(aggs).agg({
+            'lines': np.sum,
+            'insertions': np.sum,
+            'deletions': np.sum,
+            'net': np.sum
+        })
+        punch_card.reset_index(inplace=True)
+
+        # normalize all cols
+        if normalize is not None:
+            for col in ['lines', 'insertions', 'deletions', 'net']:
+                punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
+
+        return punch_card
+
     def __del__(self):
         """
 
