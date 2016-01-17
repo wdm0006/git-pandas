@@ -180,15 +180,16 @@ class Repository(object):
                             x = commits.__next__()
                     except StopIteration as e:
                         break
-
-                    ds.append([
-                              x.author.name,
-                              x.committer.name,
-                              x.committed_date,
-                              x.message,
-                              self.__check_extension(x.stats.files, extensions, ignore_dir)
-                    ])
                     c_date = x.committed_date
+                    if c_date > dlim:
+                        ds.append([
+                                  x.author.name,
+                                  x.committer.name,
+                                  x.committed_date,
+                                  x.message,
+                                  self.__check_extension(x.stats.files, extensions, ignore_dir)
+                        ])
+
         else:
             ds = [[
                       x.author.name,
@@ -261,15 +262,16 @@ class Repository(object):
                     except StopIteration as e:
                         break
 
-                    ds.append([
-                      x.author.name,
-                      x.committer.name,
-                      x.committed_date,
-                      x.message,
-                      x.name_rev.split()[0],
-                      self.__check_extension(x.stats.files, extensions, ignore_dir)
-                    ])
                     c_date = x.committed_date
+                    if c_date > dlim:
+                        ds.append([
+                                  x.author.name,
+                                  x.committer.name,
+                                  x.committed_date,
+                                  x.message,
+                                  self.__check_extension(x.stats.files, extensions, ignore_dir)
+                        ])
+
         else:
             ds = [[
                       x.author.name,
