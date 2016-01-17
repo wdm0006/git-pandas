@@ -109,7 +109,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
+    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False, days=None):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
         optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
@@ -121,6 +121,7 @@ class ProjectDirectory(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
+        :param days: (optional, default=None) number of days to return if limit is None
         :return: DataFrame
         """
 
@@ -131,7 +132,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                fcr = repo.file_change_rates(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage)
+                fcr = repo.file_change_rates(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage, days=days)
                 fcr['repository'] = repo._repo_name()
                 df = df.append(fcr)
             except GitCommandError as err:

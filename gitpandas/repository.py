@@ -291,7 +291,7 @@ class Repository(object):
 
         return df
 
-    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False):
+    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False, days=None):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
         optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
@@ -303,10 +303,11 @@ class Repository(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
+        :param days: (optional, default=None) number of days to return if limit is None
         :return: DataFrame
         """
 
-        fch = self.file_change_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+        fch = self.file_change_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
         fch.reset_index(level=0, inplace=True)
 
         file_history = fch.groupby('filename').agg(
