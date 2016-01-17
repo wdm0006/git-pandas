@@ -252,7 +252,7 @@ class Repository(object):
                 ds = []
                 c_date = time.time()
                 commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
-                dlim = time.time() - days * 24 * 3600 
+                dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
                         if sys.version_info.major == 2:
@@ -313,52 +313,55 @@ class Repository(object):
         fch = self.file_change_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
         fch.reset_index(level=0, inplace=True)
 
-        file_history = fch.groupby('filename').agg(
-            {
-                'insertions': [np.sum, np.max, np.mean],
-                'deletions': [np.sum, np.max, np.mean],
-                'message': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                'committer': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                'author': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                'date': [np.max, np.min]
-            }
-        )
+        if fch.shape[0] > 0:
+            file_history = fch.groupby('filename').agg(
+                {
+                    'insertions': [np.sum, np.max, np.mean],
+                    'deletions': [np.sum, np.max, np.mean],
+                    'message': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                    'committer': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                    'author': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
+                    'date': [np.max, np.min]
+                }
+            )
 
-        file_history.columns = [' '.join(col).strip() for col in file_history.columns.values]
+            file_history.columns = [' '.join(col).strip() for col in file_history.columns.values]
 
-        file_history = file_history.rename(columns={
-            'message <lambda>': 'messages',
-            'committer <lambda>': 'committers',
-            'insertions sum': 'total_insertions',
-            'insertions amax': 'max_insertions',
-            'insertions mean': 'mean_insertions',
-            'author <lambda>': 'authors',
-            'date amax': 'max_date',
-            'date amin': 'min_date',
-            'deletions sum': 'total_deletions',
-            'deletions amax': 'max_deletions',
-            'deletions mean': 'mean_deletions'
-        })
+            file_history = file_history.rename(columns={
+                'message <lambda>': 'messages',
+                'committer <lambda>': 'committers',
+                'insertions sum': 'total_insertions',
+                'insertions amax': 'max_insertions',
+                'insertions mean': 'mean_insertions',
+                'author <lambda>': 'authors',
+                'date amax': 'max_date',
+                'date amin': 'min_date',
+                'deletions sum': 'total_deletions',
+                'deletions amax': 'max_deletions',
+                'deletions mean': 'mean_deletions'
+            })
 
-        # get some building block values for later use
-        file_history['net_change'] = file_history['total_insertions'] - file_history['total_deletions']
-        file_history['abs_change'] = file_history['total_insertions'] + file_history['total_deletions']
-        file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
-        file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.item() / (24 * 3600 * 10e9) + 0.01))
+            # get some building block values for later use
+            file_history['net_change'] = file_history['total_insertions'] - file_history['total_deletions']
+            file_history['abs_change'] = file_history['total_insertions'] + file_history['total_deletions']
+            file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
+            file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.item() / (24 * 3600 * 10e9) + 0.01))
 
-        # calculate metrics
-        file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
-        file_history['abs_rate_of_change'] = file_history['abs_change'] / file_history['delta_days']
-        file_history['edit_rate'] = file_history['abs_rate_of_change'] - file_history['net_rate_of_change']
-        file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(','))))
+            # calculate metrics
+            file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
+            file_history['abs_rate_of_change'] = file_history['abs_change'] / file_history['delta_days']
+            file_history['edit_rate'] = file_history['abs_rate_of_change'] - file_history['net_rate_of_change']
+            file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(','))))
 
-        # reindex
-        file_history = file_history.reindex(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
-        file_history.sort_values(by=['edit_rate'], inplace=True)
+            # reindex
+            file_history = file_history.reindex(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
+            file_history.sort_values(by=['edit_rate'], inplace=True)
 
-        if coverage and self.has_coverage():
-            file_history = file_history.merge(self.coverage(), left_index=True, right_on='filename', how='outer')
-            file_history.set_index(keys=['filename'], drop=True, inplace=True)
+            if coverage and self.has_coverage():
+                file_history = file_history.merge(self.coverage(), left_index=True, right_on='filename', how='outer')
+                file_history.set_index(keys=['filename'], drop=True, inplace=True)
+        else:
+            file_history = DataFrame(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
 
         return file_history
 
