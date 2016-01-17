@@ -174,7 +174,7 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
-        df = pd.DataFrame(columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
+        df = pd.DataFrame(columns=['author', 'committer', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         for repo in self.repos:
             try:

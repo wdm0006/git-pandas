@@ -12,8 +12,8 @@ def project(path):
     p = ProjectDirectory(working_dir=path)
 
     # get the commit history
-    ch = p.commit_history('develop', limit=None, extensions=['py'], ignore_dir=['lib', 'docs', 'test', 'tests', 'tests_t'])
-    print(ch.head(5))
+    ch = p.commit_history('master', limit=None, extensions=['py'], ignore_dir=['lib', 'docs', 'test', 'tests', 'tests_t'], days=7)
+    print(ch.head)
 
     # get the list of committers
     print('\nCommiters:')
@@ -89,4 +89,4 @@ if __name__ == '__main__':
 
     path = os.path.abspath('../../git-pandas')
     project(path)
-    repository(path)
+    # repository(path)
