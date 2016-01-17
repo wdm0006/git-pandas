@@ -252,7 +252,7 @@ class Repository(object):
                 ds = []
                 c_date = time.time()
                 commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
-                dlim = time.time() - days * 24 * 3600
+                dlim = time.time() - days * 24 * 3600 
                 while c_date > dlim:
                     try:
                         if sys.version_info.major == 2:
@@ -269,6 +269,7 @@ class Repository(object):
                                   x.committer.name,
                                   x.committed_date,
                                   x.message,
+                                  x.name_rev.split()[0],
                                   self.__check_extension(x.stats.files, extensions, ignore_dir)
                         ])
 

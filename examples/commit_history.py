@@ -89,4 +89,4 @@ if __name__ == '__main__':
 
     path = os.path.abspath('../../git-pandas')
     project(path)
-    # repository(path)
+    repository(path)
