@@ -214,7 +214,7 @@ class Repository(object):
 
         return df
 
-    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
+    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -232,19 +232,44 @@ class Repository(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return if limit is None
         :return: DataFrame
         """
 
         # setup the dataset of commits
         if limit is None:
-            ds = [[
+            if days is None:
+                ds = [[
                       x.author.name,
                       x.committer.name,
                       x.committed_date,
                       x.message,
                       x.name_rev.split()[0],
                       self.__check_extension(x.stats.files, extensions, ignore_dir)
-                  ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+            else:
+                ds = []
+                c_date = time.time()
+                commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
+                dlim = time.time() - days * 24 * 3600
+                while c_date > dlim:
+                    try:
+                        if sys.version_info.major == 2:
+                            x = commits.next()
+                        else:
+                            x = commits.__next__()
+                    except StopIteration as e:
+                        break
+
+                    ds.append([
+                      x.author.name,
+                      x.committer.name,
+                      x.committed_date,
+                      x.message,
+                      x.name_rev.split()[0],
+                      self.__check_extension(x.stats.files, extensions, ignore_dir)
+                    ])
+                    c_date = x.committed_date
         else:
             ds = [[
                       x.author.name,

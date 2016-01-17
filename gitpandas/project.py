@@ -188,7 +188,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None):
+    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -207,6 +207,7 @@ class ProjectDirectory(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return if limit is None
         :return: DataFrame
         """
 
@@ -217,7 +218,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.file_change_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir)
+                ch = repo.file_change_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
                 ch['repository'] = repo._repo_name()
                 df = df.append(ch)
             except GitCommandError as err:
