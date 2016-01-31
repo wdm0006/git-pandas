@@ -29,7 +29,7 @@ class ProjectDirectory(object):
     :param verbose: (default=True), if True, will print out verbose logging to terminal
     :return:
     """
-    def __init__(self, working_dir=None, ignore=None, verbose=True):
+    def __init__(self, working_dir=None, ignore_repos=None, verbose=True):
         if working_dir is None:
             self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(os.getcwd()) if '.git' in x[0]])
         elif isinstance(working_dir, list):
@@ -39,8 +39,8 @@ class ProjectDirectory(object):
 
         self.repos = [Repository(r, verbose=verbose) for r in self.repo_dirs]
 
-        if ignore is not None:
-            self.repos = [x for x in self.repos if x._repo_name not in ignore]
+        if ignore_repos is not None:
+            self.repos = [x for x in self.repos if x._repo_name not in ignore_repos]
 
     def _repo_name(self):
         """
