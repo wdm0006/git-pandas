@@ -4,7 +4,7 @@ Git-Pandas
 ![license](https://img.shields.io/pypi/l/Django.svg) [![Coverage Status](https://coveralls.io/repos/wdm0006/git-pandas/badge.svg?branch=master&service=github)](https://coveralls.io/github/wdm0006/git-pandas?branch=master)  ![travis status](https://travis-ci.org/wdm0006/git-pandas.svg?branch=master) [![PyPI version](https://badge.fury.io/py/git-pandas.svg)](https://badge.fury.io/py/git-pandas) ![downloads](https://img.shields.io/pypi/dm/git-pandas.svg) 
 
 
-![Cumulative Blame Stravalib](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/stravalib_cumulative_blame.png)
+![Cumulative Blame](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png)
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:
@@ -17,7 +17,7 @@ in your filesystem which may have in it multiple git repositories. The subdirect
 repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).
 
 
-This is a pre-v1.0.0 project, so the interfaces and functionality may change.
+This is a pre-v1.0.0 project (just barely), so the interfaces and functionality may change.
 
 Current functionality includes:
 
@@ -29,6 +29,11 @@ Current functionality includes:
  * ProjectDirectory-level general information table
  * Approximate bus factor
  * Cumulative Blame as a time series
+ * Github.com profile analysis via GitHubProfile object
+ * Plotting helpers in utilities module
+ * Punchcard dataframe and plotting utility
+ * Filewise blame
+ * File owner approximation
   
 Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
 function on stravalib.
