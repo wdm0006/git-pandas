@@ -13,6 +13,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import requests
 from git import GitCommandError
 from gitpandas.repository import Repository
 
@@ -570,3 +571,29 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             repo.__del__()
+
+
+class GitHubProfile(ProjectDirectory):
+    """
+    An extension of the ProjectDirectory object that is based off of a single github.com user's public profile.
+    """
+    def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False):
+        """
+
+        :param username:
+        :return:
+        """
+
+        # pull the git urls from github's api
+        uri = 'https://api.github.com/users/%s/repos' % username
+        data = requests.get(uri)
+        repos = []
+        for chunk in data.json():
+            # if we are skipping forks
+            if ignore_forks:
+                if not chunk['fork']:
+                    repos.append(chunk['git_url'])
+            else:
+                repos.append(chunk['git_url'])
+
+        ProjectDirectory.__init__(self, working_dir=repos, ignore_repos=ignore_repos, verbose=verbose)
