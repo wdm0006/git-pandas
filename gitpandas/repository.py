@@ -667,7 +667,9 @@ class Repository(object):
                 return blame['loc'].idxmax()
             else:
                 return None
-        except GitCommandError as e:
+        except (GitCommandError, KeyError) as e:
+            if self.verbose:
+                print('Couldn\'t Calcualte File Owner for %s' % (rev, ))
             return None
 
     def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None):

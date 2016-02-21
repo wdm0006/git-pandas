@@ -2,13 +2,15 @@ from gitpandas import Repository
 import numpy as np
 import lifelines
 import matplotlib.pyplot as plt
+import pandas as pd
+plt.style.use('ggplot')
 
 __author__ = 'willmcginnis'
 
 
 if __name__ == '__main__':
-    threshold = 5
-    repo = Repository(working_dir='git://github.com/CamDavidsonPilon/lifelines.git')
+    threshold = 100
+    repo = Repository(working_dir='git://github.com/scikit-learn/scikit-learn.git', verbose=True)
     fch = repo.file_change_history(limit=None, extensions=['py'])
 
     fch['file_owner'] = ''
@@ -38,12 +40,15 @@ if __name__ == '__main__':
             ts = fch['timestamp'].max()
         fch.set_value(idx, 'time_until_refactor', ts - row.timestamp)
 
+    # fch.to_csv('lifelines_data_t_%s.csv' % (threshold, ))
+    # fch = pd.read_csv('lifelines_data_t_%s.csv' % (threshold, ))
+
     # plot out some survival curves
     fig = plt.figure()
     ax = plt.subplot(111)
     for filename in set(fch['file_owner'].values):
         sample = fch[fch['file_owner'] == filename]
-        if sample.shape[0] > 20:
+        if sample.shape[0] > 500:
             print('Evaluating %s' % (filename, ))
             kmf = lifelines.KaplanMeierFitter()
             kmf.fit(sample['time_until_refactor'].values, event_observed=sample['observed'], timeline=list(range(365)), label=filename)
