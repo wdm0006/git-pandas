@@ -248,18 +248,63 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        df = pd.DataFrame(columns=['loc'])
+        df = None
 
         for repo in self.repos:
             try:
-                df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by))
+                if df is None:
+                    df = repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by)
+                else:
+                    df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
 
-        df = df.groupby(df.index).agg({'loc': np.sum})
+        df = df.reset_index(level=1)
+        df = df.reset_index(level=1)
+        if committer:
+            if by == 'repository':
+                df = df.groupby('committer').agg({'loc': np.sum})
+            elif by == 'file':
+                df = df.groupby(['committer', 'file']).agg({'loc': np.sum})
+        else:
+            if by == 'repository':
+                df = df.groupby('author').agg({'loc': np.sum})
+            elif by == 'file':
+                df = df.groupby(['author', 'file']).agg({'loc': np.sum})
+
         df = df.sort_values(by=['loc'], ascending=False)
 
+        return df
+
+    def file_detail(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True):
+        """
+        Returns a table of all current files in the repos, with some high level information about each file (total LOC,
+        file owner, extension, most recent edit date, etc.).
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param committer: (optional, default=True) true if committer should be reported, false if author
+        :return:
+        """
+
+        df = None
+
+        for repo in self.repos:
+            try:
+                if df is None:
+                    df = repo.file_detail(extensions=extensions, ignore_dir=ignore_dir, committer=committer, rev=rev)
+                    df['repository'] = repo._repo_name()
+                else:
+                    chunk = repo.file_detail(extensions=extensions, ignore_dir=ignore_dir, committer=committer, rev=rev)
+                    chunk['repository'] = repo._repo_name()
+                    df = df.append(chunk)
+            except GitCommandError as err:
+                print('Warning! Repo: %s couldnt be inspected' % (repo, ))
+                pass
+
+        df = df.reset_index(level=1)
+        df = df.set_index(['file', 'repository'])
         return df
 
     def branches(self):

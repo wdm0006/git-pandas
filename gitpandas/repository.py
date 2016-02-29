@@ -654,6 +654,9 @@ class Repository(object):
         """
         Returns the owner (by majority blame) of a given file in a given rev. Returns the committers' name.
 
+        :param rev:
+        :param filename:
+        :param committer:
         """
         try:
             if committer:
@@ -671,6 +674,56 @@ class Repository(object):
             if self.verbose:
                 print('Couldn\'t Calcualte File Owner for %s' % (rev, ))
             return None
+
+    def _file_last_edit(self, filename):
+        """
+
+        :param filename:
+        :return:
+        """
+
+        tmp = self.repo.git.log('-n 1 -- %s' % (filename, )).split('\n')
+        date_string = [x for x in tmp if x.startswith('Date:')]
+
+        if len(date_string) > 0:
+            return date_string[0].replace('Date:', '').strip()
+        else:
+            return None
+
+    def file_detail(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True):
+        """
+        Returns a table of all current files in the repos, with some high level information about each file (total LOC,
+        file owner, extension, most recent edit date, etc.).
+
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param committer: (optional, default=True) true if committer should be reported, false if author
+        :return:
+        """
+
+        # first get the blame
+        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=rev, committer=committer, by='file')
+        blame = blame.reset_index(level=1)
+        blame = blame.reset_index(level=1)
+
+        # reduce it to files and total LOC
+        df = blame.reindex(columns=['file', 'loc'])
+        df = df.groupby('file').agg({'loc': np.sum})
+        df = df.reset_index(level=1)
+
+        # map in file owners
+        df['file_owner'] = df['file'].map(lambda x: self.file_owner(rev, x, committer=committer))
+
+        # add extension (something like the language)
+        df['ext'] = df['file'].map(lambda x: x.split('.')[-1])
+
+        # add in last edit date for the file
+        df['last_edit_date'] = df['file'].map(lambda x: self._file_last_edit(x))
+        df['last_edit_date'] = to_datetime(df['last_edit_date'])
+
+        df = df.set_index('file')
+
+        return df
 
     def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None):
         """
