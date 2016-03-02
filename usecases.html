@@ -85,8 +85,8 @@
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Use Cases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-setup">Example Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#repository-name">Repository Name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#is-bare">Is Bare</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tags">Tags</a></li>
@@ -96,25 +96,30 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#commit-history">Commit History</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Commit History</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Example Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Commit History</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-change-history">File Change History</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#bus-factor">Bus Factor</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Bus Factor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Example Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Bus Factor</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#cumulative-blame">Cumulative Blame</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Cumulative Blame</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Example Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Cumulative Blame</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#coverage">Coverage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Example Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#has-coverage">Has Coverage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Coverage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Coverage</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#file-change-rates">File Change Rates</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id5">File Change Rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Example Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">File Change Rates</a></li>
 </ul>
 </li>
 </ul>
@@ -185,17 +190,17 @@ use-cases that git-pandas is good at, and how you can use it in your projects or
 </ul>
 </dd>
 </dl>
-</div>
-<div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="example-setup">
+<h3>Example Setup<a class="headerlink" href="#example-setup" title="Permalink to this headline">¶</a></h3>
 <p>The following examples exhibit the basic functionality of the ProjectDirectory and Repository objects, for gathering
-the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the attributes
+the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the examples
 directory. For more detailed information, please check the API reference in previous sections.</p>
 <p>For the following examples, we will use 2 objects, defined by:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
 <span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="repository-name">
 <h3>Repository Name<a class="headerlink" href="#repository-name" title="Permalink to this headline">¶</a></h3>
@@ -385,7 +390,18 @@ commit history.  This is done via:</p>
 </ul>
 </div></blockquote>
 <div class="section" id="id1">
-<h3>Commit History<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>Example Setup<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the example: commit_history.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>Commit History<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
 <div class="section" id="file-change-history">
@@ -403,8 +419,19 @@ accessed by:</p>
 <li>bus factor</li>
 </ul>
 </div></blockquote>
-<div class="section" id="id2">
-<h3>Bus Factor<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Example Setup<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the example: bus_factor.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>Bus Factor<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
 </div>
@@ -418,8 +445,19 @@ track and visualize the share of a project borne by individual committers or rep
 <li>cumulative_blame</li>
 </ul>
 </div></blockquote>
-<div class="section" id="id3">
-<h3>Cumulative Blame<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Example Setup<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the example: cumulative_blame.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>Cumulative Blame<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
 </div>
@@ -433,12 +471,23 @@ This functionality is accessed by:</p>
 <li>coverage</li>
 </ul>
 </div></blockquote>
+<div class="section" id="id7">
+<h3>Example Setup<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the example: coverage_data.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="has-coverage">
 <h3>Has Coverage<a class="headerlink" href="#has-coverage" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
-<div class="section" id="id4">
-<h3>Coverage<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Coverage<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
 </div>
@@ -451,8 +500,19 @@ If coverage data is available, that can be included in this table.</p>
 <li>file_change_rates</li>
 </ul>
 </div></blockquote>
-<div class="section" id="id5">
-<h3>File Change Rates<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Example Setup<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the example: file_change_rates.py, which can be found in the examples directory. For more detailed
+information, please check the API reference in previous sections.</p>
+<p>For the following examples, we will use 2 objects, defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id10">
+<h3>File Change Rates<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <p>TODO</p>
 </div>
 </div>

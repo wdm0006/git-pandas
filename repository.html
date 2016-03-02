@@ -354,7 +354,7 @@ blamed to each committer at each timestamp as data.</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.file_change_history">
-<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
 the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
 many file changes). Included in the DataFrame will be the columns:</p>
@@ -378,6 +378,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
 </ul>
 </td>
 </tr>
@@ -390,9 +391,9 @@ many file changes). Included in the DataFrame will be the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.file_change_rates">
-<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_rates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will return a DataFrame containing some basic aggregations of the file change history data, and
-optionally test coverage data from a coverage.py .coverage file.  The aim here is to identify files in the
+optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
 project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
 a high change rate and poor test coverage, then it is a great candidate for writing more tests.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -405,6 +406,7 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>coverage</strong> &#8211; (optional, default=False) a bool for whether or not to attempt to join in coverage data.</li>
+<li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
 </ul>
 </td>
 </tr>
@@ -416,9 +418,46 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 </dd></dl>
 
 <dl class="method">
+<dt id="gitpandas.repository.Repository.file_detail">
+<code class="descname">file_detail</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_detail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_detail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a table of all current files in the repos, with some high level information about each file (total LOC,
+file owner, extension, most recent edit date, etc.).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="gitpandas.repository.Repository.file_owner">
-<code class="descname">file_owner</code><span class="sig-paren">(</span><em>rev</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_owner" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">file_owner</code><span class="sig-paren">(</span><em>rev</em>, <em>filename</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_owner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the owner (by majority blame) of a given file in a given rev. Returns the committers&#8217; name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rev</strong> &#8211; </li>
+<li><strong>filename</strong> &#8211; </li>
+<li><strong>committer</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.has_coverage">
@@ -443,6 +482,43 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitpandas.repository.Repository.punchcard">
+<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.punchcard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame containing all of the data for a punchcard.</p>
+<blockquote>
+<div><ul class="simple">
+<li>day_of_week</li>
+<li>hour_of_day</li>
+<li>author / committer</li>
+<li>lines</li>
+<li>insertions</li>
+<li>deletions</li>
+<li>net</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; the branch to return commits for</li>
+<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
+<li><strong>by</strong> &#8211; (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or &#8216;committer&#8217;, &#8216;author&#8217;</li>
+<li><strong>normalize</strong> &#8211; (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
 </tr>
 </tbody>
 </table>
