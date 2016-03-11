@@ -1,3 +1,13 @@
+v1.0.2
+======
+
+ * bugfix in ignore_dir option for root level directories
+
+v1.0.1
+======
+
+ * file details function
+ 
 v1.0.0
 ======
 

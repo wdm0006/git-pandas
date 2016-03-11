@@ -382,7 +382,7 @@ class Repository(object):
         if ignore_dir is None:
             ignore_dir = []
         else:
-            ignore_dir = [os.sep + str(x).replace('/', '').replace('\\', '') + os.sep for x in ignore_dir]
+            ignore_dir = [str(x).replace('/', '').replace('\\', '') + os.sep for x in ignore_dir]
 
         out = {}
         for key in files.keys():
