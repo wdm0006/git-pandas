@@ -135,6 +135,60 @@ class Repository(object):
 
         return df
 
+    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True):
+        """
+        inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
+
+        Iterates through the commit history of repo to estimate the time commitement of each author or committer over
+        the course of time indicated by limit/extensions/days/etc.
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return, if limit is None
+        :param committer: (optional, default=True) whether to use committer vs. author
+        :return: DataFrame
+        """
+
+        max_diff_in_minutes = 30
+        first_commit_addition_in_minutes = 30
+
+        # First get the commit history
+        ch = self.commit_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
+
+        # split by committer|author
+        if committer:
+            by = 'committer'
+        else:
+            by = 'author'
+        people = set(ch[by].values)
+
+        ds = []
+        for person in people:
+            commits = ch[ch[by] == person]
+            commits_ts = [x * 10e-10 for x in sorted(commits.index.values.tolist())]
+
+            if len(commits_ts) < 2:
+                ds.append([person, 0])
+                continue
+
+            def estimate(index, date):
+                next_ts = commits_ts[index + 1]
+                diff_in_minutes = next_ts - date
+                diff_in_minutes /= 60.0
+                if diff_in_minutes < max_diff_in_minutes:
+                    return diff_in_minutes / 60.0
+                return first_commit_addition_in_minutes / 60.0
+
+            hours = [estimate(a, b) for a, b in enumerate(commits_ts[:-1])]
+            hours = sum(hours)
+            ds.append([person, hours])
+
+        df = DataFrame(ds, columns=[by, 'hours'])
+
+        return df
+
     def commit_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be

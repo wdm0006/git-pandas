@@ -144,6 +144,45 @@ class ProjectDirectory(object):
 
         return df
 
+    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True):
+        """
+        inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
+
+        Iterates through the commit history of repo to estimate the time commitement of each author or committer over
+        the course of time indicated by limit/extensions/days/etc.
+
+        :param branch: the branch to return commits for
+        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param days: (optional, default=None) number of days to return, if limit is None
+        :param committer: (optional, default=True) whether to use committer vs. author
+        :return: DataFrame
+        """
+
+        if limit is not None:
+            limit = int(limit / len(self.repo_dirs))
+
+        if committer:
+            com = 'committer'
+        else:
+            com = 'author'
+
+        df = pd.DataFrame(columns=[com, 'hours', 'repository'])
+
+        for repo in self.repos:
+            try:
+                ch = repo.hours_estimate(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, committer=committer)
+                ch['repository'] = repo._repo_name()
+                df = df.append(ch)
+            except GitCommandError as err:
+                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                pass
+
+        df.reset_index()
+
+        return df
+
     def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None, days=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories

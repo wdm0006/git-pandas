@@ -1,3 +1,8 @@
+v1.0.3
+======
+
+ * Support for estimating time spent developing on projects.
+ 
 v1.0.2
 ======
 
