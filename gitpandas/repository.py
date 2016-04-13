@@ -399,7 +399,7 @@ class Repository(object):
             file_history['net_change'] = file_history['total_insertions'] - file_history['total_deletions']
             file_history['abs_change'] = file_history['total_insertions'] + file_history['total_deletions']
             file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
-            file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.item() / (24 * 3600 * 10e9) + 0.01))
+            file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.seconds / (24 * 3600) + 0.01))
 
             # calculate metrics
             file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
