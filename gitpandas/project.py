@@ -144,7 +144,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True):
+    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True, by=None):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -180,6 +180,13 @@ class ProjectDirectory(object):
                 pass
 
         df.reset_index()
+
+        if by == 'committer' or by == 'author':
+            df = df.groupby(com).agg({'hours': sum})
+            df = df.reset_index()
+        elif by == 'project':
+            df = df.groupby('repository').agg({'hours': sum})
+            df = df.reset_index()
 
         return df
 
