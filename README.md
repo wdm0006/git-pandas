@@ -16,9 +16,6 @@ A Repository object contains a single git repo, and is used to interact with it.
 in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
 repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).
 
-
-This is a pre-v1.0.0 project (just barely), so the interfaces and functionality may change.
-
 Current functionality includes:
 
  * Commit history with extension and directory filtering
@@ -34,6 +31,7 @@ Current functionality includes:
  * Punchcard dataframe and plotting utility
  * Filewise blame
  * File owner approximation
+ * Estimation of hours spent per project or per author across projects
   
 Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
 function on stravalib.
