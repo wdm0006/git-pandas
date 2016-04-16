@@ -135,7 +135,7 @@ class Repository(object):
 
         return df
 
-    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True):
+    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, extensions=None, ignore_dir=None, days=None, committer=True):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -144,6 +144,8 @@ class Repository(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session
+        :param single_commit_hours: (optional, default 0.5 hours) the time range to associate with one single commit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
@@ -151,8 +153,8 @@ class Repository(object):
         :return: DataFrame
         """
 
-        max_diff_in_minutes = 30
-        first_commit_addition_in_minutes = 30
+        max_diff_in_minutes = grouping_window * 60.0
+        first_commit_addition_in_minutes = single_commit_hours * 60.0
 
         # First get the commit history
         ch = self.commit_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
@@ -364,7 +366,13 @@ class Repository(object):
         :return: DataFrame
         """
 
-        fch = self.file_change_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
+        fch = self.file_change_history(
+            branch=branch,
+            limit=limit,
+            extensions=extensions,
+            ignore_dir=ignore_dir,
+            days=days
+        )
         fch.reset_index(level=0, inplace=True)
 
         if fch.shape[0] > 0:

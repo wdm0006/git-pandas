@@ -57,6 +57,13 @@ Contributing
 We are looking for contributors, so if you are interested, please review our contributor guidelines in CONTRIBUTING.md,
 which includes some proposed starter issues, or if you have an idea of your own, send us a pull request.
 
+Projects Using Git-Pandas
+-------------------------
+
+ * [GitNOC](https://github.com/wdm0006/gitnoc)
+ * [Commit Opener](https://github.com/lbillingham/commit_opener)
+ 
+ 
 License
 -------
 

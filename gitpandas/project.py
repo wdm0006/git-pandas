@@ -133,7 +133,14 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                fcr = repo.file_change_rates(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, coverage=coverage, days=days)
+                fcr = repo.file_change_rates(
+                    branch=branch,
+                    limit=limit,
+                    extensions=extensions,
+                    ignore_dir=ignore_dir,
+                    coverage=coverage,
+                    days=days
+                )
                 fcr['repository'] = repo._repo_name()
                 df = df.append(fcr)
             except GitCommandError as err:
@@ -144,7 +151,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def hours_estimate(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, committer=True, by=None):
+    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, extensions=None, ignore_dir=None, days=None, committer=True, by=None):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -153,6 +160,8 @@ class ProjectDirectory(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
+        :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session
+        :param single_commit_hours: (optional, default 0.5 hours) the time range to associate with one single commit
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
@@ -172,7 +181,16 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.hours_estimate(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, committer=committer)
+                ch = repo.hours_estimate(
+                    branch,
+                    grouping_window=grouping_window,
+                    single_commit_hours=single_commit_hours,
+                    limit=limit,
+                    extensions=extensions,
+                    ignore_dir=ignore_dir,
+                    days=days,
+                    committer=committer
+                )
                 ch['repository'] = repo._repo_name()
                 df = df.append(ch)
             except GitCommandError as err:
@@ -266,7 +284,13 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.file_change_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
+                ch = repo.file_change_history(
+                    branch,
+                    limit=limit,
+                    extensions=extensions,
+                    ignore_dir=ignore_dir,
+                    days=days
+                )
                 ch['repository'] = repo._repo_name()
                 df = df.append(ch)
             except GitCommandError as err:
@@ -439,7 +463,15 @@ class ProjectDirectory(object):
         blames = []
         for repo in self.repos:
             try:
-                blame = repo.cumulative_blame(branch=branch, extensions=extensions, ignore_dir=ignore_dir, limit=limit, skip=skip, num_datapoints=num_datapoints, committer=committer)
+                blame = repo.cumulative_blame(
+                    branch=branch,
+                    extensions=extensions,
+                    ignore_dir=ignore_dir,
+                    limit=limit,
+                    skip=skip,
+                    num_datapoints=num_datapoints,
+                    committer=committer
+                )
                 blames.append((repo._repo_name(), blame))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
@@ -626,7 +658,15 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                chunk = repo.punchcard(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, by=repo_by, normalize=None)
+                chunk = repo.punchcard(
+                    branch=branch,
+                    limit=limit,
+                    extensions=extensions,
+                    ignore_dir=ignore_dir,
+                    days=days,
+                    by=repo_by,
+                    normalize=None
+                )
                 chunk['repository'] = repo._repo_name()
                 df = df.append(chunk)
             except GitCommandError as err:
