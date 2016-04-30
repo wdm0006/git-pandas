@@ -23,7 +23,7 @@ class TestRemoteProperties(unittest.TestCase):
         self.repo.__del__()
 
     def test_repo_name(self):
-        self.assertEqual(self.repo._repo_name(), 'git-pandas')
+        self.assertEqual(self.repo.repo_name, 'git-pandas')
 
     def test_branches(self):
         branches = list(self.repo.branches()['branch'].values)
@@ -88,7 +88,7 @@ class TestLocalProperties(unittest.TestCase):
         shutil.rmtree(project_dir)
 
     def test_repo_name(self):
-        self.assertEqual(self.repo._repo_name(), 'repository1')
+        self.assertEqual(self.repo.repo_name, 'repository1')
 
     def test_branches(self):
         branches = list(self.repo.branches()['branch'].values)

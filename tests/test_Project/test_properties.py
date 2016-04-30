@@ -22,7 +22,7 @@ class TestProperties(unittest.TestCase):
         self.projectd.__del__()
 
     def test_repo_name(self):
-        self.assertIn('git-pandas', list(self.projectd._repo_name()['repository'].values))
+        self.assertIn('git-pandas', list(self.projectd.repo_name()['repository'].values))
 
     def test_branches(self):
         branches = list(self.projectd.branches()['branch'].values)
@@ -111,10 +111,10 @@ class TestLocalProperties(unittest.TestCase):
         shutil.rmtree(project_dir)
 
     def test_repo_name(self):
-        self.assertIn('repository1', list(self.projectd_1._repo_name()['repository'].values))
-        self.assertIn('repository2', list(self.projectd_1._repo_name()['repository'].values))
-        self.assertIn('repository1', list(self.projectd_2._repo_name()['repository'].values))
-        self.assertIn('repository2', list(self.projectd_2._repo_name()['repository'].values))
+        self.assertIn('repository1', list(self.projectd_1.repo_name()['repository'].values))
+        self.assertIn('repository2', list(self.projectd_1.repo_name()['repository'].values))
+        self.assertIn('repository1', list(self.projectd_2.repo_name()['repository'].values))
+        self.assertIn('repository2', list(self.projectd_2.repo_name()['repository'].values))
 
     def test_branches(self):
         branches = list(self.projectd_1.branches()['branch'].values)

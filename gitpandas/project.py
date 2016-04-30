@@ -14,6 +14,7 @@ import os
 import numpy as np
 import pandas as pd
 import requests
+import warnings
 from git import GitCommandError
 from gitpandas.repository import Repository
 
@@ -41,9 +42,13 @@ class ProjectDirectory(object):
         self.repos = [Repository(r, verbose=verbose) for r in self.repo_dirs]
 
         if ignore_repos is not None:
-            self.repos = [x for x in self.repos if x._repo_name not in ignore_repos]
+            self.repos = [x for x in self.repos if x.repo_name not in ignore_repos]
 
     def _repo_name(self):
+        warnings.warn('please use repo_name() now instead of _repo_name()', DeprecationWarning)
+        return self.repo_name()
+
+    def repo_name(self):
         """
         Returns a DataFrame of the repo names present in this project directory
 
@@ -51,7 +56,7 @@ class ProjectDirectory(object):
 
         """
 
-        ds = [[x._repo_name()] for x in self.repos]
+        ds = [[x.repo_name] for x in self.repos]
         df = pd.DataFrame(ds, columns=['repository'])
         return df
 
@@ -62,7 +67,7 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        ds = [[x._repo_name(), x.is_bare()] for x in self.repos]
+        ds = [[x.repo_name, x.is_bare()] for x in self.repos]
         df = pd.DataFrame(ds, columns=['repository', 'is_bare'])
         return df
 
@@ -73,7 +78,7 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        ds = [[x._repo_name(), x.has_coverage()] for x in self.repos]
+        ds = [[x.repo_name, x.has_coverage()] for x in self.repos]
         df = pd.DataFrame(ds, columns=['repository', 'has_coverage'])
         return df
 
@@ -100,7 +105,7 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 cov = repo.coverage()
-                cov['repository'] = repo._repo_name()
+                cov['repository'] = repo.repo_name
                 df = df.append(cov)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have coverage' % (repo, ))
@@ -141,7 +146,7 @@ class ProjectDirectory(object):
                     coverage=coverage,
                     days=days
                 )
-                fcr['repository'] = repo._repo_name()
+                fcr['repository'] = repo.repo_name
                 df = df.append(fcr)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
@@ -191,7 +196,7 @@ class ProjectDirectory(object):
                     days=days,
                     committer=committer
                 )
-                ch['repository'] = repo._repo_name()
+                ch['repository'] = repo.repo_name
                 df = df.append(ch)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
@@ -202,7 +207,7 @@ class ProjectDirectory(object):
         if by == 'committer' or by == 'author':
             df = df.groupby(com).agg({'hours': sum})
             df = df.reset_index()
-        elif by == 'project':
+        elif by == 'repository':
             df = df.groupby('repository').agg({'hours': sum})
             df = df.reset_index()
 
@@ -244,7 +249,7 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
-                ch['repository'] = repo._repo_name()
+                ch['repository'] = repo.repo_name
                 df = df.append(ch)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
@@ -291,7 +296,7 @@ class ProjectDirectory(object):
                     ignore_dir=ignore_dir,
                     days=days
                 )
-                ch['repository'] = repo._repo_name()
+                ch['repository'] = repo.repo_name
                 df = df.append(ch)
             except GitCommandError as err:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
@@ -364,10 +369,10 @@ class ProjectDirectory(object):
             try:
                 if df is None:
                     df = repo.file_detail(extensions=extensions, ignore_dir=ignore_dir, committer=committer, rev=rev)
-                    df['repository'] = repo._repo_name()
+                    df['repository'] = repo.repo_name
                 else:
                     chunk = repo.file_detail(extensions=extensions, ignore_dir=ignore_dir, committer=committer, rev=rev)
-                    chunk['repository'] = repo._repo_name()
+                    chunk['repository'] = repo.repo_name
                     df = df.append(chunk)
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
@@ -428,7 +433,7 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
-                revs['repository'] = repo._repo_name()
+                revs['repository'] = repo.repo_name
                 df = df.append(revs)
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
@@ -472,7 +477,7 @@ class ProjectDirectory(object):
                     num_datapoints=num_datapoints,
                     committer=committer
                 )
-                blames.append((repo._repo_name(), blame))
+                blames.append((repo.repo_name, blame))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
                 pass
@@ -667,7 +672,7 @@ class ProjectDirectory(object):
                     by=repo_by,
                     normalize=None
                 )
-                chunk['repository'] = repo._repo_name()
+                chunk['repository'] = repo.repo_name
                 df = df.append(chunk)
             except GitCommandError as err:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))

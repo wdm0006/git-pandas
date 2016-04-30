@@ -19,7 +19,7 @@ def repository():
     # build an example repository object then check the attributes
     r = Repository('git://github.com/wdm0006/git-pandas.git')
     print('\nRepository Name')
-    print(r._repo_name())
+    print(r.repo_name)
     print('\nRepository Branches:')
     print(r.branches())
     print('\nRepository Tags:')
@@ -36,7 +36,7 @@ def project():
     # build an example project directory object then check the attributes
     p = ProjectDirectory(['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
     print('\nProject Directory Name')
-    print(p._repo_name())
+    print(p.repo_name())
     print('\nProject Directory Branches:')
     print(p.branches())
     print('\nProject Directory Tags:')

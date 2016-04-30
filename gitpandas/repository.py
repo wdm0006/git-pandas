@@ -652,6 +652,10 @@ class Repository(object):
 
         return df
 
+    @property
+    def repo_name(self):
+        return self._repo_name()
+
     def _repo_name(self):
         """
         Returns the name of the repository, using the local directory name.
@@ -840,6 +844,6 @@ class GitFlowRepository(Repository):
     A special case where git flow is followed, so we know something about the branching scheme
     """
     def __init__(self):
-        super(Repository, self).__init__()
+        super(GitFlowRepository, self).__init__()
 
 
