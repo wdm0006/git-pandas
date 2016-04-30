@@ -1,3 +1,9 @@
+v1.1.0
+======
+
+ * _repo_name changed to repo_name in project directories (old method left with deprecation warning)
+ * repo_name property added to repositories
+ 
 v1.0.3
 ======
 
