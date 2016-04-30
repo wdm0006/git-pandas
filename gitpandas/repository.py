@@ -90,9 +90,9 @@ class Repository(object):
                 with open(self.git_dir + os.sep + '.coverage', 'r') as f:
                     blob = f.read()
                     blob = blob.split('!')[2]
-                    _ = json.loads(blob)
+                    json.loads(blob)
                 return True
-            except:
+            except Exception:
                 return False
         else:
             return False
@@ -124,7 +124,7 @@ class Repository(object):
         for filename in cov['lines'].keys():
             idx = 0
             with open(filename, 'r') as f:
-                for idx, l in enumerate(f):
+                for idx, _ in enumerate(f):
                     pass
             num_lines = idx + 1
             short_filename = filename.split(self.git_dir + os.sep)[1]
@@ -234,7 +234,7 @@ class Repository(object):
                             x = commits.next()
                         else:
                             x = commits.__next__()
-                    except StopIteration as e:
+                    except StopIteration:
                         break
                     c_date = x.committed_date
                     if c_date > dlim:
@@ -266,7 +266,7 @@ class Repository(object):
         df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
+        df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         return df
@@ -315,7 +315,7 @@ class Repository(object):
                             x = commits.next()
                         else:
                             x = commits.__next__()
-                    except StopIteration as e:
+                    except StopIteration:
                         break
 
                     c_date = x.committed_date
@@ -345,7 +345,7 @@ class Repository(object):
         df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
+        df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         return df
@@ -484,7 +484,7 @@ class Repository(object):
                         continue
                 try:
                     blames.append([x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))])
-                except GitCommandError as err:
+                except GitCommandError:
                     pass
 
         blames = [item for sublist in blames for item in sublist]
@@ -586,7 +586,7 @@ class Repository(object):
 
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'].map(lambda x: datetime.datetime.fromtimestamp(x)))
+        revs['date'] = to_datetime(revs['date'].map(datetime.datetime.fromtimestamp))
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -736,7 +736,7 @@ class Repository(object):
                 return blame['loc'].idxmax()
             else:
                 return None
-        except (GitCommandError, KeyError) as e:
+        except (GitCommandError, KeyError):
             if self.verbose:
                 print('Couldn\'t Calcualte File Owner for %s' % (rev, ))
             return None
@@ -784,7 +784,7 @@ class Repository(object):
         df['ext'] = df['file'].map(lambda x: x.split('.')[-1])
 
         # add in last edit date for the file
-        df['last_edit_date'] = df['file'].map(lambda x: self._file_last_edit(x))
+        df['last_edit_date'] = df['file'].map(self._file_last_edit)
         df['last_edit_date'] = to_datetime(df['last_edit_date'])
 
         df = df.set_index('file')

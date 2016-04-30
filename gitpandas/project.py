@@ -107,9 +107,8 @@ class ProjectDirectory(object):
                 cov = repo.coverage()
                 cov['repository'] = repo.repo_name
                 df = df.append(cov)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s seems to not have coverage' % (repo, ))
-                pass
 
         df.reset_index()
 
@@ -148,9 +147,8 @@ class ProjectDirectory(object):
                 )
                 fcr['repository'] = repo.repo_name
                 df = df.append(fcr)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
-                pass
 
         df.reset_index()
 
@@ -198,9 +196,8 @@ class ProjectDirectory(object):
                 )
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
-                pass
 
         df.reset_index()
 
@@ -251,9 +248,8 @@ class ProjectDirectory(object):
                 ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
-                pass
 
         df.reset_index()
 
@@ -298,9 +294,8 @@ class ProjectDirectory(object):
                 )
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
-                pass
 
         df.reset_index()
 
@@ -374,9 +369,8 @@ class ProjectDirectory(object):
                     chunk = repo.file_detail(extensions=extensions, ignore_dir=ignore_dir, committer=committer, rev=rev)
                     chunk['repository'] = repo.repo_name
                     df = df.append(chunk)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
-                pass
 
         df = df.reset_index(level=1)
         df = df.set_index(['file', 'repository'])
@@ -398,9 +392,8 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 df = df.append(repo.branches())
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                pass
 
         df.reset_index()
 
@@ -435,9 +428,8 @@ class ProjectDirectory(object):
                 revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
                 revs['repository'] = repo.repo_name
                 df = df.append(revs)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                pass
 
         df.reset_index()
 
@@ -478,7 +470,7 @@ class ProjectDirectory(object):
                     committer=committer
                 )
                 blames.append((repo.repo_name, blame))
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
                 pass
 
@@ -540,9 +532,8 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 df = df.append(repo.tags())
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                pass
 
         df.reset_index()
 
@@ -626,9 +617,9 @@ class ProjectDirectory(object):
             for repo in self.repos:
                 try:
                     df = df.append(repo.bus_factor(extensions=extensions, ignore_dir=ignore_dir, by=by))
-                except GitCommandError as err:
+                except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                    pass
+
             df.reset_index()
             return df
 
@@ -674,9 +665,8 @@ class ProjectDirectory(object):
                 )
                 chunk['repository'] = repo.repo_name
                 df = df.append(chunk)
-            except GitCommandError as err:
+            except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-                pass
 
         df.reset_index()
 

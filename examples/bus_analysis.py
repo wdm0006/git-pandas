@@ -2,9 +2,7 @@
 Assumes that GitPython and pandas are in the same directory as this repo, and nothing else is in that directory.
 """
 
-import os
-from pandas import merge
-from gitpandas import ProjectDirectory, Repository
+from gitpandas import Repository
 
 __author__ = 'willmcginnis'
 

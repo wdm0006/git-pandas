@@ -2,7 +2,6 @@ from gitpandas import Repository
 import numpy as np
 import lifelines
 import matplotlib.pyplot as plt
-import pandas as pd
 plt.style.use('ggplot')
 
 __author__ = 'willmcginnis'

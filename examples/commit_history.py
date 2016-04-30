@@ -1,8 +1,7 @@
 import os
-import sys
 from gitpandas import *
 import numpy as np
-from pandas import DataFrame, set_option
+from pandas import set_option
 from gitpandas.repository import Repository
 
 __author__ = 'willmcginnis'
