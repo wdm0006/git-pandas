@@ -49,9 +49,9 @@ def get_signatures(m, remove_self=True, include_docstring=True):
                         }
                     else:
                         out[str(key) + '.' + k] = {'args': [x for x in list(inspect.getargspec(v).args) if x not in excludes]}
-                except:
+                except Exception:
                     pass
-        except:
+        except Exception:
             if include_docstring:
                 out[key] = {
                     'args': [x for x in list(inspect.getargspec(m[key]).args) if x not in excludes],

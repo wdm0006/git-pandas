@@ -1,8 +1,7 @@
 import os
-from gitpandas import *
+from gitpandas import ProjectDirectory, Repository
 import numpy as np
 from pandas import set_option
-from gitpandas.repository import Repository
 
 __author__ = 'willmcginnis'
 
