@@ -1,3 +1,8 @@
+v1.2.0
+======
+
+ * Added ignore_globs option alongside all methods with ignore_dir and extensions, will be the only method for filtering files in v2.0.0
+ 
 v1.1.0
 ======
 

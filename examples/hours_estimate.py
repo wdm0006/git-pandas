@@ -14,7 +14,7 @@ r = Repository(path, verbose=True)
 he = r.hours_estimate(
     branch='master',
     grouping_window=0.5,
-    single_commit_hours=0.5,
+    single_commit_hours=0.75,
     limit=None,
     extensions=['py'],
     ignore_dir=ignore_dirs

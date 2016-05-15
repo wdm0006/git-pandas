@@ -114,7 +114,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False, days=None):
+    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False, days=None, ignore_globs=None):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
         optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
@@ -127,6 +127,7 @@ class ProjectDirectory(object):
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
         :param days: (optional, default=None) number of days to return if limit is None
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -143,7 +144,8 @@ class ProjectDirectory(object):
                     extensions=extensions,
                     ignore_dir=ignore_dir,
                     coverage=coverage,
-                    days=days
+                    days=days,
+                    ignore_globs=ignore_globs
                 )
                 fcr['repository'] = repo.repo_name
                 df = df.append(fcr)
@@ -154,7 +156,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, extensions=None, ignore_dir=None, days=None, committer=True, by=None):
+    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, extensions=None, ignore_dir=None, days=None, committer=True, by=None, ignore_globs=None):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -169,6 +171,7 @@ class ProjectDirectory(object):
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
         :param committer: (optional, default=True) whether to use committer vs. author
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -192,7 +195,8 @@ class ProjectDirectory(object):
                     extensions=extensions,
                     ignore_dir=ignore_dir,
                     days=days,
-                    committer=committer
+                    committer=committer,
+                    ignore_globs=ignore_globs
                 )
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
@@ -210,7 +214,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None, days=None):
+    def commit_history(self, branch, limit=None, extensions=None, ignore_dir=None, days=None, ignore_globs=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
         are appended to each other, resulting in one large data frame of size <limit>.  If a limit is provided, it is
@@ -235,6 +239,7 @@ class ProjectDirectory(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return if limit is None
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -245,7 +250,7 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days)
+                ch = repo.commit_history(branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, ignore_globs=ignore_globs)
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
             except GitCommandError:
@@ -255,7 +260,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None):
+    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, ignore_globs=None):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -275,6 +280,7 @@ class ProjectDirectory(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return if limit is None
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -290,7 +296,8 @@ class ProjectDirectory(object):
                     limit=limit,
                     extensions=extensions,
                     ignore_dir=ignore_dir,
-                    days=days
+                    days=days,
+                    ignore_globs=ignore_globs
                 )
                 ch['repository'] = repo.repo_name
                 df = df.append(ch)
@@ -623,7 +630,7 @@ class ProjectDirectory(object):
             df.reset_index()
             return df
 
-    def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None):
+    def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None, ignore_globs=None):
         """
         Returns a pandas DataFrame containing all of the data for a punchcard.
 
@@ -642,6 +649,7 @@ class ProjectDirectory(object):
         :param days: (optional, default=None) number of days to return, if limit is None
         :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author', 'repository'
         :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -661,7 +669,8 @@ class ProjectDirectory(object):
                     ignore_dir=ignore_dir,
                     days=days,
                     by=repo_by,
-                    normalize=None
+                    normalize=None,
+                    ignore_globs=ignore_globs
                 )
                 chunk['repository'] = repo.repo_name
                 df = df.append(chunk)
