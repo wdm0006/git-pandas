@@ -308,7 +308,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def blame(self, extensions=None, ignore_dir=None, committer=True, by='repository'):
+    def blame(self, extensions=None, ignore_dir=None, committer=True, by='repository', ignore_globs=None):
         """
         Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
@@ -322,6 +322,7 @@ class ProjectDirectory(object):
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :param by: (optional, default=repository) whether to group by repository or by file
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -330,9 +331,9 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 if df is None:
-                    df = repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by)
+                    df = repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by, ignore_globs=ignore_globs)
                 else:
-                    df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by))
+                    df = df.append(repo.blame(extensions=extensions, ignore_dir=ignore_dir, committer=committer, by=by, ignore_globs=ignore_globs))
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
@@ -442,7 +443,7 @@ class ProjectDirectory(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, by='committer', limit=None, skip=None, num_datapoints=None, committer=True):
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, by='committer', limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None):
         """
         Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
         collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
@@ -460,6 +461,7 @@ class ProjectDirectory(object):
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :param by: (optional, default='committer') whether to arrange the output by committer or project
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
 
         """
@@ -474,7 +476,8 @@ class ProjectDirectory(object):
                     limit=limit,
                     skip=skip,
                     num_datapoints=num_datapoints,
-                    committer=committer
+                    committer=committer,
+                    ignore_globs=ignore_globs
                 )
                 blames.append((repo.repo_name, blame))
             except GitCommandError:

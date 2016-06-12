@@ -143,7 +143,11 @@ class TestLocalProperties(unittest.TestCase):
         ch = self.projectd_1.commit_history(branch='master')
         self.assertEqual(ch.shape[0], 12)
 
+        # Will be deprecated in v2.0.0
         ch2 = self.projectd_1.commit_history(branch='master', extensions=['py'])
+        self.assertEqual(ch2.shape[0], 5)
+
+        ch2 = self.projectd_1.commit_history(branch='master', ignore_globs=['*.[!p][!y]'])
         self.assertEqual(ch2.shape[0], 5)
 
         ch3 = self.projectd_1.commit_history(branch='master', limit=4)
@@ -155,10 +159,18 @@ class TestLocalProperties(unittest.TestCase):
         fch = self.projectd_1.file_change_history(branch='master')
         self.assertEqual(fch.shape[0], 12)
 
+        # Will be deprecated in v2.0.0
         fch2 = self.projectd_1.file_change_history(branch='master', extensions=['py'])
         self.assertEqual(fch2.shape[0], 5)
 
+        fch2 = self.projectd_1.file_change_history(branch='master', ignore_globs=['*.[!p][!y]'])
+        self.assertEqual(fch2.shape[0], 5)
+
+        # Will be deprecated in v2.0.0
         fch4 = self.projectd_1.file_change_history(branch='master', extensions=['js'])
+        self.assertEqual(fch4.shape[0], 5)
+
+        fch4 = self.projectd_1.file_change_history(branch='master', ignore_globs=['*.[!j][!s]'])
         self.assertEqual(fch4.shape[0], 5)
 
         fch3 = self.projectd_1.file_change_history(branch='master', limit=4)
@@ -180,6 +192,10 @@ class TestLocalProperties(unittest.TestCase):
 
         # lets do some blaming
         blame = self.projectd_1.blame(extensions=['py'])
+        self.assertEqual(blame['loc'].sum(), 10)
+        self.assertEqual(blame.shape[0], 1)
+
+        blame = self.projectd_1.blame(ignore_globs=['*.[!p][!y]'])
         self.assertEqual(blame['loc'].sum(), 10)
         self.assertEqual(blame.shape[0], 1)
 

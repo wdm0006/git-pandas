@@ -23,7 +23,26 @@ import shutil
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
 
+try:
+    from joblib import delayed, Parallel
+    _has_joblib = True
+except ImportError as e:
+    _has_joblib = False
+
 __author__ = 'willmcginnis'
+
+
+def _parallel_cumulative_blame_func(self_, x, extensions, ignore_dir, committer, ignore_globs):
+    blm = self_.blame(
+        extensions=extensions,
+        ignore_dir=ignore_dir,
+        rev=x['rev'],
+        committer=committer,
+        ignore_globs=ignore_globs
+    )
+    x.update(json.loads(blm.to_json())['loc'])
+
+    return x
 
 
 class Repository(object):
@@ -453,7 +472,7 @@ class Repository(object):
         if ignore_globs is not None:
             out = {}
             for key in files.keys():
-                if sum([1 if fnmatch.fnmatch(key, local_glob) else 0 for local_glob in ignore_globs]) == 0:
+                if sum([1 if fnmatch.fnmatch(key, g) else 0 for g in ignore_globs]) == 0:
                     out[key] = files[key]
 
             return out
@@ -475,7 +494,7 @@ class Repository(object):
 
             return out
 
-    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True, by='repository'):
+    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True, by='repository', ignore_globs=None):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
@@ -488,8 +507,9 @@ class Repository(object):
         :param extensions: (optional, default=None) a list of file extensions to return commits for
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param rev: (optional, default=HEAD) the specific revision to blame
-        :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param committer: (optional, default=True) true if committer should be reported, false if author
         :param by: (optional, default=repository) whether to group by repository or by file
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
         """
 
@@ -498,27 +518,37 @@ class Repository(object):
 
         blames = []
         file_names = [x for x in self.repo.git.log(pretty='format:', name_only=True, diff_filter='A').split('\n') if x.strip() != '']
-        for file in file_names:
-            if sum([1 if x in file else 0 for x in ignore_dir]) == 0:
-                if extensions is not None:
-                    if file.split('.')[-1] not in extensions:
-                        continue
-                try:
-                    blames.append([x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))])
-                except GitCommandError:
-                    pass
+        for file in self.__check_extension({x: x for x in file_names}, extensions, ignore_dir, ignore_globs=ignore_globs).keys():
+            try:
+                blames.append(
+                    [x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))]
+                )
+            except GitCommandError:
+                pass
 
         blames = [item for sublist in blames for item in sublist]
         if committer:
             if by == 'repository':
-                blames = DataFrame([[x[0].committer.name, len(x[1])] for x in blames], columns=['committer', 'loc']).groupby('committer').agg({'loc': np.sum})
+                blames = DataFrame(
+                    [[x[0].committer.name, len(x[1])] for x in blames],
+                    columns=['committer', 'loc']
+                ).groupby('committer').agg({'loc': np.sum})
             elif by == 'file':
-                blames = DataFrame([[x[0].committer.name, len(x[1]), x[2]] for x in blames], columns=['committer', 'loc', 'file']).groupby(['committer', 'file']).agg({'loc': np.sum})
+                blames = DataFrame(
+                    [[x[0].committer.name, len(x[1]), x[2]] for x in blames],
+                    columns=['committer', 'loc', 'file']
+                ).groupby(['committer', 'file']).agg({'loc': np.sum})
         else:
             if by == 'repository':
-                blames = DataFrame([[x[0].author.name, len(x[1])] for x in blames], columns=['author', 'loc']).groupby('author').agg({'loc': np.sum})
+                blames = DataFrame(
+                    [[x[0].author.name, len(x[1])] for x in blames],
+                    columns=['author', 'loc']
+                ).groupby('author').agg({'loc': np.sum})
             elif by == 'file':
-                blames = DataFrame([[x[0].author.name, len(x[1]), x[2]] for x in blames], columns=['author', 'loc', 'file']).groupby(['author', 'file']).agg({'loc': np.sum})
+                blames = DataFrame(
+                    [[x[0].author.name, len(x[1]), x[2]] for x in blames],
+                    columns=['author', 'loc', 'file']
+                ).groupby(['author', 'file']).agg({'loc': np.sum})
 
         return blames
 
@@ -562,7 +592,7 @@ class Repository(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True):
+    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None):
         """
         Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
         blamed to each committer at each timestamp as data.
@@ -574,6 +604,7 @@ class Repository(object):
         :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
         :return: DataFrame
 
         """
@@ -586,8 +617,8 @@ class Repository(object):
         else:
             committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
 
-        for committer in committers:
-            revs[committer] = 0
+        for y in committers:
+            revs[y] = 0
 
         if self.verbose:
             print('Beginning processing for cumulative blame:')
@@ -597,11 +628,11 @@ class Repository(object):
             if self.verbose:
                 print('%s. [%s] getting blame for rev: %s' % (str(idx), datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), row.rev, ))
 
-            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev, committer=committer)
-            for committer in committers:
+            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev, committer=committer, ignore_globs=ignore_globs)
+            for y in committers:
                 try:
-                    loc = blame.loc[committer, 'loc']
-                    revs.set_value(idx, committer, loc)
+                    loc = blame.loc[y, 'loc']
+                    revs.set_value(idx, y, loc)
                 except KeyError:
                     pass
 
@@ -625,6 +656,65 @@ class Repository(object):
                 keep_idx.append(idx)
 
         revs = revs.ix[keep_idx]
+
+        return revs
+
+    def parallel_cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True, workers=1, ignore_globs=None):
+        """
+        Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
+        blamed to each committer at each timestamp as data.
+
+        :param branch: (optional, default 'master') the branch to work in
+        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
+        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
+        :param extensions: (optional, default=None) a list of file extensions to return commits for
+        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
+        :param committer: (optional, defualt=True) true if committer should be reported, false if author
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param workers: (optional, default=1) integer, the number of workers to use in the threadpool, -1 for one per core.
+        :return: DataFrame
+
+        """
+
+        if not _has_joblib:
+            raise ImportError('Must have joblib installed to use parallel_cumulative_blame(), please use cumulative_blame() instead.')
+
+        revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+
+        if self.verbose:
+            print('Beginning processing for cumulative blame:')
+
+        revisions = json.loads(revs.to_json(orient='index'))
+        revisions = [revisions[key] for key in revisions]
+
+        ds = Parallel(n_jobs=workers, backend='threading', verbose=5)(
+            delayed(_parallel_cumulative_blame_func)
+            (self, x, extensions, ignore_dir, committer, ignore_globs) for x in revisions
+        )
+
+        revs = DataFrame(ds)
+        del revs['rev']
+
+        revs['date'] = to_datetime(revs['date'].map(datetime.datetime.fromtimestamp))
+        revs.set_index(keys=['date'], drop=True, inplace=True)
+        revs = revs.fillna(0.0)
+
+        # drop 0 cols
+        for col in revs.columns.values:
+            if col != 'col':
+                if revs[col].sum() == 0:
+                    del revs[col]
+
+        # drop 0 rows
+        keep_idx = []
+        committers = [x for x in revs.columns.values if x != 'date']
+        for idx, row in revs.iterrows():
+            if sum([row[x] for x in committers]) > 0:
+                keep_idx.append(idx)
+
+        revs = revs.ix[keep_idx]
+        revs.sort_index(ascending=False, inplace=True)
 
         return revs
 
