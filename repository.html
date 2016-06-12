@@ -188,7 +188,7 @@ gitpython Repo instance.</p>
 </table>
 <dl class="method">
 <dt id="gitpandas.repository.Repository.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em>, <em>by='repository'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em>, <em>by='repository'</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
 name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
 method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
@@ -207,8 +207,9 @@ file extensions. The DataFrame will have the columns:</p>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>rev</strong> &#8211; (optional, default=HEAD) the specific revision to blame</li>
-<li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
+<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
 <li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -266,7 +267,7 @@ least 50% of the codebase&#8217;s LOC</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.commit_history">
-<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
 the columns:</p>
 <blockquote>
@@ -291,6 +292,7 @@ the columns:</p>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -327,7 +329,7 @@ will contain the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.cumulative_blame">
-<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.cumulative_blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.cumulative_blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
 blamed to each committer at each timestamp as data.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -342,6 +344,7 @@ blamed to each committer at each timestamp as data.</p>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
 <li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -354,7 +357,7 @@ blamed to each committer at each timestamp as data.</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.file_change_history">
-<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
 the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
 many file changes). Included in the DataFrame will be the columns:</p>
@@ -379,6 +382,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 <li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -391,7 +395,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.file_change_rates">
-<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em>, <em>days=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_rates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.file_change_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will return a DataFrame containing some basic aggregations of the file change history data, and
 optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
 project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
@@ -407,6 +411,7 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>coverage</strong> &#8211; (optional, default=False) a bool for whether or not to attempt to join in coverage data.</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -475,7 +480,7 @@ file owner, extension, most recent edit date, etc.).</p>
 
 <dl class="method">
 <dt id="gitpandas.repository.Repository.hours_estimate">
-<code class="descname">hours_estimate</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>grouping_window=0.5</em>, <em>single_commit_hours=0.5</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.hours_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.hours_estimate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hours_estimate</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>grouping_window=0.5</em>, <em>single_commit_hours=0.5</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>committer=True</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.hours_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.hours_estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>inspired by: <a class="reference external" href="https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143">https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</a></p>
 <p>Iterates through the commit history of repo to estimate the time commitement of each author or committer over
 the course of time indicated by limit/extensions/days/etc.</p>
@@ -492,6 +497,7 @@ the course of time indicated by limit/extensions/days/etc.</p>
 <li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) whether to use committer vs. author</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
@@ -517,8 +523,37 @@ the course of time indicated by limit/extensions/days/etc.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="gitpandas.repository.Repository.parallel_cumulative_blame">
+<code class="descname">parallel_cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em>, <em>workers=1</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.parallel_cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.parallel_cumulative_blame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
+blamed to each committer at each timestamp as data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>branch</strong> &#8211; (optional, default &#8216;master&#8217;) the branch to work in</li>
+<li><strong>limit</strong> &#8211; (optional, default None), the maximum number of revisions to return, None for no limit</li>
+<li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
+<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
+<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
+<li><strong>committer</strong> &#8211; (optional, defualt=True) true if committer should be reported, false if author</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>workers</strong> &#8211; (optional, default=1) integer, the number of workers to use in the threadpool, -1 for one per core.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="gitpandas.repository.Repository.punchcard">
-<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.punchcard" title="Permalink to this definition">¶</a></dt>
+<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.repository.Repository.punchcard" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas DataFrame containing all of the data for a punchcard.</p>
 <blockquote>
 <div><ul class="simple">
@@ -543,6 +578,7 @@ the course of time indicated by limit/extensions/days/etc.</p>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
 <li><strong>by</strong> &#8211; (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or &#8216;committer&#8217;, &#8216;author&#8217;</li>
 <li><strong>normalize</strong> &#8211; (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
 </ul>
 </td>
 </tr>
