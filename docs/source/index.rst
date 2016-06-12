@@ -6,7 +6,7 @@
 Git-Pandas
 ==========
 
-v0.0.6
+v1.2.0
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:
@@ -17,9 +17,6 @@ two primary objects:
 A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
 in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
 repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).
-
-
-This is a pre-v1.0.0 project, so the interfaces and functionality may change.
 
 Installation
 ------------
