@@ -216,7 +216,7 @@ git-pandas repository objects, created by os.walk-ing a directory to file all ch
 </table>
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>committer=True</em>, <em>by='repository'</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">blame</code><span class="sig-paren">(</span><em>committer=True</em>, <em>by='repository'</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
 name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
 method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
@@ -232,11 +232,10 @@ file extensions. The DataFrame will have the columns:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
 <li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -270,7 +269,7 @@ file extensions. The DataFrame will have the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.bus_factor">
-<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>by='projectd'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>ignore_globs=None</em>, <em>include_globs=None</em>, <em>by='projectd'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
 <dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
 the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
 least 50% of the codebase&#8217;s LOC</p>
@@ -279,8 +278,8 @@ least 50% of the codebase&#8217;s LOC</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -293,7 +292,7 @@ least 50% of the codebase&#8217;s LOC</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.commit_history">
-<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.commit_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.commit_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
 are appended to each other, resulting in one large data frame of size &lt;limit&gt;.  If a limit is provided, it is
 divided by the number of repositories in the project directory to find out how many commits to pull from each
@@ -320,10 +319,9 @@ across the project.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>branch</strong> &#8211; the branch to return commits for</li>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -362,7 +360,7 @@ will contain the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.cumulative_blame">
-<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>by='committer'</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.cumulative_blame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>by='committer'</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.cumulative_blame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
 collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
 returned in 3 forms (switched with the by parameter, default &#8216;committer&#8217;):</p>
@@ -381,12 +379,11 @@ returned in 3 forms (switched with the by parameter, default &#8216;committer&#8
 <li><strong>branch</strong> &#8211; (optional, default &#8216;master&#8217;) the branch to work in</li>
 <li><strong>limit</strong> &#8211; (optional, default None), the maximum number of revisions to return, None for no limit</li>
 <li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
 <li><strong>by</strong> &#8211; (optional, default=&#8217;committer&#8217;) whether to arrange the output by committer or project</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -399,7 +396,7 @@ returned in 3 forms (switched with the by parameter, default &#8216;committer&#8
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.file_change_history">
-<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_history" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_history" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
 the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
 many file changes). Included in the DataFrame will be the columns:</p>
@@ -422,10 +419,9 @@ many file changes). Included in the DataFrame will be the columns:</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>branch</strong> &#8211; the branch to return commits for</li>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -438,7 +434,7 @@ many file changes). Included in the DataFrame will be the columns:</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.file_change_rates">
-<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>coverage=False</em>, <em>days=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_rates" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>coverage=False</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will return a DataFrame containing some basic aggregations of the file change history data, and
 optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
 project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
@@ -450,11 +446,10 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>branch</strong> &#8211; (optional, default=master) the branch to return commits for</li>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>coverage</strong> &#8211; (optional, default=False) a bool for whether or not to attempt to join in coverage data.</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -467,7 +462,7 @@ a high change rate and poor test coverage, then it is a great candidate for writ
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.file_detail">
-<code class="descname">file_detail</code><span class="sig-paren">(</span><em>extensions=None</em>, <em>ignore_dir=None</em>, <em>rev='HEAD'</em>, <em>committer=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_detail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_detail" title="Permalink to this definition">¶</a></dt>
+<code class="descname">file_detail</code><span class="sig-paren">(</span><em>rev='HEAD'</em>, <em>committer=True</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_detail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_detail" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a table of all current files in the repos, with some high level information about each file (total LOC,
 file owner, extension, most recent edit date, etc.).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -475,8 +470,8 @@ file owner, extension, most recent edit date, etc.).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
 </ul>
 </td>
@@ -504,7 +499,7 @@ file owner, extension, most recent edit date, etc.).</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.hours_estimate">
-<code class="descname">hours_estimate</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>grouping_window=0.5</em>, <em>single_commit_hours=0.5</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>committer=True</em>, <em>by=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.hours_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.hours_estimate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hours_estimate</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>grouping_window=0.5</em>, <em>single_commit_hours=0.5</em>, <em>limit=None</em>, <em>days=None</em>, <em>committer=True</em>, <em>by=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.hours_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.hours_estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>inspired by: <a class="reference external" href="https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143">https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</a></p>
 <p>Iterates through the commit history of repo to estimate the time commitement of each author or committer over
 the course of time indicated by limit/extensions/days/etc.</p>
@@ -517,11 +512,10 @@ the course of time indicated by limit/extensions/days/etc.</p>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
 <li><strong>grouping_window</strong> &#8211; (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session</li>
 <li><strong>single_commit_hours</strong> &#8211; (optional, default 0.5 hours) the time range to associate with one single commit</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
 <li><strong>committer</strong> &#8211; (optional, default=True) whether to use committer vs. author</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>
@@ -548,7 +542,7 @@ the course of time indicated by limit/extensions/days/etc.</p>
 
 <dl class="method">
 <dt id="gitpandas.project.ProjectDirectory.punchcard">
-<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>extensions=None</em>, <em>ignore_dir=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em>, <em>ignore_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.punchcard" title="Permalink to this definition">¶</a></dt>
+<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.punchcard" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pandas DataFrame containing all of the data for a punchcard.</p>
 <blockquote>
 <div><ul class="simple">
@@ -568,12 +562,11 @@ the course of time indicated by limit/extensions/days/etc.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>branch</strong> &#8211; the branch to return commits for</li>
 <li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>extensions</strong> &#8211; (optional, default=None) a list of file extensions to return commits for</li>
-<li><strong>ignore_dir</strong> &#8211; (optional, default=None) a list of directory names to ignore</li>
 <li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
 <li><strong>by</strong> &#8211; (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or &#8216;committer&#8217;, &#8216;author&#8217;, &#8216;repository&#8217;</li>
 <li><strong>normalize</strong> &#8211; (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir</li>
+<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
+<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
 </ul>
 </td>
 </tr>

@@ -348,9 +348,9 @@ Repository Revisions:
 <h3>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h3>
 <p>To access the current blame of each:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Blame:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;*.py&#39;</span><span class="p">]))</span>
 <span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Blame:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;py&#39;</span><span class="p">]))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;*.py&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p>Which will yield:</p>
