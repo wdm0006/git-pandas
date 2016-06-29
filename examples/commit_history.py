@@ -10,7 +10,7 @@ def project(path):
     p = ProjectDirectory(working_dir=path)
 
     # get the commit history
-    ch = p.commit_history('master', limit=None, extensions=['py'], ignore_dir=['lib', 'docs', 'test', 'tests', 'tests_t'], days=7)
+    ch = p.commit_history('master', limit=None, include_globs=['*.py'], ignore_globs=['lib/*', 'docs/*', 'test/*', 'tests/*', 'tests_t/*'], days=7)
     print(ch.head)
 
     # get the list of committers
@@ -32,9 +32,9 @@ def project(path):
 def repository(path):
     # build an example repository object and try some things out
     ignore_dirs = [
-        'docs',
-        'tests',
-        'Data'
+        'docs/*',
+        'tests/*',
+        'Data/*'
     ]
     r = Repository(path)
 
@@ -44,7 +44,7 @@ def repository(path):
     print('\n')
 
     # get the commit history
-    ch = r.commit_history('HEAD', limit=None, extensions=['py'], ignore_dir=ignore_dirs)
+    ch = r.commit_history('HEAD', limit=None, include_globs=['*.py'], ignore_globs=ignore_dirs)
     print(ch.head(5))
 
     # get the list of committers
@@ -62,7 +62,7 @@ def repository(path):
     print(attr)
 
     # get the file change history
-    fh = r.file_change_history('HEAD', limit=None, ignore_dir=ignore_dirs)
+    fh = r.file_change_history('HEAD', limit=None, ignore_globs=ignore_dirs)
     fh['ext'] = fh['filename'].map(lambda x: x.split('.')[-1])
     print(fh.head(50))
 

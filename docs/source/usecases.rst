@@ -206,9 +206,9 @@ To access the current blame of each:
 .. code-block:: python
 
     print('Project Directory Blame:')
-    print(p.blame(extensions=['py']))
+    print(p.blame(include_globs=['*.py']))
     print('\nRepository Blame:')
-    print(r.blame(extensions=['py']))
+    print(r.blame(include_globs=['*.py']))
 
 Which will yield:
 

@@ -4,12 +4,12 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-install:
-  - "pip install -r requirements.txt"
-  - "pip install coveralls"
 before_script:
   - git config --global user.email "will@pedalwrencher.com"
   - git config --global user.name "will"
+install:
+  - "pip install -r requirements.txt"
+  - "pip install coveralls"
 script:
   - nosetests --with-coverage --cover-package=gitpandas
 after_success:

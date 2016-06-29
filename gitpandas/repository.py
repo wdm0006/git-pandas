@@ -8,23 +8,23 @@
 
 """
 
-
 import os
 import sys
 import datetime
 import time
-import numpy as np
 import json
 import logging
 import tempfile
-import warnings
 import fnmatch
 import shutil
+
+import numpy as np
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
 
 try:
     from joblib import delayed, Parallel
+
     _has_joblib = True
 except ImportError as e:
     _has_joblib = False
@@ -32,13 +32,12 @@ except ImportError as e:
 __author__ = 'willmcginnis'
 
 
-def _parallel_cumulative_blame_func(self_, x, extensions, ignore_dir, committer, ignore_globs):
+def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_globs):
     blm = self_.blame(
-        extensions=extensions,
-        ignore_dir=ignore_dir,
         rev=x['rev'],
         committer=committer,
-        ignore_globs=ignore_globs
+        ignore_globs=ignore_globs,
+        include_globs=include_globs
     )
     x.update(json.loads(blm.to_json())['loc'])
 
@@ -62,7 +61,7 @@ class Repository(object):
         if working_dir is not None:
             if working_dir[:3] == 'git':
                 if self.verbose:
-                    print('cloning repository: %s into a temporary location' % (working_dir, ))
+                    print('cloning repository: %s into a temporary location' % (working_dir,))
 
                 dir_path = tempfile.mkdtemp()
                 self.repo = Repo.clone_from(working_dir, dir_path)
@@ -156,7 +155,8 @@ class Repository(object):
 
         return df
 
-    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, extensions=None, ignore_dir=None, days=None, committer=True, ignore_globs=None):
+    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, days=None,
+                       committer=True, ignore_globs=None, include_globs=None):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -167,11 +167,10 @@ class Repository(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session
         :param single_commit_hours: (optional, default 0.5 hours) the time range to associate with one single commit
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
         :param committer: (optional, default=True) whether to use committer vs. author
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -179,7 +178,8 @@ class Repository(object):
         first_commit_addition_in_minutes = single_commit_hours * 60.0
 
         # First get the commit history
-        ch = self.commit_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, ignore_globs=ignore_globs)
+        ch = self.commit_history(branch=branch, limit=limit, days=days, ignore_globs=ignore_globs,
+                                 include_globs=include_globs)
 
         # split by committer|author
         if committer:
@@ -213,7 +213,7 @@ class Repository(object):
 
         return df
 
-    def commit_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, ignore_globs=None):
+    def commit_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
         """
         Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
         the columns:
@@ -229,10 +229,9 @@ class Repository(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -244,7 +243,7 @@ class Repository(object):
                           x.committer.name,
                           x.committed_date,
                           x.message,
-                          self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                          self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                       ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
             else:
                 ds = []
@@ -262,11 +261,12 @@ class Repository(object):
                     c_date = x.committed_date
                     if c_date > dlim:
                         ds.append([
-                                  x.author.name,
-                                  x.committer.name,
-                                  x.committed_date,
-                                  x.message,
-                                  self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                            x.author.name,
+                            x.committer.name,
+                            x.committed_date,
+                            x.message,
+                            self.__check_extension(x.stats.files, ignore_globs=ignore_globs,
+                                                   include_globs=include_globs)
                         ])
 
         else:
@@ -275,18 +275,20 @@ class Repository(object):
                       x.committer.name,
                       x.committed_date,
                       x.message,
-                      self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                      self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                   ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
         # aggregate stats
         ds = [x[:-1] + [sum([x[-1][key]['lines'] for key in x[-1].keys()]),
-                       sum([x[-1][key]['insertions'] for key in x[-1].keys()]),
-                       sum([x[-1][key]['deletions'] for key in x[-1].keys()]),
-                       sum([x[-1][key]['insertions'] for key in x[-1].keys()]) - sum([x[-1][key]['deletions'] for key in x[-1].keys()])
-                       ] for x in ds if len(x[-1].keys()) > 0]
+                        sum([x[-1][key]['insertions'] for key in x[-1].keys()]),
+                        sum([x[-1][key]['deletions'] for key in x[-1].keys()]),
+                        sum([x[-1][key]['insertions'] for key in x[-1].keys()]) - sum(
+                            [x[-1][key]['deletions'] for key in x[-1].keys()])
+                        ] for x in ds if len(x[-1].keys()) > 0]
 
         # make it a pandas dataframe
-        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
+        df = DataFrame(ds,
+                       columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
@@ -294,7 +296,7 @@ class Repository(object):
 
         return df
 
-    def file_change_history(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, ignore_globs=None):
+    def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
         """
         Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
         the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
@@ -310,10 +312,9 @@ class Repository(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -321,12 +322,12 @@ class Repository(object):
         if limit is None:
             if days is None:
                 ds = [[
-                      x.author.name,
-                      x.committer.name,
-                      x.committed_date,
-                      x.message,
-                      x.name_rev.split()[0],
-                      self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                          x.author.name,
+                          x.committer.name,
+                          x.committed_date,
+                          x.message,
+                          x.name_rev.split()[0],
+                          self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                       ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
             else:
                 ds = []
@@ -345,12 +346,13 @@ class Repository(object):
                     c_date = x.committed_date
                     if c_date > dlim:
                         ds.append([
-                                  x.author.name,
-                                  x.committer.name,
-                                  x.committed_date,
-                                  x.message,
-                                  x.name_rev.split()[0],
-                                  self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                            x.author.name,
+                            x.committer.name,
+                            x.committed_date,
+                            x.message,
+                            x.name_rev.split()[0],
+                            self.__check_extension(x.stats.files, ignore_globs=ignore_globs,
+                                                   include_globs=include_globs)
                         ])
 
         else:
@@ -360,13 +362,15 @@ class Repository(object):
                       x.committed_date,
                       x.message,
                       x.name_rev.split()[0],
-                      self.__check_extension(x.stats.files, extensions, ignore_dir, ignore_globs=ignore_globs)
+                      self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                   ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
-        ds = [x[:-1] + [fn, x[-1][fn]['insertions'], x[-1][fn]['deletions']] for x in ds for fn in x[-1].keys() if len(x[-1].keys()) > 0]
+        ds = [x[:-1] + [fn, x[-1][fn]['insertions'], x[-1][fn]['deletions']] for x in ds for fn in x[-1].keys() if
+              len(x[-1].keys()) > 0]
 
         # make it a pandas dataframe
-        df = DataFrame(ds, columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
+        df = DataFrame(ds,
+                       columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
@@ -374,7 +378,8 @@ class Repository(object):
 
         return df
 
-    def file_change_rates(self, branch='master', limit=None, extensions=None, ignore_dir=None, coverage=False, days=None, ignore_globs=None):
+    def file_change_rates(self, branch='master', limit=None, coverage=False, days=None, ignore_globs=None,
+                          include_globs=None):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
         optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
@@ -383,21 +388,19 @@ class Repository(object):
 
         :param branch: (optional, default=master) the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
         :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
         fch = self.file_change_history(
             branch=branch,
             limit=limit,
-            extensions=extensions,
-            ignore_dir=ignore_dir,
             days=days,
-            ignore_globs=ignore_globs
+            ignore_globs=ignore_globs,
+            include_globs=include_globs
         )
         fch.reset_index(level=0, inplace=True)
 
@@ -435,9 +438,11 @@ class Repository(object):
             file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
 
             try:
-                file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil(x.seconds / (24 * 3600) + 0.01))
+                file_history['delta_days'] = file_history['delta_time'].map(
+                    lambda x: np.ceil(x.seconds / (24 * 3600) + 0.01))
             except AttributeError as e:
-                file_history['delta_days'] = file_history['delta_time'].map(lambda x: np.ceil((float(x.item()) * 10e-6) / (24 * 3600) + 0.01))
+                file_history['delta_days'] = file_history['delta_time'].map(
+                    lambda x: np.ceil((float(x.item()) * 10e-6) / (24 * 3600) + 0.01))
 
             # calculate metrics
             file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
@@ -446,55 +451,53 @@ class Repository(object):
             file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(','))))
 
             # reindex
-            file_history = file_history.reindex(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
+            file_history = file_history.reindex(
+                columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change',
+                         'edit_rate'])
             file_history.sort_values(by=['edit_rate'], inplace=True)
 
             if coverage and self.has_coverage():
                 file_history = file_history.merge(self.coverage(), left_index=True, right_on='filename', how='outer')
                 file_history.set_index(keys=['filename'], drop=True, inplace=True)
         else:
-            file_history = DataFrame(columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate'])
+            file_history = DataFrame(
+                columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change',
+                         'edit_rate'])
 
         return file_history
 
     @staticmethod
-    def __check_extension(files, extensions, ignore_dir, ignore_globs=None):
+    def __check_extension(files, ignore_globs=None, include_globs=None):
         """
         Internal method to filter a list of file changes by extension and ignore_dirs.
 
         :param files:
-        :param extensions: a list of file extensions to return commits for
-        :param ignore_dir: a list of directory names to ignore
         :param ignore_globs: a list of globs to ignore (if none falls back to extensions and ignore_dir)
+        :param include_globs: a list of globs to include (if none, includes all).
         :return: dict
         """
 
-        if ignore_globs is not None:
-            out = {}
-            for key in files.keys():
-                if sum([1 if fnmatch.fnmatch(key, g) else 0 for g in ignore_globs]) == 0:
-                    out[key] = files[key]
+        if include_globs is None or include_globs == []:
+            include_globs = ['*']
 
-            return out
-        else:
-            warnings.warn('Warning, extensions and ignore_dir will be deprecated in v2.0.0, please use ignore_globs instead')
-            if extensions is None:
-                return files
-
-            if ignore_dir is None:
-                ignore_dir = []
+        out = {}
+        for key in files.keys():
+            # count up the number of patterns in the ignore globs list that match
+            if ignore_globs is not None:
+                count_exclude = sum([1 if fnmatch.fnmatch(key, g) else 0 for g in ignore_globs])
             else:
-                ignore_dir = [str(x).replace('/', '').replace('\\', '') + os.sep for x in ignore_dir]
+                count_exclude = 0
 
-            out = {}
-            for key in files.keys():
-                if key.split('.')[-1] in extensions:
-                    if sum([1 if x in key else 0 for x in ignore_dir]) == 0:
-                        out[key] = files[key]
+            # count up the number of patterns in the include globs list that match
+            count_include = sum([1 if fnmatch.fnmatch(key, g) else 0 for g in include_globs])
 
-            return out
+            # if we have one vote or more to include and none to exclude, then we use the file.
+            if count_include > 0 and count_exclude == 0:
+                out[key] = files[key]
 
-    def blame(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True, by='repository', ignore_globs=None):
+        return out
+
+    def blame(self, rev='HEAD', committer=True, by='repository', ignore_globs=None, include_globs=None):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
         name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
@@ -504,24 +507,23 @@ class Repository(object):
          * committer
          * loc
 
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param rev: (optional, default=HEAD) the specific revision to blame
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :param by: (optional, default=repository) whether to group by repository or by file
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
-        if ignore_dir is None:
-            ignore_dir = []
-
         blames = []
-        file_names = [x for x in self.repo.git.log(pretty='format:', name_only=True, diff_filter='A').split('\n') if x.strip() != '']
-        for file in self.__check_extension({x: x for x in file_names}, extensions, ignore_dir, ignore_globs=ignore_globs).keys():
+        file_names = [x for x in self.repo.git.log(pretty='format:', name_only=True, diff_filter='A').split('\n') if
+                      x.strip() != '']
+        for file in self.__check_extension({x: x for x in file_names}, ignore_globs=ignore_globs,
+                                           include_globs=include_globs).keys():
             try:
                 blames.append(
-                    [x + [str(file).replace(self.git_dir + '/', '')] for x in self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))]
+                    [x + [str(file).replace(self.git_dir + '/', '')] for x in
+                     self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))]
                 )
             except GitCommandError:
                 pass
@@ -592,7 +594,8 @@ class Repository(object):
 
         return df
 
-    def cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None):
+    def cumulative_blame(self, branch='master', limit=None, skip=None, num_datapoints=None, committer=True,
+                         ignore_globs=None, include_globs=None):
         """
         Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
         blamed to each committer at each timestamp as data.
@@ -600,11 +603,10 @@ class Repository(object):
         :param branch: (optional, default 'master') the branch to work in
         :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
         :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
 
         """
@@ -626,9 +628,10 @@ class Repository(object):
         # now populate that table with some actual values
         for idx, row in revs.iterrows():
             if self.verbose:
-                print('%s. [%s] getting blame for rev: %s' % (str(idx), datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), row.rev, ))
+                print('%s. [%s] getting blame for rev: %s' % (
+                str(idx), datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), row.rev,))
 
-            blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=row.rev, committer=committer, ignore_globs=ignore_globs)
+            blame = self.blame(rev=row.rev, committer=committer, ignore_globs=ignore_globs, include_globs=include_globs)
             for y in committers:
                 try:
                     loc = blame.loc[y, 'loc']
@@ -659,7 +662,8 @@ class Repository(object):
 
         return revs
 
-    def parallel_cumulative_blame(self, branch='master', extensions=None, ignore_dir=None, limit=None, skip=None, num_datapoints=None, committer=True, workers=1, ignore_globs=None):
+    def parallel_cumulative_blame(self, branch='master', limit=None, skip=None, num_datapoints=None, committer=True,
+                                  workers=1, ignore_globs=None, include_globs=None):
         """
         Returns the blame at every revision of interest. Index is a datetime, column per committer, with number of lines
         blamed to each committer at each timestamp as data.
@@ -667,18 +671,18 @@ class Repository(object):
         :param branch: (optional, default 'master') the branch to work in
         :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
         :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :param workers: (optional, default=1) integer, the number of workers to use in the threadpool, -1 for one per core.
         :return: DataFrame
 
         """
 
         if not _has_joblib:
-            raise ImportError('Must have joblib installed to use parallel_cumulative_blame(), please use cumulative_blame() instead.')
+            raise ImportError('''Must have joblib installed to use parallel_cumulative_blame(), please use
+            cumulative_blame() instead.''')
 
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
@@ -690,7 +694,7 @@ class Repository(object):
 
         ds = Parallel(n_jobs=workers, backend='threading', verbose=5)(
             delayed(_parallel_cumulative_blame_func)
-            (self, x, extensions, ignore_dir, committer, ignore_globs) for x in revisions
+            (self, x, committer, ignore_globs, include_globs) for x in revisions
         )
 
         revs = DataFrame(ds)
@@ -788,7 +792,7 @@ class Repository(object):
 
         :returns: str
         """
-        return 'git repository: %s at: %s' % (self._repo_name(), self.git_dir, )
+        return 'git repository: %s at: %s' % (self._repo_name(), self.git_dir,)
 
     def __repr__(self):
         """
@@ -798,14 +802,14 @@ class Repository(object):
         """
         return str(self.git_dir)
 
-    def bus_factor(self, by='repository', extensions=None, ignore_dir=None):
+    def bus_factor(self, by='repository', ignore_globs=None, include_globs=None):
         """
         An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
         the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
         least 50% of the codebase's LOC
 
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :param by: (optional, default=repository) whether to group by repository or by file
         :return:
         """
@@ -813,7 +817,7 @@ class Repository(object):
         if by == 'file':
             raise NotImplementedError('File-wise bus factor')
 
-        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, by=by)
+        blame = self.blame(include_globs=include_globs, ignore_globs=ignore_globs, by=by)
         blame = blame.sort_values(by=['loc'], ascending=False)
 
         total = blame['loc'].sum()
@@ -842,14 +846,15 @@ class Repository(object):
                 cm = 'author'
 
             blame = self.repo.blame(rev, os.path.join(self.git_dir, filename))
-            blame = DataFrame([[x[0].committer.name, len(x[1])] for x in blame], columns=[cm, 'loc']).groupby(cm).agg({'loc': np.sum})
+            blame = DataFrame([[x[0].committer.name, len(x[1])] for x in blame], columns=[cm, 'loc']).groupby(cm).agg(
+                {'loc': np.sum})
             if blame.shape[0] > 0:
                 return blame['loc'].idxmax()
             else:
                 return None
         except (GitCommandError, KeyError):
             if self.verbose:
-                print('Couldn\'t Calcualte File Owner for %s' % (rev, ))
+                print('Couldn\'t Calcualte File Owner for %s' % (rev,))
             return None
 
     def _file_last_edit(self, filename):
@@ -859,7 +864,7 @@ class Repository(object):
         :return:
         """
 
-        tmp = self.repo.git.log('-n 1 -- %s' % (filename, )).split('\n')
+        tmp = self.repo.git.log('-n 1 -- %s' % (filename,)).split('\n')
         date_string = [x for x in tmp if x.startswith('Date:')]
 
         if len(date_string) > 0:
@@ -867,19 +872,25 @@ class Repository(object):
         else:
             return None
 
-    def file_detail(self, extensions=None, ignore_dir=None, rev='HEAD', committer=True):
+    def file_detail(self, include_globs=None, ignore_globs=None, rev='HEAD', committer=True):
         """
         Returns a table of all current files in the repos, with some high level information about each file (total LOC,
         file owner, extension, most recent edit date, etc.).
 
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :return:
         """
 
         # first get the blame
-        blame = self.blame(extensions=extensions, ignore_dir=ignore_dir, rev=rev, committer=committer, by='file')
+        blame = self.blame(
+            include_globs=include_globs,
+            ignore_globs=ignore_globs,
+            rev=rev,
+            committer=committer,
+            by='file'
+        )
         blame = blame.reset_index(level=1)
         blame = blame.reset_index(level=1)
 
@@ -902,7 +913,8 @@ class Repository(object):
 
         return df
 
-    def punchcard(self, branch='master', limit=None, extensions=None, ignore_dir=None, days=None, by=None, normalize=None, ignore_globs=None):
+    def punchcard(self, branch='master', limit=None, days=None, by=None, normalize=None, ignore_globs=None,
+                  include_globs=None):
         """
         Returns a pandas DataFrame containing all of the data for a punchcard.
 
@@ -916,16 +928,21 @@ class Repository(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param extensions: (optional, default=None) a list of file extensions to return commits for
-        :param ignore_dir: (optional, default=None) a list of directory names to ignore
         :param days: (optional, default=None) number of days to return, if limit is None
         :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author'
         :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, replaces extensions and ignore_dir
+        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
-        ch = self.commit_history(branch=branch, limit=limit, extensions=extensions, ignore_dir=ignore_dir, days=days, ignore_globs=ignore_globs)
+        ch = self.commit_history(
+            branch=branch,
+            limit=limit,
+            days=days,
+            ignore_globs=ignore_globs,
+            include_globs=include_globs
+        )
 
         # add in the date fields
         ch['day_of_week'] = ch.index.map(lambda x: x.weekday())
@@ -955,7 +972,6 @@ class GitFlowRepository(Repository):
     """
     A special case where git flow is followed, so we know something about the branching scheme
     """
+
     def __init__(self):
         super(GitFlowRepository, self).__init__()
-
-

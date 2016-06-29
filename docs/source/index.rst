@@ -6,7 +6,7 @@
 Git-Pandas
 ==========
 
-v1.2.0
+v2.0.0
 
 A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
 two primary objects:

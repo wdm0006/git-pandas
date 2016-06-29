@@ -11,11 +11,11 @@ if __name__ == '__main__':
     flask_repo = Repository(working_dir='git://github.com/mitsuhiko/flask.git')
 
     # do some blaming
-    flask_blame = flask_repo.blame(extensions=['py'])
+    flask_blame = flask_repo.blame(include_globs=['*.py'])
 
     # figure out committer count from each
-    flask_ch = flask_repo.commit_history('master', limit=None, extensions=['py'])
+    flask_ch = flask_repo.commit_history('master', limit=None, include_globs=['*.py'])
 
     print('\tflask committers: %d' % (len(set(flask_ch['committer'].values))))
     print('\tflask bus count:')
-    print(flask_repo.bus_factor(extensions=['py']))
+    print(flask_repo.bus_factor(include_globs=['*.py']))

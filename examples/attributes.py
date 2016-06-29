@@ -27,7 +27,7 @@ def repository():
     print('\nRepository Revisions:')
     print(r.revs())
     print('\nRepository Blame:')
-    print(r.blame(extensions=['py']))
+    print(r.blame(include_globs=['*.py']))
     print('\nRepository Is Bare:')
     print(r.is_bare())
 

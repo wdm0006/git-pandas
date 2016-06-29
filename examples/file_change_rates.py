@@ -6,5 +6,5 @@ __author__ = 'willmcginnis'
 
 if __name__ == '__main__':
     repo = Repository(working_dir=os.path.abspath('../../git-pandas'))
-    fc = repo.file_change_rates(extensions=['py'], coverage=True)
+    fc = repo.file_change_rates(include_globs=['*.py'], coverage=True)
     print(fc)

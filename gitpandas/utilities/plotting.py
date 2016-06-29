@@ -12,8 +12,9 @@ try:
     import matplotlib.pyplot as plt
     import matplotlib.style
     matplotlib.style.use('ggplot')
+    HAS_MPL = True
 except ImportError as e:
-    pass
+    HAS_MPL = False
 
 __author__ = 'willmcginnis'
 
@@ -27,6 +28,9 @@ def plot_punchcard(df, metric='lines', title='punchcard', by=None):
     :param title:
     :return:
     """
+
+    if not HAS_MPL:
+        raise ImportError('Must have matplotlib installed to use the plotting functions')
 
     # find how many plots we are making
     if by is not None:
@@ -75,6 +79,9 @@ def plot_cumulative_blame(df):
     :param df:
     :return:
     """
+
+    if not HAS_MPL:
+        raise ImportError('Must have matplotlib installed to use the plotting functions')
 
     ax = df.plot(kind='area', stacked=True)
     plt.title('Cumulative Blame')

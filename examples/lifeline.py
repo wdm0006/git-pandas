@@ -10,7 +10,7 @@ __author__ = 'willmcginnis'
 if __name__ == '__main__':
     threshold = 100
     repo = Repository(working_dir='git://github.com/scikit-learn/scikit-learn.git', verbose=True)
-    fch = repo.file_change_history(limit=None, extensions=['py'])
+    fch = repo.file_change_history(limit=None, include_globs=['*.py'])
 
     fch['file_owner'] = ''
     fch['refactor'] = 0
