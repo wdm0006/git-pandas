@@ -44,7 +44,7 @@ def project():
     print('\nProject Directory Revisions:')
     print(p.revs())
     print('\nProject Directory Blame:')
-    print(p.blame(extensions=['py']))
+    print(p.blame())
     print('\nProject Directory Is Bare:')
     print(p.is_bare())
 

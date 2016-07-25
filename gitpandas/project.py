@@ -410,12 +410,12 @@ class ProjectDirectory(object):
         df = pd.DataFrame(columns=['repository', 'local', 'branch'])
 
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
                 delayed(_branches_func)
                 (x) for x in self.repos
             )
             for d in ds:
-                df.append(d)
+                df = df.append(d)
         else:
             for repo in self.repos:
                 try:
@@ -452,12 +452,12 @@ class ProjectDirectory(object):
         df = pd.DataFrame(columns=['repository', 'rev'])
 
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
                 delayed(_revs_func)
                 (x, branch, limit, skip, num_datapoints) for x in self.repos
             )
             for d in ds:
-                df.append(d)
+                df = df.append(d)
         else:
             for repo in self.repos:
                 try:
@@ -566,12 +566,12 @@ class ProjectDirectory(object):
         df = pd.DataFrame(columns=['repository', 'tag'])
 
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
                 delayed(_tags_func)
                 (x) for x in self.repos
             )
             for d in ds:
-                df.append(d)
+                df = df.append(d)
         else:
             for repo in self.repos:
                 try:
