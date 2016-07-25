@@ -18,7 +18,19 @@ import warnings
 from git import GitCommandError
 from gitpandas.repository import Repository
 
+try:
+    from joblib import delayed, Parallel
+
+    _has_joblib = True
+except ImportError as e:
+    _has_joblib = False
+
 __author__ = 'willmcginnis'
+
+
+# Functions for joblib.
+def _branches_func(r):
+    return r.branches()
 
 
 class ProjectDirectory(object):
@@ -27,7 +39,7 @@ class ProjectDirectory(object):
     git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
     :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
-    :param ignore: (optional, default=None), a list of directories to ignore when searching for git repos.
+    :param ignore_repos: (optional, default=None), a list of directories to ignore when searching for git repos.
     :param verbose: (default=True), if True, will print out verbose logging to terminal
     :return:
     """
@@ -389,11 +401,19 @@ class ProjectDirectory(object):
 
         df = pd.DataFrame(columns=['repository', 'local', 'branch'])
 
-        for repo in self.repos:
-            try:
-                df = df.append(repo.branches())
-            except GitCommandError:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+        if _has_joblib:
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+                delayed(_branches_func)
+                (x) for x in self.repos
+            )
+            for d in ds:
+                df.append(d)
+        else:
+            for repo in self.repos:
+                try:
+                    df = df.append(_branches_func(repo))
+                except GitCommandError:
+                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
         df.reset_index()
 

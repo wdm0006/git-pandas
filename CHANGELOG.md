@@ -1,3 +1,10 @@
+v2.0.0
+======
+
+ * Fully transitioned to ignore_globs and include_globs style syntax
+ * Parallelized cumulative blame support with joblib threading backend
+ * Added threading parallelism to many project directory functions.
+ 
 v1.2.0
 ======
 
