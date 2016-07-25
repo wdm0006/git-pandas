@@ -33,6 +33,14 @@ def _branches_func(r):
     return r.branches()
 
 
+def _revs_func(repo, branch, limit, skip, num_datapoints):
+    return repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+
+
+def _tags_func(repo):
+    return repo.tags()
+
+
 class ProjectDirectory(object):
     """
     An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
@@ -443,13 +451,21 @@ class ProjectDirectory(object):
 
         df = pd.DataFrame(columns=['repository', 'rev'])
 
-        for repo in self.repos:
-            try:
-                revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
-                revs['repository'] = repo.repo_name
-                df = df.append(revs)
-            except GitCommandError:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+        if _has_joblib:
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+                delayed(_revs_func)
+                (x, branch, limit, skip, num_datapoints) for x in self.repos
+            )
+            for d in ds:
+                df.append(d)
+        else:
+            for repo in self.repos:
+                try:
+                    revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+                    revs['repository'] = repo.repo_name
+                    df = df.append(revs)
+                except GitCommandError:
+                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
         df.reset_index()
 
@@ -549,11 +565,19 @@ class ProjectDirectory(object):
 
         df = pd.DataFrame(columns=['repository', 'tag'])
 
-        for repo in self.repos:
-            try:
-                df = df.append(repo.tags())
-            except GitCommandError:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+        if _has_joblib:
+            ds = Parallel(n_jobs=-1, backend='threading', verbose=5)(
+                delayed(_tags_func)
+                (x) for x in self.repos
+            )
+            for d in ds:
+                df.append(d)
+        else:
+            for repo in self.repos:
+                try:
+                    df = df.append(repo.tags())
+                except GitCommandError:
+                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
         df.reset_index()
 
