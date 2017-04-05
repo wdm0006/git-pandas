@@ -17,7 +17,7 @@ import logging
 import tempfile
 import fnmatch
 import shutil
-
+import warnings
 import numpy as np
 from git import Repo, GitCommandError
 from pandas import DataFrame, to_datetime
@@ -53,17 +53,21 @@ class Repository(object):
     :return:
     """
 
-    def __init__(self, working_dir=None, verbose=False):
+    def __init__(self, working_dir=None, verbose=False, tmp_dir=None):
         self.verbose = verbose
         self.log = logging.getLogger('gitpandas')
         self.__delete_hook = False
         self._git_repo_name = None
         if working_dir is not None:
             if working_dir[:3] == 'git':
-                if self.verbose:
-                    print('cloning repository: %s into a temporary location' % (working_dir,))
+                # if a tmp dir is passed, clone into that, otherwise make a temp directory.
+                if tmp_dir is None:
+                    if self.verbose:
+                        print('cloning repository: %s into a temporary location' % (working_dir,))
+                    dir_path = tempfile.mkdtemp()
+                else:
+                    dir_path = tmp_dir
 
-                dir_path = tempfile.mkdtemp()
                 self.repo = Repo.clone_from(working_dir, dir_path)
                 self._git_repo_name = working_dir.split(os.sep)[-1].split('.')[0]
                 self.git_dir = dir_path
@@ -143,12 +147,22 @@ class Repository(object):
         ds = []
         for filename in cov['lines'].keys():
             idx = 0
-            with open(filename, 'r') as f:
-                for idx, _ in enumerate(f):
-                    pass
+            try:
+                with open(filename, 'r') as f:
+                    for idx, _ in enumerate(f):
+                        pass
+            except FileNotFoundError as e:
+                if self.verbose:
+                    warnings.warn('Could not find file %s for coverage' % (filename, ))
+
             num_lines = idx + 1
-            short_filename = filename.split(self.git_dir + os.sep)[1]
-            ds.append([short_filename, len(cov['lines'][filename]), num_lines])
+
+            try:
+                short_filename = filename.split(self.git_dir + os.sep)[1]
+                ds.append([short_filename, len(cov['lines'][filename]), num_lines])
+            except IndexError as e:
+                if self.verbose:
+                    warnings.warn('Could not find file %s for coverage' % (filename, ))
 
         df = DataFrame(ds, columns=['filename', 'lines_covered', 'total_lines'])
         df['coverage'] = df['lines_covered'] / df['total_lines']
@@ -442,7 +456,7 @@ class Repository(object):
                     lambda x: np.ceil(x.seconds / (24 * 3600) + 0.01))
             except AttributeError as e:
                 file_history['delta_days'] = file_history['delta_time'].map(
-                    lambda x: np.ceil((float(x.item()) * 10e-6) / (24 * 3600) + 0.01))
+                    lambda x: np.ceil((float(x.total_seconds()) * 10e-6) / (24 * 3600) + 0.01))
 
             # calculate metrics
             file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
