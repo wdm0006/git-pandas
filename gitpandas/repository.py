@@ -20,6 +20,7 @@ import shutil
 import warnings
 import numpy as np
 from git import Repo, GitCommandError
+from gitpandas.cache import multicache, EphemeralCache, RedisDFCache
 from pandas import DataFrame, to_datetime
 
 try:
@@ -53,11 +54,12 @@ class Repository(object):
     :return:
     """
 
-    def __init__(self, working_dir=None, verbose=False, tmp_dir=None):
+    def __init__(self, working_dir=None, verbose=False, tmp_dir=None, cache_backend=None):
         self.verbose = verbose
         self.log = logging.getLogger('gitpandas')
         self.__delete_hook = False
         self._git_repo_name = None
+        self.cache_backend = cache_backend
         if working_dir is not None:
             if working_dir[:3] == 'git':
                 # if a tmp dir is passed, clone into that, otherwise make a temp directory.
@@ -511,6 +513,11 @@ class Repository(object):
 
         return out
 
+    @multicache(
+        key_prefix='blame',
+        key_list=['rev', 'committer', 'by', 'ignore_blobs', 'include_globs'],
+        skip_if=lambda x: True if x.get('rev') is None or x.get('rev') == 'HEAD' else False
+    )
     def blame(self, rev='HEAD', committer=True, by='repository', ignore_globs=None, include_globs=None):
         """
         Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
