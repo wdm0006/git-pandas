@@ -51,6 +51,7 @@ Contents:
 
    repository
    project
+   cache
    usecases
    contributors
 

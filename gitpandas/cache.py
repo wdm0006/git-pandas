@@ -41,6 +41,10 @@ class CacheMissException(Exception):
 
 
 class EphemeralCache():
+    """
+    An in-memory ephemeral cache. Basically just a dictionary of saved results.
+
+    """
     def __init__(self):
         self._cache = dict()
 
@@ -58,6 +62,16 @@ class EphemeralCache():
 
 
 class RedisDFCache():
+    """
+    A redis based cache, using redis-py under the hood.
+
+    :param host: default localhost
+    :param port: default 6379
+    :param db: the database to use, default 12
+    :param max_keys: the max number of keys to cache, default 1000
+    :param ttl: time to live for any cached results, default None
+    :param kwargs: additional options available to redis.StrictRedis
+    """
     def __init__(self, host='localhost', port=6379, db=12, max_keys=1000, ttl=None, **kwargs):
         if not _HAS_REDIS:
             raise ImportError('Need redis installed to use redis cache')

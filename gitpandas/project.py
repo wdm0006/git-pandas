@@ -49,6 +49,9 @@ class ProjectDirectory(object):
     :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
     :param ignore_repos: (optional, default=None), a list of directories to ignore when searching for git repos.
     :param verbose: (default=True), if True, will print out verbose logging to terminal
+    :param verbose: optional, verbosity level of output, bool
+    :param tmp_dir: optional, a path to clone the repo into if necessary. Will create one if none passed.
+    :param cache_backend: optional, an instantiated cache backend from gitpandas.cache
     :return:
     """
     def __init__(self, working_dir=None, ignore_repos=None, verbose=True, tmp_dir=None, cache_backend=None):

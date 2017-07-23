@@ -36,6 +36,9 @@ Current functionality includes:
 Please see examples for more detailed usage. The image above is generated using the repository object's cumulative blame
 function on stravalib.
 
+Many of these functions are fairly intensive to run, so we also now 
+support optional memory or redis based caching of certain methods. 
+
 
 Installation
 ------------

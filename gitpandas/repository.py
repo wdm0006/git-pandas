@@ -51,6 +51,9 @@ class Repository(object):
     gitpython Repo instance.
 
     :param working_dir: the directory of the git repository, meaning a .git directory is in it (default None=cwd)
+    :param verbose: optional, verbosity level of output, bool
+    :param tmp_dir: optional, a path to clone the repo into if necessary. Will create one if none passed.
+    :param cache_backend: optional, an instantiated cache backend from gitpandas.cache
     :return:
     """
 
@@ -893,6 +896,11 @@ class Repository(object):
         else:
             return None
 
+    @multicache(
+        key_prefix='file_detail',
+        key_list=['include_globs', 'ignore_globs', 'rev', 'committer'],
+        skip_if=lambda x: True if x.get('rev') is None or x.get('rev') == 'HEAD' else False
+    )
     def file_detail(self, include_globs=None, ignore_globs=None, rev='HEAD', committer=True):
         """
         Returns a table of all current files in the repos, with some high level information about each file (total LOC,
