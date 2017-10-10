@@ -175,7 +175,7 @@ class Repository(object):
         return df
 
     def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, days=None,
-                       committer=True, ignore_globs=None, include_globs=None):
+                       committer=True, ignore_globs=None, include_globs=None, commit_history=None):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -189,7 +189,8 @@ class Repository(object):
         :param days: (optional, default=None) number of days to return, if limit is None
         :param committer: (optional, default=True) whether to use committer vs. author
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
+        :param commit_history: (optional, default=None) the result of commit_history to work on, otherwise generates it
         :return: DataFrame
         """
 
@@ -197,8 +198,11 @@ class Repository(object):
         first_commit_addition_in_minutes = single_commit_hours * 60.0
 
         # First get the commit history
-        ch = self.commit_history(branch=branch, limit=limit, days=days, ignore_globs=ignore_globs,
-                                 include_globs=include_globs)
+        if commit_history is None:
+            ch = self.commit_history(branch=branch, limit=limit, days=days, ignore_globs=ignore_globs,
+                                     include_globs=include_globs)
+        else:
+            ch = commit_history
 
         # split by committer|author
         if committer:
@@ -250,7 +254,7 @@ class Repository(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param days: (optional, default=None) number of days to return, if limit is None
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -333,7 +337,7 @@ class Repository(object):
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param days: (optional, default=None) number of days to return if limit is None
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -398,7 +402,7 @@ class Repository(object):
         return df
 
     def file_change_rates(self, branch='master', limit=None, coverage=False, days=None, ignore_globs=None,
-                          include_globs=None):
+                          include_globs=None, file_change_history=None):
         """
         This function will return a DataFrame containing some basic aggregations of the file change history data, and
         optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
@@ -410,17 +414,21 @@ class Repository(object):
         :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
         :param days: (optional, default=None) number of days to return if limit is None
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
+        :param file_change_history: (optional, default=None) the result of file_change_history to work on, otherwise generates it
         :return: DataFrame
         """
 
-        fch = self.file_change_history(
-            branch=branch,
-            limit=limit,
-            days=days,
-            ignore_globs=ignore_globs,
-            include_globs=include_globs
-        )
+        if file_change_history is None:
+            fch = self.file_change_history(
+                branch=branch,
+                limit=limit,
+                days=days,
+                ignore_globs=ignore_globs,
+                include_globs=include_globs
+            )
+        else:
+            fch = file_change_history
         fch.reset_index(level=0, inplace=True)
 
         if fch.shape[0] > 0:
@@ -535,7 +543,7 @@ class Repository(object):
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :param by: (optional, default=repository) whether to group by repository or by file
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
 
@@ -630,7 +638,7 @@ class Repository(object):
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
 
         """
@@ -698,7 +706,7 @@ class Repository(object):
         :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
         :param committer: (optional, defualt=True) true if committer should be reported, false if author
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :param workers: (optional, default=1) integer, the number of workers to use in the threadpool, -1 for one per core.
         :return: DataFrame
 
@@ -833,7 +841,7 @@ class Repository(object):
         least 50% of the codebase's LOC
 
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :param by: (optional, default=repository) whether to group by repository or by file
         :return:
         """
@@ -907,7 +915,7 @@ class Repository(object):
         file owner, extension, most recent edit date, etc.).
 
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
         :param committer: (optional, default=True) true if committer should be reported, false if author
         :return:
         """
@@ -961,17 +969,21 @@ class Repository(object):
         :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author'
         :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param include_globs: (optional, default=None) a list of globs to include, default of None includes everything.
+        :param commit_history: (optional, default=None) the result of commit_history to work on, otherwise generates it
         :return: DataFrame
         """
 
-        ch = self.commit_history(
-            branch=branch,
-            limit=limit,
-            days=days,
-            ignore_globs=ignore_globs,
-            include_globs=include_globs
-        )
+        if commit_history is None:
+            ch = self.commit_history(
+                branch=branch,
+                limit=limit,
+                days=days,
+                ignore_globs=ignore_globs,
+                include_globs=include_globs
+            )
+        else:
+            ch = commit_history
 
         # add in the date fields
         ch['day_of_week'] = ch.index.map(lambda x: x.weekday())
