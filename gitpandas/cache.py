@@ -89,8 +89,8 @@ class RedisDFCache():
             key = self._key_list.pop(0)
             self._cache.delete(key)
 
-    def set(self, k, v):
-        k = self.prefix + k
+    def set(self, orik, v):
+        k = self.prefix + orik
         try:
             idx = self._key_list.index(k)
             self._key_list.pop(idx)
@@ -103,9 +103,9 @@ class RedisDFCache():
         if len(self._key_list) > self._max_keys:
             self.evict(len(self._key_list) - self._max_keys)
 
-    def get(self, k):
-        k = self.prefix + k
-        if self.exists(k):
+    def get(self, orik):
+        k = self.prefix + orik
+        if self.exists(orik):
             return pd.read_msgpack(self._cache.get(k))
         else:
             try:
