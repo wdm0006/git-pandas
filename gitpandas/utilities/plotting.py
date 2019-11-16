@@ -43,7 +43,7 @@ def plot_punchcard(df, metric='lines', title='punchcard', by=None):
         else:
             sub_df = df
         fig = plt.figure(figsize=(8, title and 3 or 2.5), facecolor='#ffffff')
-        ax = fig.add_subplot('111', axisbg='#ffffff')
+        ax = fig.add_subplot('111', facecolor='#ffffff')
         fig.subplots_adjust(left=0.06, bottom=0.04, right=0.98, top=0.95)
         if by is not None:
             ax.set_title(title + ' (%s)' % (str(val), ), y=0.96).set_color('#333333')
