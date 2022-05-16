@@ -3,6 +3,8 @@ from gitpandas import ProjectDirectory, Repository
 import numpy as np
 from pandas import set_option
 
+from definitions import GIT_PANDAS_DIR
+
 __author__ = 'willmcginnis'
 
 
@@ -80,11 +82,10 @@ def repository(path):
     print(etns)
 
 if __name__ == '__main__':
-    set_option('display.height', 1000)
     set_option('display.max_rows', 500)
     set_option('display.max_columns', 500)
     set_option('display.width', 1000)
 
-    path = os.path.abspath('../../git-pandas')
+    path = os.path.abspath(GIT_PANDAS_DIR)
     project(path)
     repository(path)

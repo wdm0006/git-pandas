@@ -920,13 +920,13 @@ class Repository(object):
             committer=committer,
             by='file'
         )
-        blame = blame.reset_index(level=1)
-        blame = blame.reset_index(level=1)
+        blame = blame.reset_index(level=-1)
+        blame = blame.reset_index(level=-1)
 
         # reduce it to files and total LOC
         df = blame.reindex(columns=['file', 'loc'])
         df = df.groupby('file').agg({'loc': np.sum})
-        df = df.reset_index(level=1)
+        df = df.reset_index(level=-1)
 
         # map in file owners
         df['file_owner'] = df['file'].map(lambda x: self.file_owner(rev, x, committer=committer))

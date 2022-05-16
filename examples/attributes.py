@@ -50,7 +50,6 @@ def project():
 
 
 if __name__ == '__main__':
-    set_option('display.height', 1000)
     set_option('display.max_rows', 500)
     set_option('display.max_columns', 500)
     set_option('display.width', 1000)

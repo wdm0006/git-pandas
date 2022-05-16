@@ -1,14 +1,14 @@
 import os
 from gitpandas.repository import Repository
 
+from definitions import GIT_PANDAS_DIR
+
 __author__ = 'willmcginnis'
 
-# get the path of this repo
-path = os.path.abspath('../../git-pandas')
 
 # build an example repository object and try some things out
 ignore_dirs = ['tests/*']
-r = Repository(path, verbose=True)
+r = Repository(GIT_PANDAS_DIR, verbose=True)
 
 # get the hours estimate for this repository (using 30 mins per commit)
 he = r.hours_estimate(

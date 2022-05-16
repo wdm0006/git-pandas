@@ -30,7 +30,12 @@ setup(
     install_requires=[
         'gitpython>=1.0.0',
         'numpy>=1.9.0',
-        'pandas>=0.16.0'
+        'pandas>=0.16.0',
+        'requests',
+        'redis'
     ],
+    extras_require={
+        'examples': ['matplotlib', 'lifelines'],
+    },
     author_email='will@pedalwrencher.com'
 )
