@@ -21,11 +21,11 @@ if __name__ == '__main__':
 
     # add in the file owner and whether or not each item is a refactor
     for idx, row in fch.iterrows():
-        fch.set_value(idx, 'file_owner', repo.file_owner(row.rev, row.filename))
+        fch.at(idx, 'file_owner', repo.file_owner(row.rev, row.filename))
         if abs(row.insertions - row.deletions) > threshold:
-            fch.set_value(idx, 'refactor', 1)
+            fch.at(idx, 'refactor', 1)
         else:
-            fch.set_value(idx, 'refactor', 0)
+            fch.at(idx, 'refactor', 0)
 
     # add in the time since column
     fch['time_until_refactor'] = 0
@@ -34,10 +34,10 @@ if __name__ == '__main__':
         chunk = fch[(fch['timestamp'] > row.timestamp) & (fch['refactor'] == 1) & (fch['filename'] == row.filename)]
         if chunk.shape[0] > 0:
             ts = chunk['timestamp'].min()
-            fch.set_value(idx, 'observed', True)
+            fch.at(idx, 'observed', True)
         else:
             ts = fch['timestamp'].max()
-        fch.set_value(idx, 'time_until_refactor', ts - row.timestamp)
+        fch.at(idx, 'time_until_refactor', ts - row.timestamp)
 
     # fch.to_csv('lifelines_data_t_%s.csv' % (threshold, ))
     # fch = pd.read_csv('lifelines_data_t_%s.csv' % (threshold, ))

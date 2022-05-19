@@ -659,7 +659,7 @@ class Repository(object):
             for y in committers:
                 try:
                     loc = blame.loc[y, 'loc']
-                    revs.set_value(idx, y, loc)
+                    revs.at(idx, y, loc)
                 except KeyError:
                     pass
 
