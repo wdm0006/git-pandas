@@ -786,7 +786,24 @@ class Repository(object):
         """
 
         tags = self.repo.tags
-        df = DataFrame([x.name for x in list(tags)], columns=['tag'])
+        tags_meta = []
+        for tag in tags:
+            annotated = False
+            annotation = ""
+            if tag.tag:
+                tag_thyme = tag.tag.tagged_date
+                annotated = True
+                annotation = tag.tag.message
+            else:
+                tag_thyme = tag.commit.committed_date
+            commit_thyme = tag.commit.committed_date
+            tag_thyme = datetime.datetime.utcfromtimestamp(tag_thyme)
+            commit_thyme = datetime.datetime.utcfromtimestamp(commit_thyme)
+            tags_meta.append(
+                dict(tag=tag.name, tag_dt=tag_thyme, commit_dt=commit_thyme, annotated=annotated,
+                     annotation=annotation)
+            )
+        df = DataFrame(tags_meta)
         df['repository'] = self._repo_name()
 
         return df
