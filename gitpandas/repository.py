@@ -610,10 +610,10 @@ class Repository(object):
                 skip = 1
 
             if df.shape[0] >= skip:
-                df = df.ix[range(0, df.shape[0], skip)]
+                df = df.iloc[range(0, df.shape[0], skip)]
                 df.reset_index()
             else:
-                df = df.ix[[0]]
+                df = df.iloc[[0]]
                 df.reset_index()
 
         return df
@@ -682,7 +682,7 @@ class Repository(object):
             if sum([row[x] for x in committers]) > 0:
                 keep_idx.append(idx)
 
-        revs = revs.ix[keep_idx]
+        revs = revs.loc[keep_idx]
 
         return revs
 
@@ -741,7 +741,7 @@ class Repository(object):
             if sum([row[x] for x in committers]) > 0:
                 keep_idx.append(idx)
 
-        revs = revs.ix[keep_idx]
+        revs = revs.iloc[keep_idx]
         revs.sort_index(ascending=False, inplace=True)
 
         return revs
@@ -865,7 +865,7 @@ class Repository(object):
         cumulative = 0
         tc = 0
         for idx in range(blame.shape[0]):
-            cumulative += blame.ix[idx, 'loc']
+            cumulative += blame.iloc[idx]["loc"]
             tc += 1
             if cumulative >= total / 2:
                 break
