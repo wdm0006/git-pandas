@@ -310,7 +310,7 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
+        df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         return df
@@ -392,7 +392,7 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'].map(datetime.datetime.fromtimestamp))
+        df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         return df
@@ -665,7 +665,7 @@ class Repository(object):
 
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'].map(datetime.datetime.fromtimestamp))
+        revs['date'] = to_datetime(revs['date'], unit="s").dt.tz_localize("UTC")
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -724,7 +724,7 @@ class Repository(object):
         revs = DataFrame(ds)
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'].map(datetime.datetime.fromtimestamp))
+        revs['date'] = to_datetime(revs['date'], unit="s").dt.tz_localize("UTC")
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -797,13 +797,13 @@ class Repository(object):
             else:
                 tag_thyme = tag.commit.committed_date
             commit_thyme = tag.commit.committed_date
-            tag_thyme = datetime.datetime.utcfromtimestamp(tag_thyme)
-            commit_thyme = datetime.datetime.utcfromtimestamp(commit_thyme)
             tags_meta.append(
                 dict(tag=tag.name, tag_dt=tag_thyme, commit_dt=commit_thyme, annotated=annotated,
                      annotation=annotation)
             )
         df = DataFrame(tags_meta)
+        df['tag_dt'] = to_datetime(df['tag_dt'], unit="s").dt.tz_localize("UTC")
+        df['commit_dt'] = to_datetime(df['commit_dt'], unit="s").dt.tz_localize("UTC")
         df['repository'] = self._repo_name()
 
         return df
@@ -953,7 +953,7 @@ class Repository(object):
 
         # add in last edit date for the file
         df['last_edit_date'] = df['file'].map(self._file_last_edit)
-        df['last_edit_date'] = to_datetime(df['last_edit_date'])
+        df['last_edit_date'] = to_datetime(df['last_edit_date']).dt.tz_localize("UTC")
 
         df = df.set_index('file')
 
