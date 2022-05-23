@@ -395,7 +395,7 @@ class ProjectDirectory(object):
             except GitCommandError:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
 
-        df = df.reset_index(level=1)
+        df = df.reset_index(level=-1)
         df = df.set_index(['file', 'repository'])
         return df
 

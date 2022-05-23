@@ -5,7 +5,9 @@
 from gitpandas.utilities.plotting import plot_punchcard
 from gitpandas import ProjectDirectory
 
-g = ProjectDirectory(working_dir=[...], verbose=True)
+from definitions import GIT_PANDAS_DIR
+
+g = ProjectDirectory(working_dir=[str(GIT_PANDAS_DIR)], verbose=True)
 
 by = None
 punchcard = g.punchcard(branch='master', include_globs=['*.py'], by=by, normalize=2500)
