@@ -762,11 +762,11 @@ class Repository(object):
         data = [[x.name, True] for x in list(local_branches)]
 
         # then the remotes
-        remote_branches = self.repo.git.branch(all=True).split('\n')
-        if sys.version_info.major == 2:
-            remote_branches = set([x.split('/')[-1] for x in remote_branches if 'remotes' in x])
-        else:
-            remote_branches = {x.split('/')[-1] for x in remote_branches if 'remotes' in x}
+        remotes_branches = self.repo.git.branch('-r').replace(" ", "").split("->")[-1].splitlines()
+        for i, remote in enumerate(remotes_branches):
+            if remote.startswith("origin/"):
+                remotes_branches[i] = remote.lstrip("origin/")
+        remote_branches = set(remotes_branches)
 
         data += [[x, False] for x in remote_branches]
 
@@ -775,36 +775,64 @@ class Repository(object):
 
         return df
 
+    def get_branches_by_commit(self, commit):
+        """
+        Lookup all branches a commit belongs to and returns a DataFrame of said branches.
+
+         * repository
+         * branch
+         * local
+
+        :param commit: the commit to lookup
+
+        :returns: DataFrame
+        """
+        branches = self.repo.git.branch('--contains', commit).replace(" ", "").lstrip("*").splitlines()
+        df = DataFrame(branches, columns=["branch"])
+        df['repository'] = self._repo_name()
+
+        return df
+
     def tags(self):
         """
         Returns a data frame of all tags in origin.  The DataFrame will have the columns:
 
-         * repository
+         * tag_date (index)
+         * commit_date (index)
          * tag
+         * annotated
+         * annotation
+         * repository
 
         :returns: DataFrame
         """
 
         tags = self.repo.tags
         tags_meta = []
+        cols = ["tag_date", "commit_date", "tag", "annotated", "annotation"]
         for tag in tags:
-            annotated = False
-            annotation = ""
+            d = dict.fromkeys(cols)
             if tag.tag:
-                tag_thyme = tag.tag.tagged_date
+                tag_dt = tag.tag.tagged_date
                 annotated = True
                 annotation = tag.tag.message
             else:
-                tag_thyme = tag.commit.committed_date
-            commit_thyme = tag.commit.committed_date
-            tags_meta.append(
-                dict(tag=tag.name, tag_dt=tag_thyme, commit_dt=commit_thyme, annotated=annotated,
-                     annotation=annotation)
-            )
-        df = DataFrame(tags_meta)
-        df['tag_dt'] = to_datetime(df['tag_dt'], unit="s").dt.tz_localize("UTC")
-        df['commit_dt'] = to_datetime(df['commit_dt'], unit="s").dt.tz_localize("UTC")
+                tag_dt = tag.commit.committed_date
+                annotated = False
+                annotation = ""
+            d["tag_date"] = tag_dt
+            d["commit_date"] = tag.commit.committed_date
+            d["tag"] = tag.name
+            d["annotated"] = annotated
+            d["annotation"] = annotation
+            tags_meta.append(cols)
+        df = DataFrame(tags_meta, columns=cols)
+
+        df['tag_date'] = to_datetime(df['tag_date'], unit="s").dt.tz_localize("UTC")
+        df['commit_date'] = to_datetime(df['commit_date'], unit="s").dt.tz_localize("UTC")
         df['repository'] = self._repo_name()
+
+        df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)
 
         return df
 
