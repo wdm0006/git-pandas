@@ -241,10 +241,12 @@ class Repository(object):
          * author
          * committer
          * message
+         * commit_sha
          * lines
          * insertions
          * deletions
          * net
+         * repository
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
@@ -262,6 +264,7 @@ class Repository(object):
                           x.committer.name,
                           x.committed_date,
                           x.message,
+                          x.hexsha,
                           self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                       ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
             else:
@@ -284,6 +287,7 @@ class Repository(object):
                             x.committer.name,
                             x.committed_date,
                             x.message,
+                            x.hexsha,
                             self.__check_extension(x.stats.files, ignore_globs=ignore_globs,
                                                    include_globs=include_globs)
                         ])
@@ -307,11 +311,14 @@ class Repository(object):
 
         # make it a pandas dataframe
         df = DataFrame(ds,
-                       columns=['author', 'committer', 'date', 'message', 'lines', 'insertions', 'deletions', 'net'])
+                       columns=['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
         df.set_index(keys=['date'], drop=True, inplace=True)
+
+        df['branch'] = branch
+        df['repository'] = self._repo_name()
 
         return df
 
@@ -789,9 +796,48 @@ class Repository(object):
         """
         branches = self.repo.git.branch('--contains', commit).replace(" ", "").lstrip("*").splitlines()
         df = DataFrame(branches, columns=["branch"])
+        df["commit"] = str(commit)
         df['repository'] = self._repo_name()
 
         return df
+
+    def commits_in_tag(self, commit, days=180):
+        df_tags = self.tags()
+        commits = [self._commits_per_tag_helper(commit, df_tags)]
+        if days:
+            dlim = time.time() - days * 24 * 3600
+        else:
+            dlim = None
+        self._commits_per_tag_recursive(commit=commit, df_tags=df_tags, commits=commits, dlim=dlim)
+        df = DataFrame(commits)
+        df["commit_date"] = to_datetime(df['commit_date'], unit="s").dt.tz_localize("UTC")
+        df['repository'] = self._repo_name()
+
+        return df
+
+    def _commits_per_tag_recursive(self, commit, df_tags, commits=None, tag=None, checked_commits=None, dlim=None):
+        commits = commits if commits is not None else []
+        checked_commits = checked_commits if checked_commits is not None else set()
+
+        for commit in commit.parents:
+            if dlim and commit.committed_date < dlim:
+                break
+            if str(commit) in checked_commits:
+                continue
+            else:
+                checked_commits.add(str(commit))
+            commit_meta = self._commits_per_tag_helper(commit=commit, df_tags=df_tags, tag=tag)
+            tag = commit_meta["tag"]
+            commits.append(commit_meta)
+            self._commits_per_tag_recursive(commit=commit, df_tags=df_tags, commits=commits, tag=tag, checked_commits=checked_commits, dlim=dlim)
+
+    def _commits_per_tag_helper(self, commit, df_tags, tag=None):
+        tag_pd = df_tags.loc[df_tags.commit_sha.str.contains(str(commit))].tag
+        if not tag_pd.empty:
+            tag = tag_pd[0]
+        branches = self.get_branches_by_commit(commit)["branch"].to_numpy()
+
+        return dict(commit_sha=str(commit), tag=tag, commit_date=commit.committed_date, branches=branches)
 
     def tags(self):
         """
@@ -809,23 +855,23 @@ class Repository(object):
 
         tags = self.repo.tags
         tags_meta = []
-        cols = ["tag_date", "commit_date", "tag", "annotated", "annotation"]
+        cols = ["tag_date", "commit_date", "tag", "annotated", "annotation", "tag_sha", "commit_sha"]
         for tag in tags:
             d = dict.fromkeys(cols)
             if tag.tag:
-                tag_dt = tag.tag.tagged_date
-                annotated = True
-                annotation = tag.tag.message
+                d["tag_date"] = tag.tag.tagged_date
+                d["annotated"] = True
+                d["annotation"] = tag.tag.message
+                d["tag_sha"] = tag.tag.hexsha
             else:
-                tag_dt = tag.commit.committed_date
-                annotated = False
-                annotation = ""
-            d["tag_date"] = tag_dt
+                d["tag_date"] = tag.commit.committed_date
+                d["annotated"] = False
+                d["annotation"] = ""
+                d["tag_sha"] = None
             d["commit_date"] = tag.commit.committed_date
             d["tag"] = tag.name
-            d["annotated"] = annotated
-            d["annotation"] = annotation
-            tags_meta.append(cols)
+            d["commit_sha"] = tag.commit.hexsha
+            tags_meta.append(d)
         df = DataFrame(tags_meta, columns=cols)
 
         df['tag_date'] = to_datetime(df['tag_date'], unit="s").dt.tz_localize("UTC")
