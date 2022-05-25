@@ -826,6 +826,8 @@ class Repository(object):
             can be a pd.Timestamp, or a np.timedelta or pd.Timedelta
             (which then calculates from today)
         :type end: pd.Timestamp | np.timedelta | pd.Timedelta
+
+        :returns: DataFrame
         """
 
         # If we pass in a timedelta instead of a timestamp, calc the timestamp relative to now

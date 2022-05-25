@@ -557,6 +557,27 @@ class ProjectDirectory(object):
 
         return global_blame
 
+    def commits_in_tags(self, **kwargs):
+        """
+        Analyze each tag, and trace backwards from the tag to all commits that make
+        up that tag. This method looks at the commit for the tag, and then works
+        backwards to that commits parents, and so on and so, until it hits another
+        tag, is out of the time range, or hits the root commit. It returns a DataFrame
+        with the branches:
+
+        :param kwargs: kwargs to pass to ``Repository.commits_in_tags``
+
+        :returns: DataFrame
+        """
+        dfs = []
+        for repo in self.repos:
+            try:
+                dfs.append(repo.commits_in_tags(**kwargs))
+            except GitCommandError as e:
+                print(f"Warning! Repo: {repo} couldn't be inspected because of {e!r}")
+        df = pd.concat(dfs)
+        return df
+
     def tags(self):
         """
         Returns a data frame of all tags in origin.  The DataFrame will have the columns:
@@ -567,24 +588,20 @@ class ProjectDirectory(object):
         :returns: DataFrame
         """
 
-        df = pd.DataFrame(columns=['repository', 'tag'])
-
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
+            dfs = Parallel(n_jobs=-1, backend='threading', verbose=0)(
                 delayed(_tags_func)
                 (x) for x in self.repos
             )
-            for d in ds:
-                df = pd.concat([df, d])
         else:
+            dfs = []
             for repo in self.repos:
                 try:
-                    df = pd.concat([df, repo.tags()])
+                    dfs.append(repo.tags())
+                    # df = pd.concat([df, repo.tags()])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-
-        df.reset_index()
-
+        df = pd.concat(dfs)
         return df
 
     def repo_information(self):
