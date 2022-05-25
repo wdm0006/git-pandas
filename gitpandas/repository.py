@@ -55,15 +55,17 @@ class Repository(object):
     :param verbose: optional, verbosity level of output, bool
     :param tmp_dir: optional, a path to clone the repo into if necessary. Will create one if none passed.
     :param cache_backend: optional, an instantiated cache backend from gitpandas.cache
+    :param labels_to_add: (optional, default=None), extra labels to add to outputted dataframes
     :return:
     """
 
-    def __init__(self, working_dir=None, verbose=False, tmp_dir=None, cache_backend=None):
+    def __init__(self, working_dir=None, verbose=False, tmp_dir=None, cache_backend=None, labels_to_add=None):
         self.verbose = verbose
         self.log = logging.getLogger('gitpandas')
         self.__delete_hook = False
         self._git_repo_name = None
         self.cache_backend = cache_backend
+        self._labels_to_add = labels_to_add or []
         if working_dir is not None:
             if working_dir[:3] == 'git':
                 # if a tmp dir is passed, clone into that, otherwise make a temp directory.
@@ -172,6 +174,7 @@ class Repository(object):
 
         df = DataFrame(ds, columns=['filename', 'lines_covered', 'total_lines'])
         df['coverage'] = df['lines_covered'] / df['total_lines']
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -230,6 +233,7 @@ class Repository(object):
             ds.append([person, hours])
 
         df = DataFrame(ds, columns=[by, 'hours'])
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -319,7 +323,7 @@ class Repository(object):
         df.set_index(keys=['date'], drop=True, inplace=True)
 
         df['branch'] = branch
-        df['repository'] = self._repo_name()
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -402,6 +406,7 @@ class Repository(object):
         # format the date col and make it the index
         df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
         df.set_index(keys=['date'], drop=True, inplace=True)
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -490,6 +495,8 @@ class Repository(object):
             file_history = DataFrame(
                 columns=['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change',
                          'edit_rate'])
+
+        file_history = self._add_labels_to_df(file_history)
 
         return file_history
 
@@ -584,6 +591,8 @@ class Repository(object):
                     columns=['author', 'loc', 'file']
                 ).groupby(['author', 'file']).agg({'loc': np.sum})
 
+        blames = self._add_labels_to_df(blames)
+
         return blames
 
     def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
@@ -623,6 +632,8 @@ class Repository(object):
             else:
                 df = df.iloc[[0]]
                 df.reset_index()
+
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -781,7 +792,7 @@ class Repository(object):
         data += [[x, False] for x in remote_branches]
 
         df = DataFrame(data, columns=['branch', 'local'])
-        df['repository'] = self._repo_name()
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -800,7 +811,7 @@ class Repository(object):
         branches = self.repo.git.branch('-a', '--contains', commit).replace(" ", "").lstrip("*").splitlines()
         df = DataFrame(branches, columns=["branch"])
         df["commit"] = str(commit)
-        df['repository'] = self._repo_name()
+        df = self._add_labels_to_df(df)
 
         return df
 
@@ -869,7 +880,7 @@ class Repository(object):
             self._commits_per_tags_recursive(commit=commit, df_tags=df_tags, ds=ds, start=start, end=end,
                                              checked_commits=checked_commits, tag=tag)
         df = pd.DataFrame(ds)
-        df['repository'] = self._repo_name()
+        df = self._add_labels_to_df(df)
 
         df = df.sort_values(by=["tag", "commit_date"])
         df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)
@@ -952,7 +963,7 @@ class Repository(object):
 
         df['tag_date'] = to_datetime(df['tag_date'], unit="s").dt.tz_localize("UTC")
         df['commit_date'] = to_datetime(df['commit_date'], unit="s").dt.tz_localize("UTC")
-        df['repository'] = self._repo_name()
+        df = self._add_labels_to_df(df)
 
         df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)
         df = df.sort_index(level=["tag_date", "commit_date"])
@@ -977,6 +988,12 @@ class Repository(object):
             if reponame.strip() == '':
                 return 'unknown_repo'
             return reponame
+
+    def _add_labels_to_df(self, df):
+        df['repository'] = self._repo_name()
+        for i, label in enumerate(self._labels_to_add):
+            df[f"label{i}"] = label
+        return df
 
     def __str__(self):
         """
@@ -1104,9 +1121,10 @@ class Repository(object):
 
         # add in last edit date for the file
         df['last_edit_date'] = df['file'].map(self._file_last_edit)
-        df['last_edit_date'] = to_datetime(df['last_edit_date']).dt.tz_localize("UTC")
+        df['last_edit_date'] = to_datetime(df['last_edit_date'])
 
         df = df.set_index('file')
+        df = self._add_labels_to_df(df)
 
         return df
 

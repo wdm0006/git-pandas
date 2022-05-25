@@ -46,7 +46,9 @@ class ProjectDirectory(object):
     An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
     git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
-    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
+    :param working_dir: (optional, default=None), the working directory to search for repositories in,
+        None for cwd, an explicit list of directories containing git repositories,
+        or a list of ``Repository`` instances
     :param ignore_repos: (optional, default=None), a list of directories to ignore when searching for git repos.
     :param verbose: (default=True), if True, will print out verbose logging to terminal
     :param verbose: optional, verbosity level of output, bool
@@ -62,7 +64,11 @@ class ProjectDirectory(object):
         else:
             self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(working_dir) if '.git' in x[0]])
 
-        self.repos = [Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend) for r in self.repo_dirs]
+        if all(isinstance(r, Repository) for r in self.repo_dirs):
+            self.repos = self.repo_dirs
+        else:
+            self.repos = [Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend)
+                          for r in self.repo_dirs]
 
         if ignore_repos is not None:
             self.repos = [x for x in self.repos if x.repo_name not in ignore_repos]
