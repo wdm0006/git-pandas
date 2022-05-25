@@ -19,6 +19,7 @@ import fnmatch
 import shutil
 import warnings
 import numpy as np
+import pandas as pd
 from git import Repo, GitCommandError
 from gitpandas.cache import multicache, EphemeralCache, RedisDFCache
 from pandas import DataFrame, to_datetime
@@ -769,11 +770,13 @@ class Repository(object):
         data = [[x.name, True] for x in list(local_branches)]
 
         # then the remotes
-        remotes_branches = self.repo.git.branch('-r').replace(" ", "").split("->")[-1].splitlines()
-        for i, remote in enumerate(remotes_branches):
-            if remote.startswith("origin/"):
-                remotes_branches[i] = remote.lstrip("origin/")
-        remote_branches = set(remotes_branches)
+        remote_branches = self.repo.git.branch('-r').replace(" ", "").splitlines()
+        rb = []
+        for i, remote in enumerate(remote_branches):
+            if "->" in remote:
+                continue
+            rb.append(remote)
+        remote_branches = set(rb)
 
         data += [[x, False] for x in remote_branches]
 
@@ -794,50 +797,120 @@ class Repository(object):
 
         :returns: DataFrame
         """
-        branches = self.repo.git.branch('--contains', commit).replace(" ", "").lstrip("*").splitlines()
+        branches = self.repo.git.branch('-a', '--contains', commit).replace(" ", "").lstrip("*").splitlines()
         df = DataFrame(branches, columns=["branch"])
         df["commit"] = str(commit)
         df['repository'] = self._repo_name()
 
         return df
 
-    def commits_in_tag(self, commit, days=180):
+    def commits_in_tags(self, start=np.timedelta64(6, "M"), end=None):
+        """
+        Analyze each tag, and trace backwards from the tag to all commits that make
+        up that tag. This method looks at the commit for the tag, and then works
+        backwards to that commits parents, and so on and so, until it hits another
+        tag, is out of the time range, or hits the root commit. It returns a DataFrame
+        with the branches:
+
+         * tag_date (index)
+         * commit_date (index)
+         * commit_sha
+         * tag
+         * repository
+
+        :param start: (optional, defaults to 6 months before today) the start time for commits,
+            can be a pd.Timestamp, or a np.timedelta or pd.Timedelta
+            (which then calculates from today)
+        :type start: pd.Timestamp | np.timedelta | pd.Timedelta
+        :param end: (optional, defaults to None) the end time for commits,
+            can be a pd.Timestamp, or a np.timedelta or pd.Timedelta
+            (which then calculates from today)
+        :type end: pd.Timestamp | np.timedelta | pd.Timedelta
+        """
+
+        # If we pass in a timedelta instead of a timestamp, calc the timestamp relative to now
+        if isinstance(start, pd.Timedelta) or isinstance(start, np.timedelta64):
+            start = pd.Timestamp.today(tz="UTC") - start
+        if isinstance(end, pd.Timedelta) or isinstance(end, np.timedelta64):
+            end = pd.Timestamp.today(tz="UTC") - end
+
+        # remove tagged commits outside our date ranges
         df_tags = self.tags()
-        commits = [self._commits_per_tag_helper(commit, df_tags)]
-        if days:
-            dlim = time.time() - days * 24 * 3600
-        else:
-            dlim = None
-        self._commits_per_tag_recursive(commit=commit, df_tags=df_tags, commits=commits, dlim=dlim)
-        df = DataFrame(commits)
-        df["commit_date"] = to_datetime(df['commit_date'], unit="s").dt.tz_localize("UTC")
+        if start:
+            df_tags = df_tags.query(f'commit_date > "{start}"').copy()
+        if end:
+            df_tags = df_tags.query(f'commit_date < "{end}"').copy()
+
+        # convert to unix time to speed up calculations later
+        start = (start - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta('1s') if start else start
+        end = (end - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta('1s') if end else end
+
+        ds = []
+        checked_commits = set()
+
+        df_tags["filled_shas"] = df_tags["tag_sha"].fillna(value=df_tags["commit_sha"])
+        for sha, tag in df_tags[["filled_shas", "tag"]].sort_index(level="tag_date").values:
+            commit = self.repo.commit(sha)
+            before_start = start and commit.committed_date < start
+            passed_end = end and commit.committed_date > end
+            already_checked = str(commit) in checked_commits
+            if before_start or passed_end or already_checked:
+                continue
+            tag = self.repo.tag(tag)
+
+            checked_commits.add(str(commit))
+            ds.append(self._commits_per_tags_helper(commit, df_tags, tag=tag)[0])
+
+        for sha, tag in df_tags[["filled_shas", "tag"]].sort_index(level="tag_date").values:
+            commit = self.repo.commit(sha)
+            tag = self.repo.tag(tag)
+            self._commits_per_tags_recursive(commit=commit, df_tags=df_tags, ds=ds, start=start, end=end,
+                                             checked_commits=checked_commits, tag=tag)
+        df = pd.DataFrame(ds)
         df['repository'] = self._repo_name()
+
+        df = df.sort_values(by=["tag", "commit_date"])
+        df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)
 
         return df
 
-    def _commits_per_tag_recursive(self, commit, df_tags, commits=None, tag=None, checked_commits=None, dlim=None):
-        commits = commits if commits is not None else []
+    def _commits_per_tags_recursive(self, commit, df_tags, ds=None, tag=None, checked_commits=None, start=None,
+                                    end=None):
+        ds = ds if ds is not None else []
         checked_commits = checked_commits if checked_commits is not None else set()
 
         for commit in commit.parents:
-            if dlim and commit.committed_date < dlim:
-                break
-            if str(commit) in checked_commits:
+            before_start = start and commit.committed_date < start
+            passed_end = end and commit.committed_date > end
+            already_checked = str(commit) in checked_commits
+            if before_start or passed_end or already_checked:
                 continue
-            else:
-                checked_commits.add(str(commit))
-            commit_meta = self._commits_per_tag_helper(commit=commit, df_tags=df_tags, tag=tag)
-            tag = commit_meta["tag"]
-            commits.append(commit_meta)
-            self._commits_per_tag_recursive(commit=commit, df_tags=df_tags, commits=commits, tag=tag, checked_commits=checked_commits, dlim=dlim)
+            checked_commits.add(str(commit))
+            commit_meta, tag = self._commits_per_tags_helper(commit=commit, df_tags=df_tags, tag=tag)
+            ds.append(commit_meta)
+            self._commits_per_tags_recursive(commit=commit, df_tags=df_tags, ds=ds, tag=tag,
+                                             checked_commits=checked_commits, start=start, end=end)
 
-    def _commits_per_tag_helper(self, commit, df_tags, tag=None):
-        tag_pd = df_tags.loc[df_tags.commit_sha.str.contains(str(commit))].tag
+    def _commits_per_tags_helper(self, commit, df_tags, tag=None):
+        tag_pd = (df_tags
+                  .loc[
+                      (df_tags["commit_sha"].str.contains(str(commit)))
+                      | (df_tags["tag_sha"].str.contains(str(commit)))
+                  ].tag)
         if not tag_pd.empty:
-            tag = tag_pd[0]
-        branches = self.get_branches_by_commit(commit)["branch"].to_numpy()
+            tag = self.repo.tag(tag_pd[0])
+        if tag and tag.tag:
+            tag_date = tag.tag.tagged_date
+        elif tag:
+            tag_date = tag.commit.committed_date
+        else:
+            tag_date = None
 
-        return dict(commit_sha=str(commit), tag=tag, commit_date=commit.committed_date, branches=branches)
+        return (dict(commit_sha=str(commit),
+                     tag=str(tag),
+                     tag_date=pd.to_datetime(tag_date, unit="s", utc=True),
+                     commit_date=pd.to_datetime(commit.committed_date, unit="s", utc=True)),
+                tag)
 
     def tags(self):
         """
@@ -871,6 +944,7 @@ class Repository(object):
             d["commit_date"] = tag.commit.committed_date
             d["tag"] = tag.name
             d["commit_sha"] = tag.commit.hexsha
+
             tags_meta.append(d)
         df = DataFrame(tags_meta, columns=cols)
 
@@ -879,6 +953,7 @@ class Repository(object):
         df['repository'] = self._repo_name()
 
         df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)
+        df = df.sort_index(level=["tag_date", "commit_date"])
 
         return df
 

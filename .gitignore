@@ -5,6 +5,9 @@
 # they won't be until the next test
 tests/**/repos
 
+# scratch stuff
+scratch
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
