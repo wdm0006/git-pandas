@@ -879,7 +879,7 @@ class Repository(object):
             tag = self.repo.tag(tag)
             self._commits_per_tags_recursive(commit=commit, df_tags=df_tags, ds=ds, start=start, end=end,
                                              checked_commits=checked_commits, tag=tag)
-        df = pd.DataFrame(ds)
+        df = pd.DataFrame(ds, columns=["tag_date", "commit_date", "commit_sha", "tag"])
         df = self._add_labels_to_df(df)
 
         df = df.sort_values(by=["tag", "commit_date"])
