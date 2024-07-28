@@ -46,7 +46,9 @@ class ProjectDirectory(object):
     An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
     git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
 
-    :param working_dir: (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories
+    :param working_dir: (optional, default=None), the working directory to search for repositories in,
+        None for cwd, an explicit list of directories containing git repositories,
+        or a list of ``Repository`` instances
     :param ignore_repos: (optional, default=None), a list of directories to ignore when searching for git repos.
     :param verbose: (default=True), if True, will print out verbose logging to terminal
     :param verbose: optional, verbosity level of output, bool
@@ -62,7 +64,11 @@ class ProjectDirectory(object):
         else:
             self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(working_dir) if '.git' in x[0]])
 
-        self.repos = [Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend) for r in self.repo_dirs]
+        if all(isinstance(r, Repository) for r in self.repo_dirs):
+            self.repos = self.repo_dirs
+        else:
+            self.repos = [Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend)
+                          for r in self.repo_dirs]
 
         if ignore_repos is not None:
             self.repos = [x for x in self.repos if x.repo_name not in ignore_repos]
@@ -129,7 +135,7 @@ class ProjectDirectory(object):
             try:
                 cov = repo.coverage()
                 cov['repository'] = repo.repo_name
-                df = df.append(cov)
+                df = pd.concat([df, cov])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have coverage' % (repo, ))
 
@@ -169,7 +175,7 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 fcr['repository'] = repo.repo_name
-                df = df.append(fcr)
+                df = pd.concat([df, fcr])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -218,7 +224,7 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 ch['repository'] = repo.repo_name
-                df = df.append(ch)
+                df = pd.concat([df, ch])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -270,7 +276,7 @@ class ProjectDirectory(object):
             try:
                 ch = repo.commit_history(branch, limit=limit, days=days, ignore_globs=ignore_globs, include_globs=include_globs)
                 ch['repository'] = repo.repo_name
-                df = df.append(ch)
+                df = pd.concat([df, ch])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -316,7 +322,7 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 ch['repository'] = repo.repo_name
-                df = df.append(ch)
+                df = pd.concat([df, ch])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -348,13 +354,14 @@ class ProjectDirectory(object):
                 if df is None:
                     df = repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)
                 else:
-                    df = df.append(repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs))
+                    df = pd.concat([df, repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)])
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
 
-        df = df.reset_index(level=1)
-        df = df.reset_index(level=1)
+        for lvl in range(df.index.nlevels):
+            df = df.reset_index(level=lvl)
+
         if committer:
             if by == 'repository':
                 df = df.groupby('committer').agg({'loc': np.sum})
@@ -391,7 +398,7 @@ class ProjectDirectory(object):
                 else:
                     chunk = repo.file_detail(ignore_globs=ignore_globs, include_globs=include_globs, committer=committer, rev=rev)
                     chunk['repository'] = repo.repo_name
-                    df = df.append(chunk)
+                    df = pd.concat([df, chunk])
             except GitCommandError:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
 
@@ -418,11 +425,11 @@ class ProjectDirectory(object):
                 (x) for x in self.repos
             )
             for d in ds:
-                df = df.append(d)
+                df = pd.concat([df, d])
         else:
             for repo in self.repos:
                 try:
-                    df = df.append(_branches_func(repo))
+                    df = pd.concat([df, _branches_func(repo)])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -460,13 +467,13 @@ class ProjectDirectory(object):
                 (x, branch, limit, skip, num_datapoints) for x in self.repos
             )
             for d in ds:
-                df = df.append(d)
+                df = pd.concat([df, d])
         else:
             for repo in self.repos:
                 try:
                     revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
                     revs['repository'] = repo.repo_name
-                    df = df.append(revs)
+                    df = pd.concat([df, revs])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -556,6 +563,27 @@ class ProjectDirectory(object):
 
         return global_blame
 
+    def commits_in_tags(self, **kwargs):
+        """
+        Analyze each tag, and trace backwards from the tag to all commits that make
+        up that tag. This method looks at the commit for the tag, and then works
+        backwards to that commits parents, and so on and so, until it hits another
+        tag, is out of the time range, or hits the root commit. It returns a DataFrame
+        with the branches:
+
+        :param kwargs: kwargs to pass to ``Repository.commits_in_tags``
+
+        :returns: DataFrame
+        """
+        dfs = []
+        for repo in self.repos:
+            try:
+                dfs.append(repo.commits_in_tags(**kwargs))
+            except GitCommandError as e:
+                print(f"Warning! Repo: {repo} couldn't be inspected because of {e!r}")
+        df = pd.concat(dfs)
+        return df
+
     def tags(self):
         """
         Returns a data frame of all tags in origin.  The DataFrame will have the columns:
@@ -566,24 +594,20 @@ class ProjectDirectory(object):
         :returns: DataFrame
         """
 
-        df = pd.DataFrame(columns=['repository', 'tag'])
-
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
+            dfs = Parallel(n_jobs=-1, backend='threading', verbose=0)(
                 delayed(_tags_func)
                 (x) for x in self.repos
             )
-            for d in ds:
-                df = df.append(d)
         else:
+            dfs = []
             for repo in self.repos:
                 try:
-                    df = df.append(repo.tags())
+                    dfs.append(repo.tags())
+                    # df = pd.concat([df, repo.tags()])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-
-        df.reset_index()
-
+        df = pd.concat(dfs)
         return df
 
     def repo_information(self):
@@ -653,7 +677,7 @@ class ProjectDirectory(object):
             cumulative = 0
             tc = 0
             for idx in range(blame.shape[0]):
-                cumulative += blame.ix[idx, 'loc']
+                cumulative += blame.iloc[idx]['loc']
                 tc += 1
                 if cumulative >= total / 2:
                     break
@@ -663,7 +687,7 @@ class ProjectDirectory(object):
             df = pd.DataFrame(columns=['repository', 'bus factor'])
             for repo in self.repos:
                 try:
-                    df = df.append(repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by))
+                    df = pd.concat([df, repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -711,7 +735,7 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 chunk['repository'] = repo.repo_name
-                df = df.append(chunk)
+                df = pd.concat([df, chunk])
             except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 

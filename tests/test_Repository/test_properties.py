@@ -94,7 +94,7 @@ class TestLocalProperties(unittest.TestCase):
         self.assertIn('master', branches)
 
     def test_tags(self):
-        tags = list(self.repo.tags()['tag'].values)
+        tags = self.repo.tags()
         self.assertEqual(len(tags), 0)
 
     def test_is_bare(self):

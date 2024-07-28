@@ -1,4 +1,13 @@
 # Created by .ignore support plugin (hsz.mobi)
+
+# tests
+# these should be torn down after every test, but if a test is interupted,
+# they won't be until the next test
+tests/**/repos
+
+# scratch stuff
+scratch
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

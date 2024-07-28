@@ -124,10 +124,10 @@ class TestLocalProperties(unittest.TestCase):
         self.assertIn('master', branches)
 
     def test_tags(self):
-        tags = list(self.projectd_1.tags()['tag'].values)
+        tags = self.projectd_1.tags()
         self.assertEqual(len(tags), 0)
 
-        tags = list(self.projectd_2.tags()['tag'].values)
+        tags = self.projectd_2.tags()
         self.assertEqual(len(tags), 0)
 
     def test_is_bare(self):
