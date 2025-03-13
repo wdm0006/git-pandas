@@ -1,0 +1,62 @@
+---
+description: 
+globs: docs/*
+---
+# Sphinx Documentation Standards
+
+## Project Setup
+- Use `sphinx-quickstart` to initialize the documentation structure
+- Configure `conf.py` with appropriate project information
+- Use the ReadTheDocs theme for consistent styling
+- Enable necessary extensions (e.g., `autodoc`, `napoleon`, `viewcode`)
+
+## Directory Structure
+- Keep documentation source files in the `docs/` directory
+- Organize documentation into logical sections (e.g., user guide, API reference)
+- Use a clear and consistent file naming convention
+- Include an `index.rst` file as the documentation entry point
+
+## Documentation Style
+- Write in clear, concise language
+- Use present tense and active voice
+- Be consistent with terminology
+- Include examples where appropriate
+- Target the appropriate audience (users, developers, etc.)
+
+## reStructuredText Formatting
+- Use proper heading hierarchy (=, -, ~, ^, ")
+- Use bullet lists for unordered items and numbered lists for sequences
+- Use code blocks with appropriate language for syntax highlighting
+- Use cross-references to link between documentation sections
+- Include images and diagrams where they add value
+
+## API Documentation
+- Use autodoc to generate API documentation from docstrings
+- Document all public modules, classes, methods, and functions
+- Follow Google or NumPy docstring style consistently
+- Include type information for parameters and return values
+- Document exceptions that may be raised
+
+## Examples and Tutorials
+- Include practical examples for common use cases
+- Provide step-by-step tutorials for complex operations
+- Ensure all examples are tested and working
+- Use `literalinclude` to include code examples from actual source files
+
+## Building and Testing
+- Build documentation locally before committing changes
+- Check for and fix all warnings during the build process
+- Verify that cross-references work correctly
+- Test documentation on different screen sizes
+
+## Deployment
+- Configure automatic documentation builds on ReadTheDocs or GitHub Pages
+- Include a link to the documentation in the project README
+- Version documentation to match software releases
+- Provide a changelog or release notes section
+
+## Maintenance
+- Keep documentation up-to-date with code changes
+- Review and update documentation during each release cycle
+- Address user feedback and questions in the documentation
+- Remove outdated or deprecated information 

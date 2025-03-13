@@ -1,2 +1,0 @@
-# Bare Minimum, to run tests add nose, to run some examples, add matplotlib
--e .

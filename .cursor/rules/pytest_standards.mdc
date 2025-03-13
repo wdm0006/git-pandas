@@ -1,0 +1,48 @@
+---
+description: 
+globs: tests/*
+---
+# Pytest Standards
+
+## Test Organization
+- All test files should be named with the prefix `test_` (e.g., `test_module.py`)
+- Test classes should be named with the prefix `Test` (e.g., `TestClassName`)
+- Test methods should be named with the prefix `test_` (e.g., `test_function_name`)
+- Tests should be organized in the same directory structure as the source code they test
+
+## Test Structure
+- Each test should focus on testing a single functionality
+- Use descriptive test names that explain what is being tested
+- Group related tests in test classes
+- Use appropriate fixtures for test setup and teardown
+- Avoid test interdependence - tests should be able to run in any order
+
+## Assertions
+- Use pytest's built-in assertions instead of Python's `assert` statement when possible
+- Use appropriate assertion methods for the type being tested (e.g., `assert_almost_equal` for floats)
+- Include descriptive error messages in assertions to aid debugging
+
+## Fixtures
+- Use fixtures for common setup and teardown operations
+- Define fixtures at the appropriate scope (function, class, module, or session)
+- Use parameterized fixtures for testing multiple inputs
+- Use conftest.py for sharing fixtures across multiple test files
+
+## Coverage
+- Aim for at least 80% code coverage
+- Write tests for both success and failure cases
+- Test edge cases and boundary conditions
+- Use `pytest-cov` to generate coverage reports
+
+## Best Practices
+- Keep tests fast and independent
+- Avoid mocking unless necessary
+- Use markers to categorize tests (e.g., `@pytest.mark.slow`)
+- Use parametrize for testing multiple inputs
+- Write tests before or alongside code (TDD approach)
+- Run the full test suite before committing changes
+
+## Commands
+- Run tests with `pytest`
+- Generate coverage reports with `pytest --cov=gitpandas`
+- Run specific tests with `pytest path/to/test_file.py::TestClass::test_method` 

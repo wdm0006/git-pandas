@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "git-pandas"
+version = "2.0.0"
+description = "A utility for interacting with data from git repositories as Pandas dataframes"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {text = "BSD"}
+authors = [
+    {name = "Will McGinnis", email = "will@pedalwrencher.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["git", "pandas", "data", "analysis"]
+dependencies = [
+    "gitpython>=1.0.0",
+    "numpy>=1.9.0",
+    "pandas>=0.16.0",
+    "requests",
+    "redis",
+]
+
+[project.optional-dependencies]
+examples = [
+    "matplotlib",
+    "lifelines",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "matplotlib",
+    "lifelines",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["gitpandas"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+
+[tool.ruff]
+target-version = "py36"
+line-length = 88
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "C4", "SIM", "ERA"]
+ignore = ["ANN101"]  # Ignore missing type annotation for self
+
+[tool.ruff.isort]
+known-first-party = ["git_pandas"]
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+suppress-none-returning = true 

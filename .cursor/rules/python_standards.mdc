@@ -1,0 +1,68 @@
+---
+description: 
+globs: *.py
+---
+# Python Coding Standards
+
+## Important Notes
+- Do not ever ever add test-case specific handling into the library code. Do not add handling for "special cases", "test cases" or any other logic branches that attempt to skip the normal buisness logic to get a test to pass.
+
+## Code Style
+- Follow PEP 8 style guide for Python code
+- Use 4 spaces for indentation (no tabs)
+- Maximum line length of 88 characters (Black default)
+- Use snake_case for variables, functions, and methods
+- Use CamelCase for classes
+- Use UPPER_CASE for constants
+- Add a blank line at the end of each file
+
+## Imports
+- Group imports in the following order:
+  1. Standard library imports
+  2. Related third-party imports
+  3. Local application/library specific imports
+- Use absolute imports when possible
+- Avoid wildcard imports (`from module import *`)
+- Use import aliases for long module names
+
+## Documentation
+- Document all public modules, classes, methods, and functions
+- Use docstrings that follow the Google style guide
+- Include type hints for function parameters and return values
+- Document parameters, return values, and exceptions raised
+
+## Error Handling
+- Use specific exception types instead of generic ones
+- Handle exceptions at the appropriate level
+- Use context managers (`with` statements) for resource management
+- Avoid catching exceptions without proper handling
+
+## Code Organization
+- Keep functions and methods short and focused
+- Follow the Single Responsibility Principle
+- Use classes to encapsulate related functionality
+- Separate concerns into different modules
+
+## Testing
+- Write unit tests for all code
+- Use meaningful test names
+- Test both normal and edge cases
+- Mock external dependencies in tests
+
+## Performance
+- Prefer list/dict/set comprehensions over loops when appropriate
+- Use generators for large data sets
+- Profile code before optimizing
+- Consider using NumPy/Pandas for numerical operations
+
+## Tools
+- Use Black for code formatting
+- Use Ruff for linting and static analysis
+- Use mypy for type checking
+- Use isort for import sorting
+
+## Version Control
+- Write meaningful commit messages
+- Keep commits focused on a single change
+- Use feature branches for development
+- Review code before merging 

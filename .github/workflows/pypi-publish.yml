@@ -1,0 +1,55 @@
+name: "PyPI Packaging"
+on:
+  release:
+    types: created
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing
+      id-token: write
+    steps:
+      - name: Clone
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        run: |
+          python -m pip install --upgrade pip
+          pip install uv
+      
+      - name: Setup virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        run: |
+          uv pip install -e ".[dev]"
+          uv pip install build
+      
+      - name: Build source distribution
+        run: |
+          # Clean the build directories first
+          rm -rf build/
+          rm -rf dist/
+          rm -rf .eggs/
+          
+          # Find and remove egg-info directories, excluding the virtual environment
+          find . -path ./.venv -prune -o -name '*.egg-info' -type d -exec rm -rf {} \; 2>/dev/null || true
+          find . -path ./.venv -prune -o -name '*.egg' -type f -exec rm -f {} \; 2>/dev/null || true
+          find . -path ./.venv -prune -o -name '__pycache__' -type d -exec rm -rf {} \; 2>/dev/null || true
+          
+          # Build only the source distribution
+          python -m build --sdist
+      
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/

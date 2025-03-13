@@ -1,0 +1,53 @@
+---
+description: how to use the makefile to run tests
+globs: 
+---
+ # Gitpandas Testing Standards
+
+## Running Tests
+
+### Using Make Commands
+- Always use `make test` to run the test suite
+- Use `make test-cov` to run tests with coverage reports
+- Use `make test-all` to run tests on all supported Python versions using tox
+
+### Test Commands
+```bash
+# Run the standard test suite
+make test
+
+# Run tests with coverage
+make test-cov
+
+# Run tests on all supported Python versions
+make test-all
+
+# Run a specific test file
+make test PYTEST_ARGS="tests/test_unified_interface.py"
+
+# Run a specific test class
+make test PYTEST_ARGS="tests/test_unified_interface.py::TestUnifiedInterface"
+
+# Run a specific test method
+make test PYTEST_ARGS="tests/test_unified_interface.py::TestUnifiedInterface::test_base_methods_elo"
+```
+
+### Test Environment
+- Tests are run using `uv run pytest` through the Makefile
+- The test environment is automatically set up with the correct dependencies
+- Always run tests in a clean environment to avoid dependency conflicts
+
+### Continuous Integration
+- All tests must pass in CI before merging
+- Coverage should not decrease with new code
+- New features should include corresponding tests
+
+### Benchmarks
+- Use `make benchmark` to run performance benchmarks
+- Benchmark results are stored in the `benchmark_results` directory
+- Performance regressions should be addressed before merging
+
+### Linting and Formatting
+- Use `make lint` to check code quality
+- Use `make lint-fix` to automatically fix linting issues
+- Use `make format` to format code according to project standards

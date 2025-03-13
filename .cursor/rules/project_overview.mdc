@@ -1,0 +1,227 @@
+---
+description: Overview of the pygeohash project
+globs: 
+---
+I'll do a thorough analysis of the gitpandas library to help new developers understand it. Let me start by exploring the codebase to get a comprehensive understanding.
+
+Ran tool
+Let's first look at the README to get an overview of the project:
+
+Read file: README.md
+Now let's look at the main module structure:
+
+Ran tool
+Let's check the __init__.py file to understand the main components:
+
+Read file: gitpandas/__init__.py
+Now let's look at the repository.py file, which seems to be one of the main components:
+
+Read file: gitpandas/repository.py
+Let's also look at the project.py file to understand the ProjectDirectory class:
+
+Read file: gitpandas/project.py
+Let's also check the cache.py file to understand the caching mechanism:
+
+Read file: gitpandas/cache.py
+Let's check the utilities directory to understand what helper functions are available:
+
+Ran tool
+Let's look at the utilities/__init__.py file:
+
+Read file: gitpandas/utilities/__init__.py
+Let's look at the plotting utilities:
+
+Read file: gitpandas/utilities/plotting.py
+Let's check the examples directory to see how the library is used:
+
+Ran tool
+Let's look at a couple of example files to understand how the library is used:
+
+Read file: examples/commit_history.py
+
+Read file: examples/bus_analysis.py
+
+Read file: examples/cumulative_blame.py
+Let's check the pyproject.toml file to understand the project dependencies and metadata:
+
+Read file: pyproject.toml
+Based on my thorough analysis of the gitpandas library, here's a comprehensive overview for new developers:
+
+# GitPandas: A Comprehensive Overview
+
+## What is GitPandas?
+
+GitPandas is a Python library that provides a set of wrappers around GitPython for creating pandas DataFrames from git repository data. It enables data-driven analysis of git repositories, allowing developers and data scientists to extract meaningful insights from their codebase's history and structure.
+
+## Core Components
+
+GitPandas is built around two primary objects:
+
+1. **Repository**: Represents a single git repository and provides methods to analyze it.
+2. **ProjectDirectory**: Represents a directory containing multiple git repositories, allowing for aggregated analysis across all repositories.
+3. **GitHubProfile**: A specialized ProjectDirectory that analyzes all repositories owned by a GitHub user.
+
+## Key Features
+
+### Repository Analysis
+- **Commit History**: Extract detailed commit history with filtering by file extensions and directories
+- **File Change History**: Track how files have changed over time
+- **Blame Analysis**: Determine who wrote each line of code in the repository
+- **Branch and Tag Information**: Extract metadata about branches and tags
+- **Bus Factor Analysis**: Estimate the project's "bus factor" (risk if key contributors leave)
+- **Cumulative Blame**: Track how code ownership changes over time
+- **Punchcard Analysis**: Visualize when code is written (day/hour patterns)
+- **Hours Estimation**: Estimate time spent on the project by contributors
+
+### Project Directory Analysis
+- Aggregate all the above analyses across multiple repositories
+- Compare metrics across repositories
+- Generate project-wide statistics and visualizations
+
+### Visualization Utilities
+- Plot cumulative blame over time
+- Create punchcard visualizations of commit patterns
+
+### Caching System
+- In-memory caching via `EphemeralCache`
+- Redis-based caching via `RedisDFCache`
+- Decorator-based caching system for expensive operations
+
+## Core Concepts
+
+### Data Representation
+All data in GitPandas is represented as pandas DataFrames, making it easy to:
+- Filter and transform the data
+- Visualize results
+- Export to various formats
+- Integrate with other data analysis workflows
+
+### Filtering Mechanisms
+GitPandas provides consistent filtering options across most methods:
+- `ignore_globs`: Glob patterns for files to exclude (e.g., `['tests/*', 'docs/*']`)
+- `include_globs`: Glob patterns for files to include (e.g., `['*.py', '*.js']`)
+- `limit`: Limit the number of commits to analyze
+- `days`: Limit analysis to commits within a certain number of days
+- `branch`: Specify which branch to analyze
+
+### Caching
+GitPandas implements a flexible caching system to improve performance:
+- The `multicache` decorator allows caching results of expensive operations
+- Cache backends can be swapped (memory or Redis)
+- Cache keys are generated based on repository name and method parameters
+
+## Usage Patterns
+
+### Single Repository Analysis
+```python
+from gitpandas import Repository
+
+# Create a Repository object
+repo = Repository(working_dir='/path/to/repo')
+
+# Get commit history
+commit_history = repo.commit_history(branch='master', include_globs=['*.py'])
+
+# Analyze blame
+blame = repo.blame(committer=True)
+
+# Estimate bus factor
+bus_factor = repo.bus_factor()
+```
+
+### Multi-Repository Analysis
+```python
+from gitpandas import ProjectDirectory
+
+# Create a ProjectDirectory object
+project = ProjectDirectory(working_dir='/path/to/project')
+
+# Get aggregated commit history
+commit_history = project.commit_history(branch='master')
+
+# Get aggregated blame
+blame = project.blame()
+```
+
+### GitHub Profile Analysis
+```python
+from gitpandas import GitHubProfile
+
+# Analyze a GitHub user's repositories
+profile = GitHubProfile(username='username')
+
+# Get repository information
+repo_info = profile.repo_information()
+```
+
+### Visualization
+```python
+from gitpandas import Repository
+from gitpandas.utilities.plotting import plot_cumulative_blame
+
+repo = Repository(working_dir='/path/to/repo')
+blame = repo.cumulative_blame(branch='master')
+plot_cumulative_blame(blame)
+```
+
+## Technical Implementation Details
+
+### Git Integration
+- Uses GitPython under the hood to interact with git repositories
+- Can work with local repositories or clone remote ones
+- Handles bare repositories appropriately
+
+### Performance Considerations
+- Caching system for expensive operations
+- Optional parallel processing for certain operations (requires joblib)
+- Filtering mechanisms to limit analysis scope
+
+### Data Processing
+- Heavy use of pandas for data manipulation and aggregation
+- Consistent DataFrame structures across different analyses
+- Time series analysis capabilities
+
+## Development Conventions
+
+### Code Organization
+- Core classes in separate modules (`repository.py`, `project.py`)
+- Utility functions in the `utilities` package
+- Caching mechanisms in `cache.py`
+
+### Error Handling
+- Graceful handling of missing repositories
+- Proper cleanup of temporary repositories
+- Appropriate warnings for deprecated functionality
+
+### Dependencies
+- Core dependencies: GitPython, pandas, numpy
+- Optional dependencies: matplotlib (for plotting), redis (for Redis caching), joblib (for parallel processing)
+
+## Practical Applications
+
+GitPandas can be used for:
+1. **Project Management**: Track contributor activity and estimate effort
+2. **Code Quality Analysis**: Identify areas with high churn or single-owner code
+3. **Team Dynamics**: Understand how team members collaborate and contribute
+4. **Historical Analysis**: Track how a project evolves over time
+5. **Risk Assessment**: Identify bus factor and knowledge silos
+6. **Performance Metrics**: Generate developer and team performance metrics
+
+## Extending GitPandas
+
+Developers can extend GitPandas by:
+1. Adding new analysis methods to the Repository or ProjectDirectory classes
+2. Creating new visualization utilities
+3. Implementing additional caching backends
+4. Building higher-level abstractions for specific use cases
+
+## Best Practices
+
+When working with GitPandas:
+1. Use appropriate filtering to limit analysis scope for large repositories
+2. Implement caching for repeated analyses
+3. Consider using parallel processing for intensive operations
+4. Combine multiple analyses for comprehensive insights
+5. Visualize results for easier interpretation
+
+This overview should provide new developers with a solid understanding of GitPandas, its capabilities, and how to effectively use it for git repository analysis.
