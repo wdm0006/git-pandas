@@ -91,7 +91,7 @@ class Repository(object):
         self.cache_backend = cache_backend
         self._labels_to_add = labels_to_add or []
         if working_dir is not None:
-            if working_dir[:3] == 'git':
+            if working_dir.startswith(('git://', 'https://', 'http://')):
                 # if a tmp dir is passed, clone into that, otherwise make a temp directory.
                 if tmp_dir is None:
                     if self.verbose:
@@ -343,6 +343,7 @@ class Repository(object):
                       x.committer.name,
                       x.committed_date,
                       x.message,
+                      x.hexsha,
                       self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
                   ] for x in self.repo.iter_commits(branch, max_count=limit)]
 
@@ -359,7 +360,7 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'], unit="s").tz_localize("UTC")
+        df['date'] = pd.to_datetime(df['date'], unit="s", utc=True)
         df = df.set_index('date')
 
         df['branch'] = branch
@@ -453,8 +454,9 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'], unit="s").tz_localize("UTC")
+        df['date'] = pd.to_datetime(df['date'], unit="s")  # First convert to datetime
         df = df.set_index('date')
+        df.index = df.index.tz_localize("UTC")  # Then localize the index
         df = self._add_labels_to_df(df)
 
         return df
@@ -486,50 +488,36 @@ class Repository(object):
         fch.reset_index(level=0, inplace=True)
 
         if fch.shape[0] > 0:
-            file_history = fch.groupby('filename').agg(
-                {
-                    'insertions': [np.sum, np.max, np.mean],
-                    'deletions': [np.sum, np.max, np.mean],
-                    'message': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                    'committer': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                    'author': lambda x: ','.join(['"' + str(y) + '"' for y in x]),
-                    'date': [np.max, np.min]
-                }
-            )
-
-            file_history.columns = [' '.join(col).strip() for col in file_history.columns.values]
-
-            file_history = file_history.rename(columns={
-                'message <lambda>': 'messages',
-                'committer <lambda>': 'committers',
-                'insertions sum': 'total_insertions',
-                'insertions amax': 'max_insertions',
-                'insertions mean': 'mean_insertions',
-                'author <lambda>': 'authors',
-                'date amax': 'max_date',
-                'date amin': 'min_date',
-                'deletions sum': 'total_deletions',
-                'deletions amax': 'max_deletions',
-                'deletions mean': 'mean_deletions'
+            file_history = fch.groupby('filename').agg({
+                'insertions': ['sum', 'max', 'mean'],
+                'deletions': ['sum', 'max', 'mean'],
+                'message': lambda x: ' | '.join([str(y) for y in x]),
+                'committer': lambda x: ' | '.join([str(y) for y in x]),
+                'author': lambda x: ' | '.join([str(y) for y in x]),
+                'date': ['max', 'min']
             })
 
-            # get some building block values for later use
+            # Flatten column names
+            file_history.columns = [
+                'total_insertions', 'insertions_max', 'mean_insertions',
+                'total_deletions', 'deletions_max', 'mean_deletions',
+                'messages', 'committers', 'authors',
+                'max_date', 'min_date'
+            ]
+
+            # Calculate net changes
             file_history['net_change'] = file_history['total_insertions'] - file_history['total_deletions']
             file_history['abs_change'] = file_history['total_insertions'] + file_history['total_deletions']
+
+            # Calculate time deltas
             file_history['delta_time'] = file_history['max_date'] - file_history['min_date']
+            file_history['delta_days'] = file_history['delta_time'].dt.total_seconds() / (60 * 60 * 24)
 
-            try:
-                file_history['delta_days'] = file_history['delta_time'].map(
-                    lambda x: np.ceil(x.seconds / (24 * 3600) + 0.01))
-            except AttributeError as e:
-                file_history['delta_days'] = file_history['delta_time'].map(
-                    lambda x: np.ceil((float(x.total_seconds()) * 10e-6) / (24 * 3600) + 0.01))
-
-            # calculate metrics
+            # Calculate metrics
             file_history['net_rate_of_change'] = file_history['net_change'] / file_history['delta_days']
             file_history['abs_rate_of_change'] = file_history['abs_change'] / file_history['delta_days']
             file_history['edit_rate'] = file_history['abs_rate_of_change'] - file_history['net_rate_of_change']
-            file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(','))))
+            file_history['unique_committers'] = file_history['committers'].map(lambda x: len(set(x.split(' | '))))
 
             # reindex
             file_history = file_history.reindex(
@@ -624,40 +612,38 @@ class Repository(object):
         for file in self.__check_extension({x: x for x in file_names}, ignore_globs=ignore_globs,
                                            include_globs=include_globs).keys():
             try:
-                blames.append(
-                    [x + [str(file).replace(self.git_dir + '/', '')] for x in
-                     self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))]
-                )
+                blame_output = self.repo.blame(rev, str(file).replace(self.git_dir + '/', ''))
+                for commit, lines in blame_output:
+                    blames.append((commit, lines, str(file).replace(self.git_dir + '/', '')))
             except GitCommandError:
                 pass
 
-        blames = [item for sublist in blames for item in sublist]
         if committer:
             if by == 'repository':
-                blames = DataFrame(
+                blames_df = DataFrame(
                     [[x[0].committer.name, len(x[1])] for x in blames],
                     columns=['committer', 'loc']
                 ).groupby('committer')['loc'].sum().to_frame()
             elif by == 'file':
-                blames = DataFrame(
+                blames_df = DataFrame(
                     [[x[0].committer.name, len(x[1]), x[2]] for x in blames],
                     columns=['committer', 'loc', 'file']
                 ).groupby(['committer', 'file'])['loc'].sum().to_frame()
         else:
             if by == 'repository':
-                blames = DataFrame(
+                blames_df = DataFrame(
                     [[x[0].author.name, len(x[1])] for x in blames],
                     columns=['author', 'loc']
                 ).groupby('author')['loc'].sum().to_frame()
             elif by == 'file':
-                blames = DataFrame(
+                blames_df = DataFrame(
                     [[x[0].author.name, len(x[1]), x[2]] for x in blames],
                     columns=['author', 'loc', 'file']
                 ).groupby(['author', 'file'])['loc'].sum().to_frame()
 
-        blames = self._add_labels_to_df(blames)
+        blames_df = self._add_labels_to_df(blames_df)
 
-        return blames
+        return blames_df
 
     def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
         """
@@ -692,10 +678,10 @@ class Repository(object):
 
             if df.shape[0] >= skip:
                 df = df.iloc[range(0, df.shape[0], skip)]
-                df.reset_index()
+                df.reset_index(drop=True, inplace=True)
             else:
                 df = df.iloc[[0]]
-                df.reset_index()
+                df.reset_index(drop=True, inplace=True)
 
         df = self._add_labels_to_df(df)
 
@@ -748,7 +734,7 @@ class Repository(object):
 
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'], unit="s").tz_localize("UTC")
+        revs['date'] = pd.to_datetime(revs['date'], unit="s", utc=True)
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -762,7 +748,15 @@ class Repository(object):
         keep_idx = []
         committers = [x for x in revs.columns.values if x != 'date']
         for idx, row in revs.iterrows():
-            if sum([row[x] for x in committers]) > 0:
+            # Convert any string values to numeric, treating non-numeric strings as 0
+            row_sum = 0
+            for x in committers:
+                try:
+                    val = float(row[x])
+                    row_sum += val
+                except (ValueError, TypeError):
+                    continue
+            if row_sum > 0:
                 keep_idx.append(idx)
 
         revs = revs.loc[keep_idx]
@@ -807,7 +801,7 @@ class Repository(object):
         revs = DataFrame(ds)
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'], unit="s").tz_localize("UTC")
+        revs['date'] = pd.to_datetime(revs['date'], unit="s", utc=True)
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -821,7 +815,15 @@ class Repository(object):
         keep_idx = []
         committers = [x for x in revs.columns.values if x != 'date']
         for idx, row in revs.iterrows():
-            if sum([row[x] for x in committers]) > 0:
+            # Convert any string values to numeric, treating non-numeric strings as 0
+            row_sum = 0
+            for x in committers:
+                try:
+                    val = float(row[x])
+                    row_sum += val
+                except (ValueError, TypeError):
+                    continue
+            if row_sum > 0:
                 keep_idx.append(idx)
 
         revs = revs.iloc[keep_idx]
@@ -852,6 +854,9 @@ class Repository(object):
         for i, remote in enumerate(remote_branches):
             if "->" in remote:
                 continue
+            # Strip origin/ prefix
+            if remote.startswith('origin/'):
+                remote = remote[7:]
             rb.append(remote)
         remote_branches = set(rb)
 
@@ -982,16 +987,17 @@ class Repository(object):
             tag = self.repo.tag(tag_pd[0])
         if tag and tag.tag:
             tag_date = tag.tag.tagged_date
-        elif tag:
-            tag_date = tag.commit.committed_date
         else:
-            tag_date = None
-
-        return (dict(commit_sha=str(commit),
-                     tag=str(tag),
-                     tag_date=pd.to_datetime(tag_date, unit="s", utc=True),
-                     commit_date=pd.to_datetime(commit.committed_date, unit="s", utc=True)),
-                tag)
+            tag_date = commit.committed_date
+        tag_date = pd.to_datetime(tag_date, unit="s", utc=True)
+        commit_date = pd.to_datetime(commit.committed_date, unit="s", utc=True)
+        
+        return dict(
+            commit_sha=str(commit),
+            tag=str(tag),
+            tag_date=tag_date,
+            commit_date=commit_date
+        )
 
     def tags(self):
         """Returns information about all tags in the repository.
@@ -1037,8 +1043,8 @@ class Repository(object):
             tags_meta.append(d)
         df = DataFrame(tags_meta, columns=cols)
 
-        df['tag_date'] = to_datetime(df['tag_date'], unit="s").tz_localize("UTC")
-        df['commit_date'] = to_datetime(df['commit_date'], unit="s").tz_localize("UTC")
+        df['tag_date'] = to_datetime(df['tag_date'], unit="s", utc=True)
+        df['commit_date'] = to_datetime(df['commit_date'], unit="s", utc=True)
         df = self._add_labels_to_df(df)
 
         df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)

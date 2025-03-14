@@ -156,7 +156,8 @@ class ProjectDirectory(object):
             try:
                 cov = repo.coverage()
                 cov['repository'] = repo.repo_name
-                df = pd.concat([df, cov])
+                if not cov.empty:
+                    df = pd.concat([df, cov])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have coverage' % (repo, ))
 
@@ -213,7 +214,9 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 fcr['repository'] = repo.repo_name
-                df = pd.concat([df, fcr])
+                # Filter out empty DataFrames before concatenation
+                if not fcr.empty:
+                    df = pd.concat([df, fcr])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -311,7 +314,7 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
-        df = pd.DataFrame(columns=['author', 'committer', 'message', 'lines', 'insertions', 'deletions', 'net'])
+        df = pd.DataFrame(columns=['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
 
         for repo in self.repos:
             try:
@@ -323,10 +326,14 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 ch['repository'] = repo.repo_name
-                df = pd.concat([df, ch])
+                # Filter out empty DataFrames before concatenation
+                if not ch.empty:
+                    df = pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
+        # Ensure consistent column order
+        df = df[['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net', 'repository']]
         df = df.reset_index(drop=True)
         return df
 
@@ -375,7 +382,9 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 ch['repository'] = repo.repo_name
-                df = pd.concat([df, ch])
+                # Filter out empty DataFrames before concatenation
+                if not ch.empty:
+                    df = pd.concat([df, ch])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
@@ -422,7 +431,9 @@ class ProjectDirectory(object):
                 if df is None:
                     df = repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)
                 else:
-                    df = pd.concat([df, repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)])
+                    blame_df = repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)
+                    if not blame_df.empty:
+                        df = pd.concat([df, blame_df])
             except GitCommandError as err:
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
@@ -482,7 +493,8 @@ class ProjectDirectory(object):
                 else:
                     chunk = repo.file_detail(ignore_globs=ignore_globs, include_globs=include_globs, committer=committer, rev=rev)
                     chunk['repository'] = repo.repo_name
-                    df = pd.concat([df, chunk])
+                    if not chunk.empty:
+                        df = pd.concat([df, chunk])
             except GitCommandError:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
 
@@ -511,11 +523,14 @@ class ProjectDirectory(object):
                 (x) for x in self.repos
             )
             for d in ds:
-                df = pd.concat([df, d])
+                if not d.empty:
+                    df = pd.concat([df, d])
         else:
             for repo in self.repos:
                 try:
-                    df = pd.concat([df, _branches_func(repo)])
+                    branches_df = _branches_func(repo)
+                    if not branches_df.empty:
+                        df = pd.concat([df, branches_df])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -561,13 +576,15 @@ class ProjectDirectory(object):
                 (x, branch, limit, skip, num_datapoints) for x in self.repos
             )
             for d in ds:
-                df = pd.concat([df, d])
+                if not d.empty:
+                    df = pd.concat([df, d])
         else:
             for repo in self.repos:
                 try:
                     revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
                     revs['repository'] = repo.repo_name
-                    df = pd.concat([df, revs])
+                    if not revs.empty:
+                        df = pd.concat([df, revs])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -633,11 +650,22 @@ class ProjectDirectory(object):
             blame.columns = [x + '__' + reponame for x in blame.columns.values]
             global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how='outer')
 
-        global_blame.fillna(method='pad', inplace=True)
+        global_blame = global_blame.ffill()
         global_blame.fillna(0.0, inplace=True)
 
+        # Convert all numeric columns to float first
+        numeric_columns = []
+        for col in global_blame.columns:
+            if col != 'date':
+                try:
+                    global_blame[col] = pd.to_numeric(global_blame[col], errors='raise')
+                    numeric_columns.append(col)
+                except (ValueError, TypeError):
+                    # Skip columns that can't be converted to numeric
+                    pass
+
         if by == 'committer':
-            committers = [(str(x).split('__')[0].lower().strip(), x) for x in global_blame.columns.values]
+            committers = [(str(x).split('__')[0].lower().strip(), x) for x in numeric_columns]
 
             if sys.version_info.major == 2:
                 committer_mapping = dict([(c, [x[1] for x in committers if x[0] == c]) for c in set([x[0] for x in committers])])
@@ -645,13 +673,13 @@ class ProjectDirectory(object):
                 committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
 
             for committer in committer_mapping.keys():
-                global_blame[committer] = 0
+                global_blame[committer] = pd.Series(0.0, index=global_blame.index)
                 for col in committer_mapping.get(committer, []):
                     global_blame[committer] += global_blame[col]
 
             global_blame = global_blame.reindex(columns=list(committer_mapping.keys()))
         elif by == 'project':
-            projects = [(str(x).split('__')[1].lower().strip(), x) for x in global_blame.columns.values]
+            projects = [(str(x).split('__')[1].lower().strip(), x) for x in numeric_columns]
 
             if sys.version_info.major == 2:
                 project_mapping = dict([(c, [x[1] for x in projects if x[0] == c]) for c in set([x[0] for x in projects])])
@@ -659,7 +687,7 @@ class ProjectDirectory(object):
                 project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
 
             for project in project_mapping.keys():
-                global_blame[project] = 0
+                global_blame[project] = pd.Series(0.0, index=global_blame.index)
                 for col in project_mapping.get(project, []):
                     global_blame[project] += global_blame[col]
 
@@ -713,7 +741,9 @@ class ProjectDirectory(object):
                     # df = pd.concat([df, repo.tags()])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
-        df = pd.concat(dfs)
+        # Filter out empty DataFrames before concatenation
+        dfs = [df for df in dfs if not df.empty]
+        df = pd.concat(dfs) if dfs else pd.DataFrame()
         return df
 
     def repo_information(self):
@@ -814,7 +844,9 @@ class ProjectDirectory(object):
             df = pd.DataFrame(columns=['repository', 'bus factor'])
             for repo in self.repos:
                 try:
-                    df = pd.concat([df, repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)])
+                    bf_df = repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)
+                    if not bf_df.empty:
+                        df = pd.concat([df, bf_df])
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
@@ -870,7 +902,8 @@ class ProjectDirectory(object):
                     include_globs=include_globs
                 )
                 chunk['repository'] = repo.repo_name
-                df = pd.concat([df, chunk])
+                if not chunk.empty:
+                    df = pd.concat([df, chunk])
             except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 

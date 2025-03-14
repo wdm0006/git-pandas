@@ -5,7 +5,7 @@ PYTHON = python
 UV = uv
 
 # Project settings
-PACKAGE_NAME = git_pandas
+PACKAGE_NAME = gitpandas
 TESTS_DIR = tests
 DOCS_DIR = docs
 BUILD_DIR = dist
