@@ -359,8 +359,8 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
-        df.set_index(keys=['date'], drop=True, inplace=True)
+        df['date'] = to_datetime(df['date'], unit="s").tz_localize("UTC")
+        df = df.set_index('date')
 
         df['branch'] = branch
         df = self._add_labels_to_df(df)
@@ -453,8 +453,8 @@ class Repository(object):
                        columns=['author', 'committer', 'date', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         # format the date col and make it the index
-        df['date'] = to_datetime(df['date'], unit="s").dt.tz_localize("UTC")
-        df.set_index(keys=['date'], drop=True, inplace=True)
+        df['date'] = to_datetime(df['date'], unit="s").tz_localize("UTC")
+        df = df.set_index('date')
         df = self._add_labels_to_df(df)
 
         return df
@@ -637,23 +637,23 @@ class Repository(object):
                 blames = DataFrame(
                     [[x[0].committer.name, len(x[1])] for x in blames],
                     columns=['committer', 'loc']
-                ).groupby('committer').agg({'loc': np.sum})
+                ).groupby('committer')['loc'].sum().to_frame()
             elif by == 'file':
                 blames = DataFrame(
                     [[x[0].committer.name, len(x[1]), x[2]] for x in blames],
                     columns=['committer', 'loc', 'file']
-                ).groupby(['committer', 'file']).agg({'loc': np.sum})
+                ).groupby(['committer', 'file'])['loc'].sum().to_frame()
         else:
             if by == 'repository':
                 blames = DataFrame(
                     [[x[0].author.name, len(x[1])] for x in blames],
                     columns=['author', 'loc']
-                ).groupby('author').agg({'loc': np.sum})
+                ).groupby('author')['loc'].sum().to_frame()
             elif by == 'file':
                 blames = DataFrame(
                     [[x[0].author.name, len(x[1]), x[2]] for x in blames],
                     columns=['author', 'loc', 'file']
-                ).groupby(['author', 'file']).agg({'loc': np.sum})
+                ).groupby(['author', 'file'])['loc'].sum().to_frame()
 
         blames = self._add_labels_to_df(blames)
 
@@ -748,7 +748,7 @@ class Repository(object):
 
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'], unit="s").dt.tz_localize("UTC")
+        revs['date'] = to_datetime(revs['date'], unit="s").tz_localize("UTC")
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -807,7 +807,7 @@ class Repository(object):
         revs = DataFrame(ds)
         del revs['rev']
 
-        revs['date'] = to_datetime(revs['date'], unit="s").dt.tz_localize("UTC")
+        revs['date'] = to_datetime(revs['date'], unit="s").tz_localize("UTC")
         revs.set_index(keys=['date'], drop=True, inplace=True)
         revs = revs.fillna(0.0)
 
@@ -1037,8 +1037,8 @@ class Repository(object):
             tags_meta.append(d)
         df = DataFrame(tags_meta, columns=cols)
 
-        df['tag_date'] = to_datetime(df['tag_date'], unit="s").dt.tz_localize("UTC")
-        df['commit_date'] = to_datetime(df['commit_date'], unit="s").dt.tz_localize("UTC")
+        df['tag_date'] = to_datetime(df['tag_date'], unit="s").tz_localize("UTC")
+        df['commit_date'] = to_datetime(df['commit_date'], unit="s").tz_localize("UTC")
         df = self._add_labels_to_df(df)
 
         df = df.set_index(keys=['tag_date', 'commit_date'], drop=True)

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import pandas as pd
+import pickle
 try:
     import redis
     _HAS_REDIS = True
@@ -42,19 +43,40 @@ class CacheMissException(Exception):
 
 class EphemeralCache():
     """
-    An in-memory ephemeral cache. Basically just a dictionary of saved results.
-
+    A simple in-memory cache.
     """
-    def __init__(self):
-        self._cache = dict()
+    def __init__(self, max_keys=1000):
+        self._cache = {}
+        self._key_list = []
+        self._max_keys = max_keys
+
+    def evict(self, n=1):
+        for _ in range(n):
+            key = self._key_list.pop(0)
+            del self._cache[key]
 
     def set(self, k, v):
+        try:
+            idx = self._key_list.index(k)
+            self._key_list.pop(idx)
+            self._key_list.append(k)
+        except ValueError as e:
+            self._key_list.append(k)
+
         self._cache[k] = v
+
+        if len(self._key_list) > self._max_keys:
+            self.evict(len(self._key_list) - self._max_keys)
 
     def get(self, k):
         if self.exists(k):
-            return self._cache.get(k)
+            return self._cache[k]
         else:
+            try:
+                idx = self._key_list.index(k)
+                self._key_list.pop(idx)
+            except ValueError as e:
+                pass
             raise CacheMissException(k)
 
     def exists(self, k):
@@ -98,7 +120,8 @@ class RedisDFCache():
         except ValueError as e:
             self._key_list.append(k)
 
-        self._cache.set(k, v.to_msgpack(compress='zlib'), ex=self.ttl)
+        # Use pickle instead of msgpack for DataFrame serialization
+        self._cache.set(k, pickle.dumps(v), ex=self.ttl)
 
         if len(self._key_list) > self._max_keys:
             self.evict(len(self._key_list) - self._max_keys)
@@ -106,7 +129,8 @@ class RedisDFCache():
     def get(self, orik):
         k = self.prefix + orik
         if self.exists(orik):
-            return pd.read_msgpack(self._cache.get(k))
+            # Use pickle instead of msgpack for DataFrame deserialization
+            return pickle.loads(self._cache.get(k))
         else:
             try:
                 idx = self._key_list.index(k)
@@ -120,7 +144,11 @@ class RedisDFCache():
         return self._cache.exists(k)
 
     def sync(self):
-        self._key_list = [x for x in self._cache.scan_iter("%s*" % (self.prefix, ))]
+        """
+        Syncs the key list with what is in redis.
+        :return: None
+        """
+        self._key_list = [x.decode('utf-8') for x in self._cache.keys(self.prefix + '*')]
 
     def purge(self):
         for key in self._cache.scan_iter("%s*" % (self.prefix, )):

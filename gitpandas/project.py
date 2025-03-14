@@ -160,8 +160,7 @@ class ProjectDirectory(object):
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have coverage' % (repo, ))
 
-        df.reset_index()
-
+        df = df.reset_index(drop=True)
         return df
 
     def file_change_rates(self, branch='master', limit=None, coverage=False, days=None, ignore_globs=None, include_globs=None):
@@ -316,14 +315,19 @@ class ProjectDirectory(object):
 
         for repo in self.repos:
             try:
-                ch = repo.commit_history(branch, limit=limit, days=days, ignore_globs=ignore_globs, include_globs=include_globs)
+                ch = repo.commit_history(
+                    branch,
+                    limit=limit,
+                    days=days,
+                    ignore_globs=ignore_globs,
+                    include_globs=include_globs
+                )
                 ch['repository'] = repo.repo_name
                 df = pd.concat([df, ch])
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
-        df.reset_index()
-
+        df = df.reset_index(drop=True)
         return df
 
     def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
@@ -423,22 +427,21 @@ class ProjectDirectory(object):
                 print('Warning! Repo: %s couldnt be blamed' % (repo, ))
                 pass
 
-        for lvl in range(df.index.nlevels):
-            df = df.reset_index(level=lvl)
+        # Reset all index levels
+        df = df.reset_index()
 
         if committer:
             if by == 'repository':
-                df = df.groupby('committer').agg({'loc': np.sum})
+                df = df.groupby('committer')['loc'].sum().to_frame()
             elif by == 'file':
-                df = df.groupby(['committer', 'file']).agg({'loc': np.sum})
+                df = df.groupby(['committer', 'file'])['loc'].sum().to_frame()
         else:
             if by == 'repository':
-                df = df.groupby('author').agg({'loc': np.sum})
+                df = df.groupby('author')['loc'].sum().to_frame()
             elif by == 'file':
-                df = df.groupby(['author', 'file']).agg({'loc': np.sum})
+                df = df.groupby(['author', 'file'])['loc'].sum().to_frame()
 
         df = df.sort_values(by=['loc'], ascending=False)
-
         return df
 
     def file_detail(self, rev='HEAD', committer=True, ignore_globs=None, include_globs=None):
@@ -483,7 +486,7 @@ class ProjectDirectory(object):
             except GitCommandError:
                 print('Warning! Repo: %s couldnt be inspected' % (repo, ))
 
-        df = df.reset_index(level=-1)
+        df = df.reset_index()
         df = df.set_index(['file', 'repository'])
         return df
 
@@ -516,8 +519,7 @@ class ProjectDirectory(object):
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
-        df.reset_index()
-
+        df = df.reset_index(drop=True)
         return df
 
     def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
@@ -569,8 +571,7 @@ class ProjectDirectory(object):
                 except GitCommandError:
                     print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
 
-        df.reset_index()
-
+        df = df.reset_index(drop=True)
         return df
 
     def cumulative_blame(self, branch='master', by='committer', limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None, include_globs=None):

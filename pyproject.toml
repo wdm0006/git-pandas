@@ -21,7 +21,7 @@ keywords = ["git", "pandas", "data", "analysis"]
 dependencies = [
     "gitpython>=1.0.0",
     "numpy>=1.9.0",
-    "pandas>=0.16.0",
+    "pandas>=2.0.0",
     "requests",
     "redis",
 ]
