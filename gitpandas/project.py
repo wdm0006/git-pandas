@@ -42,19 +42,40 @@ def _tags_func(repo):
 
 
 class ProjectDirectory(object):
-    """
-    An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
-    git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.
+    """A class for analyzing multiple git repositories in a directory or from explicit paths.
 
-    :param working_dir: (optional, default=None), the working directory to search for repositories in,
-        None for cwd, an explicit list of directories containing git repositories,
-        or a list of ``Repository`` instances
-    :param ignore_repos: (optional, default=None), a list of directories to ignore when searching for git repos.
-    :param verbose: (default=True), if True, will print out verbose logging to terminal
-    :param verbose: optional, verbosity level of output, bool
-    :param tmp_dir: optional, a path to clone the repo into if necessary. Will create one if none passed.
-    :param cache_backend: optional, an instantiated cache backend from gitpandas.cache
-    :return:
+    This class provides functionality to analyze multiple git repositories together, whether they are
+    local repositories in a directory, explicitly specified local repositories, or remote repositories
+    that need to be cloned. It offers methods for analyzing commit history, blame information,
+    file changes, and other git metrics across all repositories.
+
+    Args:
+        working_dir (Union[str, List[str], None]): The source of repositories to analyze:
+            - If None: Uses current working directory to find repositories
+            - If str: Path to directory containing git repositories
+            - If List[str]: List of paths to git repositories or Repository instances
+        ignore_repos (Optional[List[str]]): List of repository names to ignore
+        verbose (bool, optional): Whether to print verbose output. Defaults to True.
+        tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
+        cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
+
+    Attributes:
+        repo_dirs (Union[set, list]): Set of repository directories or list of Repository instances
+        repos (List[Repository]): List of Repository objects being analyzed
+
+    Examples:
+        >>> # Create from directory containing repos
+        >>> pd = ProjectDirectory(working_dir='/path/to/repos')
+        
+        >>> # Create from explicit local repos
+        >>> pd = ProjectDirectory(working_dir=['/path/to/repo1', '/path/to/repo2'])
+        
+        >>> # Create from remote repos
+        >>> pd = ProjectDirectory(working_dir=['git://github.com/user/repo.git'])
+
+    Note:
+        When using remote repositories, they will be cloned to temporary directories.
+        This can be slow for large repositories.
     """
     def __init__(self, working_dir=None, ignore_repos=None, verbose=True, tmp_dir=None, cache_backend=None):
         if working_dir is None:
@@ -78,11 +99,11 @@ class ProjectDirectory(object):
         return self.repo_name()
 
     def repo_name(self):
-        """
-        Returns a DataFrame of the repo names present in this project directory
+        """Returns a DataFrame containing the names of all repositories in the project.
 
-        :return: DataFrame
-
+        Returns:
+            pandas.DataFrame: A DataFrame with a single column:
+                - repository (str): Name of each repository
         """
 
         ds = [[x.repo_name] for x in self.repos]
@@ -144,19 +165,37 @@ class ProjectDirectory(object):
         return df
 
     def file_change_rates(self, branch='master', limit=None, coverage=False, days=None, ignore_globs=None, include_globs=None):
-        """
-        This function will return a DataFrame containing some basic aggregations of the file change history data, and
-        optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
-        project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
-        a high change rate and poor test coverage, then it is a great candidate for writing more tests.
+        """Analyzes the rate of changes to files across all repositories.
 
-        :param branch: (optional, default=master) the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param coverage: (optional, default=False) a bool for whether or not to attempt to join in coverage data.
-        :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        This method helps identify files with high change rates or unusual edit patterns.
+        When combined with test coverage data, it can help identify files that may need
+        additional test coverage based on their change frequency.
+
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of commits to analyze per repository
+            coverage (bool, optional): Whether to include test coverage data. Defaults to False.
+            days (Optional[int]): If provided, only analyze commits from the last N days
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - unique_committers (int): Number of different committers
+                - abs_rate_of_change (float): Average number of lines changed per day
+                - net_rate_of_change (float): Average net lines changed per day
+                - net_change (int): Total net lines changed
+                - abs_change (int): Total absolute lines changed
+                - edit_rate (float): Ratio of changes to final size
+                If coverage=True, additional columns:
+                    - lines_covered (int): Number of lines covered by tests
+                    - total_lines (int): Total number of lines
+                    - coverage (float): Coverage percentage
+
+        Note:
+            Files with high change rates but low test coverage may be good candidates
+            for additional testing.
         """
 
         columns = ['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate', 'repository']
@@ -240,31 +279,34 @@ class ProjectDirectory(object):
         return df
 
     def commit_history(self, branch, limit=None, days=None, ignore_globs=None, include_globs=None):
-        """
-        Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
-        are appended to each other, resulting in one large data frame of size <limit>.  If a limit is provided, it is
-        divided by the number of repositories in the project directory to find out how many commits to pull from each
-        project. Future implementations will use date ordering across all projects to get the true most recent N commits
-        across the project.
+        """Returns a DataFrame containing the commit history for all repositories.
 
-        Included in that DataFrame will be the columns:
+        For each repository, retrieves the commit history on the specified branch. Results from all
+        repositories are combined into a single DataFrame. If a limit is provided, it is divided by
+        the number of repositories to determine how many commits to fetch from each.
 
-         * repository
-         * date (index)
-         * author
-         * committer
-         * message
-         * lines
-         * insertions
-         * deletions
-         * net
+        Args:
+            branch (str): The branch to analyze (e.g. 'master', 'main')
+            limit (Optional[int]): Maximum number of total commits to return. If provided, divided among repos.
+            days (Optional[int]): If provided, only return commits from the last N days
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Name of the repository
+                - date (datetime, index): Timestamp of the commit
+                - author (str): Name of the commit author
+                - committer (str): Name of the committer
+                - message (str): Commit message
+                - lines (int): Total lines changed
+                - insertions (int): Lines added
+                - deletions (int): Lines removed
+                - net (int): Net lines changed (insertions - deletions)
+
+        Note:
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         if limit is not None:
@@ -285,26 +327,33 @@ class ProjectDirectory(object):
         return df
 
     def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
-        """
-        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
-        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
-        many file changes). Included in the DataFrame will be the columns:
+        """Returns detailed history of all file changes across repositories.
 
-         * repository
-         * date (index)
-         * author
-         * committer
-         * message
-         * filename
-         * insertions
-         * deletions
+        Unlike commit_history which returns one row per commit, this method returns
+        one row per file change, as a single commit may modify multiple files.
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of commits to analyze per repository
+            days (Optional[int]): If provided, only analyze commits from the last N days
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - date (datetime): Timestamp of the change
+                - author (str): Name of the author
+                - committer (str): Name of the committer
+                - message (str): Commit message
+                - rev (str): Commit hash
+                - filename (str): Path of the changed file
+                - insertions (int): Lines added
+                - deletions (int): Lines removed
+
+        Note:
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         if limit is not None:
@@ -331,20 +380,35 @@ class ProjectDirectory(object):
         return df
 
     def blame(self, committer=True, by='repository', ignore_globs=None, include_globs=None):
-        """
-        Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
-        name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
-        method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
-        file extensions. The DataFrame will have the columns:
+        """Analyzes blame information across all repositories.
 
-         * committer
-         * loc
+        Retrieves blame information from the current HEAD of each repository and aggregates it
+        based on the specified grouping. Can group results by committer/author and either
+        repository or file.
 
-        :param committer: (optional, default=True) true if committer should be reported, false if author
-        :param by: (optional, default=repository) whether to group by repository or by file
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            committer (bool, optional): If True, group by committer name. If False, group by author name.
+                Defaults to True.
+            by (str, optional): How to group the results. One of:
+                - 'repository': Group by repository (default)
+                - 'file': Group by individual file
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns depending on the 'by' parameter:
+                If by='repository':
+                    - committer/author (str): Name of the committer/author
+                    - loc (int): Lines of code attributed to that person
+                If by='file':
+                    - committer/author (str): Name of the committer/author
+                    - file (str): File path
+                    - loc (int): Lines of code attributed to that person in that file
+
+        Note:
+            Results are sorted by lines of code in descending order.
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         df = None
@@ -378,14 +442,31 @@ class ProjectDirectory(object):
         return df
 
     def file_detail(self, rev='HEAD', committer=True, ignore_globs=None, include_globs=None):
-        """
-        Returns a table of all current files in the repos, with some high level information about each file (total LOC,
-        file owner, extension, most recent edit date, etc.).
+        """Provides detailed information about all files in the repositories.
 
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :param committer: (optional, default=True) true if committer should be reported, false if author
-        :return:
+        Analyzes each file in the repositories at the specified revision, gathering
+        information about size, ownership, and last modification.
+
+        Args:
+            rev (str, optional): Revision to analyze. Defaults to 'HEAD'.
+            committer (bool, optional): If True, use committer info. If False, use author.
+                Defaults to True.
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by (file, repository) with columns:
+                - committer/author (str): Name of primary committer/author
+                - last_change (datetime): When file was last modified
+                - loc (int): Lines of code in file
+                - extension (str): File extension
+                - directory (str): Directory containing file
+                - filename (str): Name of file without path
+                - pct_blame (float): Percentage of file attributed to primary committer/author
+
+        Note:
+            The primary committer/author is the person responsible for the most lines
+            in the current version of the file.
         """
 
         df = None
@@ -407,14 +488,16 @@ class ProjectDirectory(object):
         return df
 
     def branches(self):
-        """
-        Returns a data frame of all branches in origin.  The DataFrame will have the columns:
+        """Returns information about all branches across repositories.
 
-         * repository
-         * local
-         * branch
+        Retrieves a list of all branches (both local and remote) from each repository
+        in the project directory.
 
-        :returns: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - local (bool): Whether the branch is local
+                - branch (str): Name of the branch
         """
 
         df = pd.DataFrame(columns=['repository', 'local', 'branch'])
@@ -438,19 +521,28 @@ class ProjectDirectory(object):
         return df
 
     def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
-        """
-        Returns a dataframe of all revision tags and their timestamps for each project. It will have the columns:
+        """Returns revision information for each repository.
 
-         * date
-         * repository
-         * rev
+        Retrieves revision (commit) information from each repository, with options
+        for limiting or sampling the revisions returned.
 
-        :param branch: (optional, default 'master') the branch to work in
-        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
-        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
-        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of revisions per repository
+            skip (Optional[int]): If provided, only return every Nth revision
+            num_datapoints (Optional[int]): If provided, evenly sample this many
+                revisions from each repository's history
 
-        :return: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - rev (str): Commit hash
+                - date (datetime): Timestamp of the revision
+
+        Note:
+            If num_datapoints is provided, it overrides limit and skip parameters.
+            The sampling will attempt to space the revisions evenly across the
+            repository's history.
         """
 
         if limit is not None:
@@ -482,25 +574,38 @@ class ProjectDirectory(object):
         return df
 
     def cumulative_blame(self, branch='master', by='committer', limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None, include_globs=None):
-        """
-        Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
-        collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
-        returned in 3 forms (switched with the by parameter, default 'committer'):
+        """Analyzes how code ownership has evolved over time.
 
-         * committer: one column per committer
-         * project: one column per project
-         * raw: one column per committed per project
+        For each revision point, calculates the lines of code attributed to each
+        contributor, showing how ownership of the codebase has changed over time.
 
-        :param branch: (optional, default 'master') the branch to work in
-        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
-        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.
-        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints evenly spaced revs will be used
-        :param committer: (optional, default=True) true if committer should be reported, false if author
-        :param by: (optional, default='committer') whether to arrange the output by committer or project
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            by (str, optional): How to group the results. One of:
+                - 'committer': One column per committer (default)
+                - 'project': One column per project
+                - 'raw': One column per committer per project
+            limit (Optional[int]): Maximum number of revisions to analyze
+            skip (Optional[int]): If provided, only analyze every Nth revision
+            num_datapoints (Optional[int]): If provided, evenly sample this many points
+            committer (bool, optional): If True, use committer info. If False, use author.
+                Defaults to True.
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
 
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by date with columns depending on 'by':
+                If by='committer':
+                    One column per committer showing their LOC over time
+                If by='project':
+                    One column per project showing total LOC over time
+                If by='raw':
+                    One column per committer-project combination
+
+        Note:
+            Missing values are forward-filled, then filled with 0.
+            This assumes that if a contributor hasn't modified their code, they
+            maintain the same LOC count from their last contribution.
         """
 
         blames = []
@@ -611,22 +716,23 @@ class ProjectDirectory(object):
         return df
 
     def repo_information(self):
-        """
-        Returns a DataFrame with the properties of all repositories in the project directory. The returned DataFrame
-        will have the columns:
+        """Returns detailed metadata about each repository.
 
-         * local_directory
-         * branches
-         * bare
-         * remotes
-         * description
-         * references
-         * heads
-         * submodules
-         * tags
-         * active_branch
+        Retrieves various properties and references from each repository's
+        Git object model.
 
-        :return: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - local_directory (str): Path to the repository
+                - branches (list): List of branches
+                - bare (bool): Whether it's a bare repository
+                - remotes (list): List of remote references
+                - description (str): Repository description
+                - references (list): List of all references
+                - heads (list): List of branch heads
+                - submodules (list): List of submodules
+                - tags (list): List of tags
+                - active_branch (str): Currently checked out branch
         """
 
         data = [[repo.git_dir,
@@ -656,15 +762,35 @@ class ProjectDirectory(object):
         return df
 
     def bus_factor(self, ignore_globs=None, include_globs=None, by='projectd'):
-        """
-        An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
-        the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
-        least 50% of the codebase's LOC
+        """Calculates the "bus factor" for the repositories.
 
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        The bus factor is a measure of risk based on how concentrated the codebase knowledge is
+        among contributors. It is calculated as the minimum number of contributors whose combined
+        contributions account for at least 50% of the codebase's lines of code.
 
-        :return:
+        Args:
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+            by (str, optional): How to calculate the bus factor. One of:
+                - 'projectd': Calculate for entire project directory (default)
+                - 'repository': Calculate separately for each repository
+                - 'file': Not implemented yet
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns depending on the 'by' parameter:
+                If by='projectd':
+                    - projectd (str): Always 'projectd'
+                    - bus factor (int): Bus factor for entire project
+                If by='repository':
+                    - repository (str): Repository name
+                    - bus factor (int): Bus factor for that repository
+
+        Raises:
+            NotImplementedError: If by='file' is specified (not implemented yet)
+
+        Note:
+            A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
+            few contributors. A higher bus factor indicates knowledge is better distributed.
         """
 
         if by == 'file':
@@ -695,25 +821,33 @@ class ProjectDirectory(object):
             return df
 
     def punchcard(self, branch='master', limit=None, days=None, by=None, normalize=None, ignore_globs=None, include_globs=None):
-        """
-        Returns a pandas DataFrame containing all of the data for a punchcard.
+        """Generates a "punch card" visualization of commit activity.
 
-         * day_of_week
-         * hour_of_day
-         * author / committer
-         * lines
-         * insertions
-         * deletions
-         * net
+        Creates a visualization of when commits occur, aggregated by day of week
+        and hour of day. This helps identify patterns in development activity.
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return, if limit is None
-        :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or 'committer', 'author', 'repository'
-        :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of commits to analyze
+            days (Optional[int]): If provided, only analyze commits from the last N days
+            by (Optional[str]): Additional field to group by (e.g. 'committer')
+            normalize (Optional[int]): If provided, normalize counts to this value
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - day (int): Day of week (0=Monday, 6=Sunday)
+                - hour (int): Hour of day (0-23)
+                - lines (int/float): Lines changed
+                - insertions (int/float): Lines added
+                - deletions (int/float): Lines removed
+                - net (int/float): Net lines changed
+                If by is specified, includes that column as well.
+
+        Note:
+            If normalize is provided, all numeric columns are normalized so their
+            sum equals the specified value.
         """
 
         df = pd.DataFrame()
@@ -761,9 +895,10 @@ class ProjectDirectory(object):
         return punch_card
 
     def __del__(self):
-        """
+        """Cleanup method called when the object is destroyed.
 
-        :return:
+        Ensures proper cleanup of all repository objects, including
+        temporary directories for cloned repositories.
         """
 
         for repo in self.repos:
@@ -771,14 +906,32 @@ class ProjectDirectory(object):
 
 
 class GitHubProfile(ProjectDirectory):
-    """
-    An extension of the ProjectDirectory object that is based off of a single github.com user's public profile.
-    """
-    def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False):
-        """
+    """A specialized ProjectDirectory for analyzing a GitHub user's repositories.
 
-        :param username:
-        :return:
+    This class extends ProjectDirectory to work with a GitHub user's public profile,
+    automatically discovering and analyzing their repositories.
+
+    Args:
+        username (str): GitHub username to analyze
+        ignore_forks (bool, optional): Whether to exclude forked repositories.
+            Defaults to False.
+        ignore_repos (Optional[List[str]]): List of repository names to ignore
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+
+    Note:
+        This class uses the GitHub API to discover repositories. It does not require
+        authentication for public repositories, but API rate limits may apply.
+    """
+
+    def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False):
+        """Initializes a GitHubProfile object.
+
+        Args:
+            username (str): GitHub username to analyze
+            ignore_forks (bool, optional): Whether to exclude forked repositories.
+                Defaults to False.
+            ignore_repos (Optional[List[str]]): List of repository names to ignore
+            verbose (bool, optional): Whether to print verbose output. Defaults to False.
         """
 
         # pull the git urls from github's api
