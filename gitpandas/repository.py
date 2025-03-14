@@ -47,16 +47,40 @@ def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_g
 
 
 class Repository(object):
-    """
-    The base class for a generic git repository, from which to gather statistics.  The object encapulates a single
-    gitpython Repo instance.
+    """A class for analyzing a single git repository.
 
-    :param working_dir: the directory of the git repository, meaning a .git directory is in it (default None=cwd)
-    :param verbose: optional, verbosity level of output, bool
-    :param tmp_dir: optional, a path to clone the repo into if necessary. Will create one if none passed.
-    :param cache_backend: optional, an instantiated cache backend from gitpandas.cache
-    :param labels_to_add: (optional, default=None), extra labels to add to outputted dataframes
-    :return:
+    This class provides functionality to analyze a git repository, whether it is a local
+    repository or a remote repository that needs to be cloned. It offers methods for
+    analyzing commit history, blame information, file changes, and other git metrics.
+
+    Args:
+        working_dir (Optional[str]): Path to the git repository:
+            - If None: Uses current working directory
+            - If local path: Path must contain a .git directory
+            - If git URL: Repository will be cloned to a temporary directory
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+        tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
+        cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
+        labels_to_add (Optional[List[str]]): Extra labels to add to output DataFrames
+
+    Attributes:
+        verbose (bool): Whether verbose output is enabled
+        git_dir (str): Path to the git repository
+        repo (git.Repo): GitPython Repo instance
+        cache_backend (Optional[object]): Cache backend being used
+        _labels_to_add (List[str]): Labels to add to DataFrames
+        _git_repo_name (Optional[str]): Repository name for remote repos
+
+    Examples:
+        >>> # Create from local repository
+        >>> repo = Repository('/path/to/repo')
+        
+        >>> # Create from remote repository
+        >>> repo = Repository('git://github.com/user/repo.git')
+
+    Note:
+        When using remote repositories, they will be cloned to temporary directories.
+        This can be slow for large repositories.
     """
 
     def __init__(self, working_dir=None, verbose=False, tmp_dir=None, cache_backend=None, labels_to_add=None):
@@ -91,30 +115,34 @@ class Repository(object):
             print('Repository [%s] instantiated at directory: %s' % (self._repo_name(), self.git_dir))
 
     def __del__(self):
-        """
-        On delete, clean up any temporary repositories still hanging around
+        """Cleanup method called when the object is destroyed.
 
-        :return:
+        Cleans up any temporary directories created for cloned repositories.
         """
         if self.__delete_hook:
             if os.path.exists(self.git_dir):
                 shutil.rmtree(self.git_dir)
 
     def is_bare(self):
-        """
-        Returns a boolean for if the repo is bare or not
+        """Checks if this is a bare repository.
 
-        :return: bool
+        A bare repository is one without a working tree, typically used as a central
+        repository.
+
+        Returns:
+            bool: True if this is a bare repository, False otherwise
         """
 
         return self.repo.bare
 
     def has_coverage(self):
-        """
-        Returns a boolean for is a parseable .coverage file can be found in the repository
+        """Checks if a parseable .coverage file exists in the repository.
 
-        :return: bool
+        Attempts to find and parse a .coverage file in the repository root directory.
+        The file must be in a valid format that can be parsed as JSON.
 
+        Returns:
+            bool: True if a valid .coverage file exists, False otherwise
         """
 
         if os.path.exists(self.git_dir + os.sep + '.coverage'):
@@ -130,18 +158,23 @@ class Repository(object):
             return False
 
     def coverage(self):
-        """
-        If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which
-        will contain the columns:
+        """Analyzes test coverage information from the repository.
 
-         * filename
-         * lines_covered
-         * total_lines
-         * coverage
+        Attempts to parse the .coverage file if it exists and returns coverage
+        statistics for each file.
 
-        If it can't be found or parsed, an empty DataFrame of that form will be returned.
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - filename (str): Path to the file
+                - lines_covered (int): Number of lines covered by tests
+                - total_lines (int): Total number of lines
+                - coverage (float): Coverage percentage
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
 
-        :return: DataFrame
+        Note:
+            Returns an empty DataFrame with the correct columns if no coverage
+            file exists or it can't be parsed.
         """
 
         if not self.has_coverage():
@@ -238,27 +271,34 @@ class Repository(object):
         return df
 
     def commit_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
-        """
-        Returns a pandas DataFrame containing all of the commits for a given branch. Included in that DataFrame will be
-        the columns:
+        """Returns a DataFrame containing the commit history for a branch.
 
-         * date (index)
-         * author
-         * committer
-         * message
-         * commit_sha
-         * lines
-         * insertions
-         * deletions
-         * net
-         * repository
+        Retrieves the commit history for the specified branch, with options to limit
+        the number of commits or time range, and filter which files to include.
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return, if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of commits to return
+            days (Optional[int]): If provided, only return commits from the last N days
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - date (datetime, index): Timestamp of the commit
+                - author (str): Name of the commit author
+                - committer (str): Name of the committer
+                - message (str): Commit message
+                - commit_sha (str): Commit hash
+                - lines (int): Total lines changed
+                - insertions (int): Lines added
+                - deletions (int): Lines removed
+                - net (int): Net lines changed (insertions - deletions)
+                - repository (str): Repository name
+
+        Note:
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         # setup the data-set of commits
@@ -328,25 +368,34 @@ class Repository(object):
         return df
 
     def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
-        """
-        Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
-        the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
-        many file changes). Included in the DataFrame will be the columns:
+        """Returns detailed history of all file changes in a branch.
 
-         * date (index)
-         * author
-         * committer
-         * message
-         * filename
-         * insertions
-         * deletions
+        Unlike commit_history which returns one row per commit, this method returns
+        one row per file change, as a single commit may modify multiple files.
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return if limit is None
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            limit (Optional[int]): Maximum number of commits to analyze
+            days (Optional[int]): If provided, only analyze commits from the last N days
+            ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
+            include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - date (datetime, index): Timestamp of the change
+                - author (str): Name of the author
+                - committer (str): Name of the committer
+                - message (str): Commit message
+                - rev (str): Commit hash
+                - filename (str): Path of the changed file
+                - insertions (int): Lines added
+                - deletions (int): Lines removed
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         # setup the dataset of commits
@@ -537,21 +586,36 @@ class Repository(object):
         skip_if=lambda x: True if x.get('rev') is None or x.get('rev') == 'HEAD' else False
     )
     def blame(self, rev='HEAD', committer=True, by='repository', ignore_globs=None, include_globs=None):
-        """
-        Returns the blame from the current HEAD of the repository as a DataFrame.  The DataFrame is grouped by committer
-        name, so it will be the sum of all contributions to the repository by each committer. As with the commit history
-        method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
-        file extensions. The DataFrame will have the columns:
+        """Analyzes blame information for files in the repository.
 
-         * committer
-         * loc
+        Retrieves blame information from a specific revision and aggregates it based on
+        the specified grouping. Can group results by committer/author and either
+        repository or file.
 
-        :param rev: (optional, default=HEAD) the specific revision to blame
-        :param committer: (optional, default=True) true if committer should be reported, false if author
-        :param by: (optional, default=repository) whether to group by repository or by file
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            rev (str, optional): Revision to analyze. Defaults to 'HEAD'.
+            committer (bool, optional): If True, group by committer name. If False, group by author name.
+                Defaults to True.
+            by (str, optional): How to group the results. One of:
+                - 'repository': Group by repository (default)
+                - 'file': Group by individual file
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns depending on the 'by' parameter:
+                If by='repository':
+                    - committer/author (str): Name of the committer/author
+                    - loc (int): Lines of code attributed to that person
+                If by='file':
+                    - committer/author (str): Name of the committer/author
+                    - file (str): File path
+                    - loc (int): Lines of code attributed to that person in that file
+
+        Note:
+            Results are sorted by lines of code in descending order.
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
         """
 
         blames = []
@@ -766,14 +830,16 @@ class Repository(object):
         return revs
 
     def branches(self):
-        """
-        Returns a data frame of all branches in origin.  The DataFrame will have the columns:
+        """Returns information about all branches in the repository.
 
-         * repository
-         * branch
-         * local
+        Retrieves a list of all branches (both local and remote) from the repository.
 
-        :returns: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - branch (str): Name of the branch
+                - local (bool): Whether the branch is local
+                Additional columns for any labels specified in labels_to_add
         """
 
         # first pull the local branches
@@ -797,16 +863,17 @@ class Repository(object):
         return df
 
     def get_branches_by_commit(self, commit):
-        """
-        Lookup all branches a commit belongs to and returns a DataFrame of said branches.
+        """Finds all branches containing a specific commit.
 
-         * repository
-         * branch
-         * local
+        Args:
+            commit (str): Commit hash to look up
 
-        :param commit: the commit to lookup
-
-        :returns: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - branch (str): Name of each branch containing the commit
+                - commit (str): The commit hash that was looked up
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
         """
         branches = self.repo.git.branch('-a', '--contains', commit).replace(" ", "").lstrip("*").splitlines()
         df = DataFrame(branches, columns=["branch"])
@@ -816,29 +883,30 @@ class Repository(object):
         return df
 
     def commits_in_tags(self, start=np.timedelta64(6, "M"), end=None):
-        """
-        Analyze each tag, and trace backwards from the tag to all commits that make
-        up that tag. This method looks at the commit for the tag, and then works
-        backwards to that commits parents, and so on and so, until it hits another
-        tag, is out of the time range, or hits the root commit. It returns a DataFrame
-        with the branches:
+        """Analyzes commits associated with each tag.
 
-         * tag_date (index)
-         * commit_date (index)
-         * commit_sha
-         * tag
-         * repository
+        For each tag, traces backwards through the commit history until hitting another
+        tag, reaching the time limit, or hitting the root commit. This helps understand
+        what changes went into each tagged version.
 
-        :param start: (optional, defaults to 6 months before today) the start time for commits,
-            can be a pd.Timestamp, or a np.timedelta or pd.Timedelta
-            (which then calculates from today)
-        :type start: pd.Timestamp | np.timedelta | pd.Timedelta
-        :param end: (optional, defaults to None) the end time for commits,
-            can be a pd.Timestamp, or a np.timedelta or pd.Timedelta
-            (which then calculates from today)
-        :type end: pd.Timestamp | np.timedelta | pd.Timedelta
+        Args:
+            start (Union[pd.Timestamp, np.timedelta64, pd.Timedelta], optional):
+                Start time for commit analysis. If a timedelta is provided, it's
+                calculated relative to today. Defaults to 6 months before today.
+            end (Optional[Union[pd.Timestamp, np.timedelta64, pd.Timedelta]]):
+                End time for commit analysis. If a timedelta is provided, it's
+                calculated relative to today. Defaults to None (no end limit).
 
-        :returns: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by (tag_date, commit_date) with columns:
+                - commit_sha (str): SHA of the commit
+                - tag (str): Name of the tag this commit belongs to
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            This is useful for generating changelogs or understanding the scope
+            of changes between tagged releases.
         """
 
         # If we pass in a timedelta instead of a timestamp, calc the timestamp relative to now
@@ -926,17 +994,25 @@ class Repository(object):
                 tag)
 
     def tags(self):
-        """
-        Returns a data frame of all tags in origin.  The DataFrame will have the columns:
+        """Returns information about all tags in the repository.
 
-         * tag_date (index)
-         * commit_date (index)
-         * tag
-         * annotated
-         * annotation
-         * repository
+        Retrieves detailed information about all tags, including both lightweight
+        and annotated tags.
 
-        :returns: DataFrame
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by (tag_date, commit_date) with columns:
+                - tag (str): Name of the tag
+                - annotated (bool): Whether it's an annotated tag
+                - annotation (str): Tag message (empty for lightweight tags)
+                - tag_sha (Optional[str]): SHA of tag object (None for lightweight tags)
+                - commit_sha (str): SHA of the commit being tagged
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            - tag_date is the tag creation time for annotated tags, commit time for lightweight
+            - commit_date is always the timestamp of the tagged commit
+            - Both dates are timezone-aware UTC timestamps
         """
 
         tags = self.repo.tags
@@ -975,10 +1051,17 @@ class Repository(object):
         return self._repo_name()
 
     def _repo_name(self):
-        """
-        Returns the name of the repository, using the local directory name.
+        """Returns the name of the repository.
 
-        :returns: str
+        For local repositories, uses the name of the directory containing the .git folder.
+        For remote repositories, extracts the name from the URL.
+
+        Returns:
+            str: Name of the repository, or 'unknown_repo' if name can't be determined
+
+        Note:
+            This is an internal method primarily used to provide consistent repository
+            names in DataFrame outputs.
         """
 
         if self._git_repo_name is not None:
@@ -990,37 +1073,69 @@ class Repository(object):
             return reponame
 
     def _add_labels_to_df(self, df):
+        """Adds configured labels to a DataFrame.
+
+        Adds the repository name and any additional configured labels to the DataFrame.
+        This ensures consistent labeling across all DataFrame outputs.
+
+        Args:
+            df (pandas.DataFrame): DataFrame to add labels to
+
+        Returns:
+            pandas.DataFrame: The input DataFrame with additional label columns:
+                - repository (str): Repository name
+                - label0..labelN: Values from labels_to_add
+
+        Note:
+            This is an internal helper method used by all public methods that
+            return DataFrames.
+        """
         df['repository'] = self._repo_name()
         for i, label in enumerate(self._labels_to_add):
             df[f"label{i}"] = label
         return df
 
     def __str__(self):
-        """
-        A pretty name for the repository object.
+        """Returns a human-readable string representation of the repository.
 
-        :returns: str
+        Returns:
+            str: String in format 'git repository: {name} at: {path}'
         """
         return 'git repository: %s at: %s' % (self._repo_name(), self.git_dir,)
 
     def __repr__(self):
-        """
-        A unique name for the repository object.
+        """Returns a unique string representation of the repository.
 
-        :returns: str
+        Returns:
+            str: The absolute path to the repository
         """
         return str(self.git_dir)
 
     def bus_factor(self, by='repository', ignore_globs=None, include_globs=None):
-        """
-        An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
-        the repository's primary branch.  The factor is the fewest number of contributors whose contributions make up at
-        least 50% of the codebase's LOC
+        """Calculates the "bus factor" for the repository.
 
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :param by: (optional, default=repository) whether to group by repository or by file
-        :return:
+        The bus factor is a measure of risk based on how concentrated the codebase knowledge is
+        among contributors. It is calculated as the minimum number of contributors whose combined
+        contributions account for at least 50% of the codebase's lines of code.
+
+        Args:
+            by (str, optional): How to calculate the bus factor. One of:
+                - 'repository': Calculate for entire repository (default)
+                - 'file': Not implemented yet
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - repository (str): Repository name
+                - bus factor (int): Bus factor for the repository
+
+        Raises:
+            NotImplementedError: If by='file' is specified (not implemented yet)
+
+        Note:
+            A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
+            few contributors. A higher bus factor indicates knowledge is better distributed.
         """
 
         if by == 'file':
@@ -1041,12 +1156,23 @@ class Repository(object):
         return DataFrame([[self._repo_name(), tc]], columns=['repository', 'bus factor'])
 
     def file_owner(self, rev, filename, committer=True):
-        """
-        Returns the owner (by majority blame) of a given file in a given rev. Returns the committers' name.
+        """Determines the primary owner of a file at a specific revision.
 
-        :param rev:
-        :param filename:
-        :param committer:
+        The owner is determined by who has contributed the most lines of code
+        to the file according to git blame.
+
+        Args:
+            rev (str): Revision to analyze
+            filename (str): Path to the file relative to repository root
+            committer (bool, optional): If True, use committer info. If False, use author.
+                Defaults to True.
+
+        Returns:
+            Optional[str]: Name of the primary owner, or None if file doesn't exist
+                or can't be analyzed
+
+        Note:
+            This is a helper method used by file_detail() to determine file ownership.
         """
         try:
             if committer:
@@ -1067,10 +1193,18 @@ class Repository(object):
             return None
 
     def _file_last_edit(self, filename):
-        """
+        """Gets the timestamp of the last modification to a file.
 
-        :param filename:
-        :return:
+        Args:
+            filename (str): Path to the file relative to repository root
+
+        Returns:
+            Optional[str]: Date string from git log, or None if file doesn't exist
+                or has no history
+
+        Note:
+            This is an internal helper method used by file_detail() to get file
+            modification times.
         """
 
         tmp = self.repo.git.log('-n 1 -- %s' % (filename,)).split('\n')
@@ -1087,14 +1221,32 @@ class Repository(object):
         skip_if=lambda x: True if x.get('rev') is None or x.get('rev') == 'HEAD' else False
     )
     def file_detail(self, include_globs=None, ignore_globs=None, rev='HEAD', committer=True):
-        """
-        Returns a table of all current files in the repos, with some high level information about each file (total LOC,
-        file owner, extension, most recent edit date, etc.).
+        """Provides detailed information about all files in the repository.
 
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :param committer: (optional, default=True) true if committer should be reported, false if author
-        :return:
+        Analyzes each file at the specified revision, gathering information about
+        size, ownership, and last modification.
+
+        Args:
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            rev (str, optional): Revision to analyze. Defaults to 'HEAD'.
+            committer (bool, optional): If True, use committer info. If False, use author.
+                Defaults to True.
+
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by file path with columns:
+                - file_owner (str): Name of primary committer/author
+                - last_edit_date (datetime): When file was last modified
+                - loc (int): Lines of code in file
+                - ext (str): File extension
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            The primary file owner is the person responsible for the most lines
+            in the current version of the file.
+            
+            This method is cached if a cache_backend was provided and rev is not HEAD.
         """
 
         # first get the blame
