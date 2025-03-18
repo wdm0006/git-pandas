@@ -414,11 +414,11 @@ class Repository(object):
                           x.message,
                           x.name_rev.split()[0],
                           self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
-                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+                      ] for x in self.repo.iter_commits(branch)]
             else:
                 ds = []
                 c_date = time.time()
-                commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
+                commits = self.repo.iter_commits(branch)
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
@@ -670,7 +670,7 @@ class Repository(object):
             skip = int(float(limit) / num_datapoints)
         else:
             if limit is None:
-                limit = sys.maxsize
+                limit = None  # Let Git handle unlimited commits naturally
             elif skip is not None:
                 limit = limit * skip
 
@@ -713,9 +713,9 @@ class Repository(object):
 
         # get the commit history to stub out committers (hacky and slow)
         if sys.version_info.major == 2:
-            committers = set([x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)])
+            committers = set([x.committer.name for x in self.repo.iter_commits(branch)])
         else:
-            committers = {x.committer.name for x in self.repo.iter_commits(branch, max_count=sys.maxsize)}
+            committers = {x.committer.name for x in self.repo.iter_commits(branch)}
 
         for y in committers:
             revs[y] = 0
