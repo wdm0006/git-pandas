@@ -7,7 +7,7 @@ name = "git-pandas"
 version = "2.0.0"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 license = {text = "BSD"}
 authors = [
     {name = "Will McGinnis", email = "will@pedalwrencher.com"},
