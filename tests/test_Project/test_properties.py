@@ -33,6 +33,16 @@ def local_project(tmp_path):
     grepo1 = git.Repo.init(str(repo1_dir))
     grepo2 = git.Repo.init(str(repo2_dir))
     
+    # Configure git user
+    grepo1.git.config('user.name', 'Test User')
+    grepo1.git.config('user.email', 'test@example.com')
+    grepo2.git.config('user.name', 'Test User')
+    grepo2.git.config('user.email', 'test@example.com')
+    
+    # Rename master to main
+    grepo1.git.branch('-M', 'main')
+    grepo2.git.branch('-M', 'main')
+    
     # Add README files
     with open(f"{repo1_dir}/README.md", 'w') as f:
         f.write('Sample README for a sample python project\n')

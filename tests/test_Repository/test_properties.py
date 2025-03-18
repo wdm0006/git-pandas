@@ -26,6 +26,13 @@ def local_repo(tmp_path):
     # Initialize a git repo
     grepo = git.Repo.init(str(repo_dir))
     
+    # Configure git user
+    grepo.git.config('user.name', 'Test User')
+    grepo.git.config('user.email', 'test@example.com')
+    
+    # Rename master to main
+    grepo.git.branch('-M', 'main')
+    
     # Add a README file
     readme_path = repo_dir / "README.md"
     readme_path.write_text('Sample README for a sample project\n')
