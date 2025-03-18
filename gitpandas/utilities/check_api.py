@@ -4,11 +4,9 @@ in different functions.
 
 """
 
-import gitpandas as module
 import inspect
-import json
 
-__author__ = 'willmcginnis'
+__author__ = "willmcginnis"
 
 
 def extract_objects(m, classes=True, functions=False):
@@ -25,17 +23,18 @@ def extract_objects(m, classes=True, functions=False):
 
 
 def parse_docstring(ds):
-    ds = [x.strip() for x in ds.split('\n')]
-    ds = [x.split(':') for x in ds if x.startswith(':param')]
-    ds = [{x[1].replace('param', '').strip(): x[2].strip()} for x in ds]
+    ds = [x.strip() for x in ds.split("\n")]
+    ds = [x.split(":") for x in ds if x.startswith(":param")]
+    ds = [{x[1].replace("param", "").strip(): x[2].strip()} for x in ds]
     return ds
 
 
 def get_distinct_params(m):
     out = set()
-    for k in m.keys():
-        out.update(m[k]['args'])
+    for k in m:
+        out.update(m[k]["args"])
     return out
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("Development utilities for analyzing the git-pandas API")

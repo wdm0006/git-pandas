@@ -31,7 +31,7 @@ lint:
 
 format:
 	$(UV) run ruff format .
-	$(UV) run ruff check --fix .
+	$(UV) run ruff check --fix --unsafe-fixes .
 
 docs:
 	$(MAKE) -C $(DOCS_DIR) html

@@ -9,23 +9,25 @@
 """
 
 import math
-import sys
 import os
+import sys
+import warnings
+
 import numpy as np
 import pandas as pd
 import requests
-import warnings
 from git import GitCommandError
+
 from gitpandas.repository import Repository
 
 try:
-    from joblib import delayed, Parallel
+    from joblib import Parallel, delayed
 
     _has_joblib = True
-except ImportError as e:
+except ImportError:
     _has_joblib = False
 
-__author__ = 'willmcginnis'
+__author__ = "willmcginnis"
 
 
 # Functions for joblib.
@@ -41,7 +43,7 @@ def _tags_func(repo):
     return repo.tags()
 
 
-class ProjectDirectory(object):
+class ProjectDirectory:
     """A class for analyzing multiple git repositories in a directory or from explicit paths.
 
     This class provides functionality to analyze multiple git repositories together, whether they are
@@ -66,10 +68,10 @@ class ProjectDirectory(object):
     Examples:
         >>> # Create from directory containing repos
         >>> pd = ProjectDirectory(working_dir='/path/to/repos')
-        
+
         >>> # Create from explicit local repos
         >>> pd = ProjectDirectory(working_dir=['/path/to/repo1', '/path/to/repo2'])
-        
+
         >>> # Create from remote repos
         >>> pd = ProjectDirectory(working_dir=['git://github.com/user/repo.git'])
 
@@ -77,25 +79,38 @@ class ProjectDirectory(object):
         When using remote repositories, they will be cloned to temporary directories.
         This can be slow for large repositories.
     """
-    def __init__(self, working_dir=None, ignore_repos=None, verbose=True, tmp_dir=None, cache_backend=None):
+
+    def __init__(
+        self,
+        working_dir=None,
+        ignore_repos=None,
+        verbose=True,
+        tmp_dir=None,
+        cache_backend=None,
+    ):
         if working_dir is None:
-            self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(os.getcwd()) if '.git' in x[0]])
+            self.repo_dirs = {x[0].split(".git")[0] for x in os.walk(os.getcwd()) if ".git" in x[0]}
         elif isinstance(working_dir, list):
             self.repo_dirs = working_dir
         else:
-            self.repo_dirs = set([x[0].split('.git')[0] for x in os.walk(working_dir) if '.git' in x[0]])
+            self.repo_dirs = {x[0].split(".git")[0] for x in os.walk(working_dir) if ".git" in x[0]}
 
         if all(isinstance(r, Repository) for r in self.repo_dirs):
             self.repos = self.repo_dirs
         else:
-            self.repos = [Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend)
-                          for r in self.repo_dirs]
+            self.repos = [
+                Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend) for r in self.repo_dirs
+            ]
 
         if ignore_repos is not None:
             self.repos = [x for x in self.repos if x.repo_name not in ignore_repos]
 
     def _repo_name(self):
-        warnings.warn('please use repo_name() now instead of _repo_name()', DeprecationWarning)
+        warnings.warn(
+            "please use repo_name() now instead of _repo_name()",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.repo_name()
 
     def repo_name(self):
@@ -107,7 +122,7 @@ class ProjectDirectory(object):
         """
 
         ds = [[x.repo_name] for x in self.repos]
-        df = pd.DataFrame(ds, columns=['repository'])
+        df = pd.DataFrame(ds, columns=["repository"])
         return df
 
     def is_bare(self):
@@ -118,7 +133,7 @@ class ProjectDirectory(object):
         """
 
         ds = [[x.repo_name, x.is_bare()] for x in self.repos]
-        df = pd.DataFrame(ds, columns=['repository', 'is_bare'])
+        df = pd.DataFrame(ds, columns=["repository", "is_bare"])
         return df
 
     def has_coverage(self):
@@ -129,7 +144,7 @@ class ProjectDirectory(object):
         """
 
         ds = [[x.repo_name, x.has_coverage()] for x in self.repos]
-        df = pd.DataFrame(ds, columns=['repository', 'has_coverage'])
+        df = pd.DataFrame(ds, columns=["repository", "has_coverage"])
         return df
 
     def coverage(self):
@@ -150,21 +165,37 @@ class ProjectDirectory(object):
         :return: DataFrame
         """
 
-        df = pd.DataFrame(columns=['filename', 'lines_covered', 'total_lines', 'coverage', 'repository'])
+        df = pd.DataFrame(
+            columns=[
+                "filename",
+                "lines_covered",
+                "total_lines",
+                "coverage",
+                "repository",
+            ]
+        )
 
         for repo in self.repos:
             try:
                 cov = repo.coverage()
-                cov['repository'] = repo.repo_name
+                cov["repository"] = repo.repo_name
                 if not cov.empty:
                     df = pd.concat([df, cov])
             except GitCommandError:
-                print('Warning! Repo: %s seems to not have coverage' % (repo, ))
+                print(f"Warning! Repo: {repo} seems to not have coverage")
 
         df = df.reset_index(drop=True)
         return df
 
-    def file_change_rates(self, branch='master', limit=None, coverage=False, days=None, ignore_globs=None, include_globs=None):
+    def file_change_rates(
+        self,
+        branch="master",
+        limit=None,
+        coverage=False,
+        days=None,
+        ignore_globs=None,
+        include_globs=None,
+    ):
         """Analyzes the rate of changes to files across all repositories.
 
         This method helps identify files with high change rates or unusual edit patterns.
@@ -198,10 +229,18 @@ class ProjectDirectory(object):
             for additional testing.
         """
 
-        columns = ['repository', 'unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate']
+        columns = [
+            "repository",
+            "unique_committers",
+            "abs_rate_of_change",
+            "net_rate_of_change",
+            "net_change",
+            "abs_change",
+            "edit_rate",
+        ]
         if coverage:
-            columns += ['lines_covered', 'total_lines', 'coverage']
-        
+            columns += ["lines_covered", "total_lines", "coverage"]
+
         # Initialize empty DataFrame with all required columns
         df = pd.DataFrame(columns=columns)
 
@@ -213,20 +252,31 @@ class ProjectDirectory(object):
                     coverage=coverage,
                     days=days,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
                 if not fcr.empty:
-                    fcr['repository'] = repo.repo_name
+                    fcr["repository"] = repo.repo_name
                     df = pd.concat([df, fcr], sort=True)
             except GitCommandError:
-                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         # Ensure consistent column order and reset index
         df = df[columns]
         df = df.reset_index(drop=True)
         return df
 
-    def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, days=None, committer=True, by=None, ignore_globs=None, include_globs=None):
+    def hours_estimate(
+        self,
+        branch="master",
+        grouping_window=0.5,
+        single_commit_hours=0.5,
+        limit=None,
+        days=None,
+        committer=True,
+        by=None,
+        ignore_globs=None,
+        include_globs=None,
+    ):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
 
@@ -235,7 +285,8 @@ class ProjectDirectory(object):
 
         :param branch: the branch to return commits for
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session
+        :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to
+             consider them part of one coding session
         :param single_commit_hours: (optional, default 0.5 hours) the time range to associate with one single commit
         :param days: (optional, default=None) number of days to return, if limit is None
         :param committer: (optional, default=True) whether to use committer vs. author
@@ -247,12 +298,9 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
-        if committer:
-            com = 'committer'
-        else:
-            com = 'author'
+        com = "committer" if committer else "author"
 
-        df = pd.DataFrame(columns=[com, 'hours', 'repository'])
+        df = pd.DataFrame(columns=[com, "hours", "repository"])
 
         for repo in self.repos:
             try:
@@ -264,20 +312,20 @@ class ProjectDirectory(object):
                     days=days,
                     committer=committer,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
-                ch['repository'] = repo.repo_name
+                ch["repository"] = repo.repo_name
                 df = pd.concat([df, ch])
             except GitCommandError:
-                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         df.reset_index()
 
-        if by == 'committer' or by == 'author':
-            df = df.groupby(com).agg({'hours': sum})
+        if by == "committer" or by == "author":
+            df = df.groupby(com).agg({"hours": sum})
             df = df.reset_index()
-        elif by == 'repository':
-            df = df.groupby('repository').agg({'hours': sum})
+        elif by == "repository":
+            df = df.groupby("repository").agg({"hours": sum})
             df = df.reset_index()
 
         return df
@@ -317,7 +365,20 @@ class ProjectDirectory(object):
             limit = int(limit / len(self.repo_dirs))
 
         # Initialize empty DataFrame with all required columns
-        df = pd.DataFrame(columns=['repository', 'author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
+        df = pd.DataFrame(
+            columns=[
+                "repository",
+                "author",
+                "committer",
+                "date",
+                "message",
+                "commit_sha",
+                "lines",
+                "insertions",
+                "deletions",
+                "net",
+            ]
+        )
 
         for repo in self.repos:
             try:
@@ -326,20 +387,40 @@ class ProjectDirectory(object):
                     limit=limit,
                     days=days,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
                 if not ch.empty:
-                    ch['repository'] = repo.repo_name
+                    ch["repository"] = repo.repo_name
                     df = pd.concat([df, ch], sort=True)
             except GitCommandError:
-                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         # Ensure consistent column order and reset index
-        df = df[['repository', 'author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net']]
+        df = df[
+            [
+                "repository",
+                "author",
+                "committer",
+                "date",
+                "message",
+                "commit_sha",
+                "lines",
+                "insertions",
+                "deletions",
+                "net",
+            ]
+        ]
         df = df.reset_index(drop=True)
         return df
 
-    def file_change_history(self, branch='master', limit=None, days=None, ignore_globs=None, include_globs=None):
+    def file_change_history(
+        self,
+        branch="master",
+        limit=None,
+        days=None,
+        ignore_globs=None,
+        include_globs=None,
+    ):
         """Returns detailed history of all file changes across repositories.
 
         Unlike commit_history which returns one row per commit, this method returns
@@ -373,7 +454,19 @@ class ProjectDirectory(object):
             limit = int(limit / len(self.repo_dirs))
 
         # Initialize empty DataFrame with all required columns
-        df = pd.DataFrame(columns=['repository', 'date', 'author', 'committer', 'message', 'rev', 'filename', 'insertions', 'deletions'])
+        df = pd.DataFrame(
+            columns=[
+                "repository",
+                "date",
+                "author",
+                "committer",
+                "message",
+                "rev",
+                "filename",
+                "insertions",
+                "deletions",
+            ]
+        )
 
         for repo in self.repos:
             try:
@@ -382,20 +475,32 @@ class ProjectDirectory(object):
                     limit=limit,
                     days=days,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
                 if not ch.empty:
-                    ch['repository'] = repo.repo_name
+                    ch["repository"] = repo.repo_name
                     df = pd.concat([df, ch], sort=True)
             except GitCommandError:
-                print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
+                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         # Ensure consistent column order and reset index
-        df = df[['repository', 'date', 'author', 'committer', 'message', 'rev', 'filename', 'insertions', 'deletions']]
+        df = df[
+            [
+                "repository",
+                "date",
+                "author",
+                "committer",
+                "message",
+                "rev",
+                "filename",
+                "insertions",
+                "deletions",
+            ]
+        ]
         df = df.reset_index(drop=True)
         return df
 
-    def blame(self, committer=True, by='repository', ignore_globs=None, include_globs=None):
+    def blame(self, committer=True, by="repository", ignore_globs=None, include_globs=None):
         """Analyzes blame information across all repositories.
 
         Retrieves blame information from the current HEAD of each repository and aggregates it
@@ -432,33 +537,43 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 if df is None:
-                    df = repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)
+                    df = repo.blame(
+                        committer=committer,
+                        by=by,
+                        ignore_globs=ignore_globs,
+                        include_globs=include_globs,
+                    )
                 else:
-                    blame_df = repo.blame(committer=committer, by=by, ignore_globs=ignore_globs, include_globs=include_globs)
+                    blame_df = repo.blame(
+                        committer=committer,
+                        by=by,
+                        ignore_globs=ignore_globs,
+                        include_globs=include_globs,
+                    )
                     if not blame_df.empty:
                         df = pd.concat([df, blame_df])
-            except GitCommandError as err:
-                print('Warning! Repo: %s couldnt be blamed' % (repo, ))
+            except GitCommandError:
+                print(f"Warning! Repo: {repo} couldnt be blamed")
                 pass
 
         # Reset all index levels
         df = df.reset_index()
 
         if committer:
-            if by == 'repository':
-                df = df.groupby('committer')['loc'].sum().to_frame()
-            elif by == 'file':
-                df = df.groupby(['committer', 'file'])['loc'].sum().to_frame()
+            if by == "repository":
+                df = df.groupby("committer")["loc"].sum().to_frame()
+            elif by == "file":
+                df = df.groupby(["committer", "file"])["loc"].sum().to_frame()
         else:
-            if by == 'repository':
-                df = df.groupby('author')['loc'].sum().to_frame()
-            elif by == 'file':
-                df = df.groupby(['author', 'file'])['loc'].sum().to_frame()
+            if by == "repository":
+                df = df.groupby("author")["loc"].sum().to_frame()
+            elif by == "file":
+                df = df.groupby(["author", "file"])["loc"].sum().to_frame()
 
-        df = df.sort_values(by=['loc'], ascending=False)
+        df = df.sort_values(by=["loc"], ascending=False)
         return df
 
-    def file_detail(self, rev='HEAD', committer=True, ignore_globs=None, include_globs=None):
+    def file_detail(self, rev="HEAD", committer=True, ignore_globs=None, include_globs=None):
         """Provides detailed information about all files in the repositories.
 
         Analyzes each file in the repositories at the specified revision, gathering
@@ -491,18 +606,28 @@ class ProjectDirectory(object):
         for repo in self.repos:
             try:
                 if df is None:
-                    df = repo.file_detail(ignore_globs=ignore_globs, include_globs=include_globs, committer=committer, rev=rev)
-                    df['repository'] = repo.repo_name
+                    df = repo.file_detail(
+                        ignore_globs=ignore_globs,
+                        include_globs=include_globs,
+                        committer=committer,
+                        rev=rev,
+                    )
+                    df["repository"] = repo.repo_name
                 else:
-                    chunk = repo.file_detail(ignore_globs=ignore_globs, include_globs=include_globs, committer=committer, rev=rev)
-                    chunk['repository'] = repo.repo_name
+                    chunk = repo.file_detail(
+                        ignore_globs=ignore_globs,
+                        include_globs=include_globs,
+                        committer=committer,
+                        rev=rev,
+                    )
+                    chunk["repository"] = repo.repo_name
                     if not chunk.empty:
                         df = pd.concat([df, chunk])
             except GitCommandError:
-                print('Warning! Repo: %s couldnt be inspected' % (repo, ))
+                print(f"Warning! Repo: {repo} couldnt be inspected")
 
         df = df.reset_index()
-        df = df.set_index(['file', 'repository'])
+        df = df.set_index(["file", "repository"])
         return df
 
     def branches(self):
@@ -518,13 +643,10 @@ class ProjectDirectory(object):
                 - branch (str): Name of the branch
         """
 
-        df = pd.DataFrame(columns=['repository', 'local', 'branch'])
+        df = pd.DataFrame(columns=["repository", "local", "branch"])
 
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
-                delayed(_branches_func)
-                (x) for x in self.repos
-            )
+            ds = Parallel(n_jobs=-1, backend="threading", verbose=0)(delayed(_branches_func)(x) for x in self.repos)
             for d in ds:
                 if not d.empty:
                     df = pd.concat([df, d])
@@ -535,12 +657,12 @@ class ProjectDirectory(object):
                     if not branches_df.empty:
                         df = pd.concat([df, branches_df])
                 except GitCommandError:
-                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                    print(f"Warning! Repo: {repo} couldn't be inspected")
 
         df = df.reset_index(drop=True)
         return df
 
-    def revs(self, branch='master', limit=None, skip=None, num_datapoints=None):
+    def revs(self, branch="master", limit=None, skip=None, num_datapoints=None):
         """Returns revision information for each repository.
 
         Retrieves revision (commit) information from each repository, with options
@@ -571,12 +693,11 @@ class ProjectDirectory(object):
         if num_datapoints is not None:
             num_datapoints = math.floor(float(num_datapoints) / len(self.repos))
 
-        df = pd.DataFrame(columns=['repository', 'rev'])
+        df = pd.DataFrame(columns=["repository", "rev"])
 
         if _has_joblib:
-            ds = Parallel(n_jobs=-1, backend='threading', verbose=0)(
-                delayed(_revs_func)
-                (x, branch, limit, skip, num_datapoints) for x in self.repos
+            ds = Parallel(n_jobs=-1, backend="threading", verbose=0)(
+                delayed(_revs_func)(x, branch, limit, skip, num_datapoints) for x in self.repos
             )
             for d in ds:
                 if not d.empty:
@@ -584,17 +705,32 @@ class ProjectDirectory(object):
         else:
             for repo in self.repos:
                 try:
-                    revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
-                    revs['repository'] = repo.repo_name
+                    revs = repo.revs(
+                        branch=branch,
+                        limit=limit,
+                        skip=skip,
+                        num_datapoints=num_datapoints,
+                    )
+                    revs["repository"] = repo.repo_name
                     if not revs.empty:
                         df = pd.concat([df, revs])
                 except GitCommandError:
-                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                    print(f"Warning! Repo: {repo} couldn't be inspected")
 
         df = df.reset_index(drop=True)
         return df
 
-    def cumulative_blame(self, branch='master', by='committer', limit=None, skip=None, num_datapoints=None, committer=True, ignore_globs=None, include_globs=None):
+    def cumulative_blame(
+        self,
+        branch="master",
+        by="committer",
+        limit=None,
+        skip=None,
+        num_datapoints=None,
+        committer=True,
+        ignore_globs=None,
+        include_globs=None,
+    ):
         """Analyzes how code ownership has evolved over time.
 
         For each revision point, calculates the lines of code attributed to each
@@ -639,29 +775,29 @@ class ProjectDirectory(object):
                     num_datapoints=num_datapoints,
                     committer=committer,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
                 if not blame.empty:
                     blames.append((repo.repo_name, blame))
             except GitCommandError:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                print(f"Warning! Repo: {repo} couldn't be inspected")
                 pass
 
         if not blames:
             # Return empty DataFrame with expected columns if no data
-            if by == 'committer':
-                return pd.DataFrame(columns=['committer'])
-            elif by == 'project':
-                return pd.DataFrame(columns=['project'])
+            if by == "committer":
+                return pd.DataFrame(columns=["committer"])
+            elif by == "project":
+                return pd.DataFrame(columns=["project"])
             else:  # by == 'raw'
                 return pd.DataFrame()
 
         global_blame = blames[0][1]
-        global_blame.columns = [x + '__' + str(blames[0][0]) for x in global_blame.columns.values]
+        global_blame.columns = [x + "__" + str(blames[0][0]) for x in global_blame.columns.values]
         blames = blames[1:]
         for reponame, blame in blames:
-            blame.columns = [x + '__' + reponame for x in blame.columns.values]
-            global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how='outer')
+            blame.columns = [x + "__" + reponame for x in blame.columns.values]
+            global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how="outer")
 
         global_blame = global_blame.ffill()
         global_blame.fillna(0.0, inplace=True)
@@ -669,37 +805,37 @@ class ProjectDirectory(object):
         # Convert all numeric columns to float first
         numeric_columns = []
         for col in global_blame.columns:
-            if col != 'date':
+            if col != "date":
                 try:
-                    global_blame[col] = pd.to_numeric(global_blame[col], errors='raise')
+                    global_blame[col] = pd.to_numeric(global_blame[col], errors="raise")
                     numeric_columns.append(col)
                 except (ValueError, TypeError):
                     # Skip columns that can't be converted to numeric
                     pass
 
-        if by == 'committer':
-            committers = [(str(x).split('__')[0].lower().strip(), x) for x in numeric_columns]
+        if by == "committer":
+            committers = [(str(x).split("__")[0].lower().strip(), x) for x in numeric_columns]
 
             if sys.version_info.major == 2:
-                committer_mapping = dict([(c, [x[1] for x in committers if x[0] == c]) for c in set([x[0] for x in committers])])
+                committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
             else:
                 committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
 
-            for committer in committer_mapping.keys():
+            for committer in committer_mapping:
                 global_blame[committer] = pd.Series(0.0, index=global_blame.index)
                 for col in committer_mapping.get(committer, []):
                     global_blame[committer] += global_blame[col]
 
             global_blame = global_blame.reindex(columns=list(committer_mapping.keys()))
-        elif by == 'project':
-            projects = [(str(x).split('__')[1].lower().strip(), x) for x in numeric_columns]
+        elif by == "project":
+            projects = [(str(x).split("__")[1].lower().strip(), x) for x in numeric_columns]
 
             if sys.version_info.major == 2:
-                project_mapping = dict([(c, [x[1] for x in projects if x[0] == c]) for c in set([x[0] for x in projects])])
+                project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
             else:
                 project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
 
-            for project in project_mapping.keys():
+            for project in project_mapping:
                 global_blame[project] = pd.Series(0.0, index=global_blame.index)
                 for col in project_mapping.get(project, []):
                     global_blame[project] += global_blame[col]
@@ -742,18 +878,14 @@ class ProjectDirectory(object):
         """
 
         if _has_joblib:
-            dfs = Parallel(n_jobs=-1, backend='threading', verbose=0)(
-                delayed(_tags_func)
-                (x) for x in self.repos
-            )
+            dfs = Parallel(n_jobs=-1, backend="threading", verbose=0)(delayed(_tags_func)(x) for x in self.repos)
         else:
             dfs = []
             for repo in self.repos:
                 try:
                     dfs.append(repo.tags())
-                    # df = pd.concat([df, repo.tags()])
                 except GitCommandError:
-                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                    print(f"Warning! Repo: {repo} couldn't be inspected")
         # Filter out empty DataFrames before concatenation
         dfs = [df for df in dfs if not df.empty]
         df = pd.concat(dfs) if dfs else pd.DataFrame()
@@ -779,33 +911,41 @@ class ProjectDirectory(object):
                 - active_branch (str): Currently checked out branch
         """
 
-        data = [[repo.git_dir,
-                 repo.repo.branches,
-                 repo.repo.bare,
-                 repo.repo.remotes,
-                 repo.repo.description,
-                 repo.repo.references,
-                 repo.repo.heads,
-                 repo.repo.submodules,
-                 repo.repo.tags,
-                 repo.repo.active_branch] for repo in self.repos]
+        data = [
+            [
+                repo.git_dir,
+                repo.repo.branches,
+                repo.repo.bare,
+                repo.repo.remotes,
+                repo.repo.description,
+                repo.repo.references,
+                repo.repo.heads,
+                repo.repo.submodules,
+                repo.repo.tags,
+                repo.repo.active_branch,
+            ]
+            for repo in self.repos
+        ]
 
-        df = pd.DataFrame(data, columns=[
-            'local_directory',
-            'branches',
-            'bare',
-            'remotes',
-            'description',
-            'references',
-            'heads',
-            'submodules',
-            'tags',
-            'active_branch'
-        ])
+        df = pd.DataFrame(
+            data,
+            columns=[
+                "local_directory",
+                "branches",
+                "bare",
+                "remotes",
+                "description",
+                "references",
+                "heads",
+                "submodules",
+                "tags",
+                "active_branch",
+            ],
+        )
 
         return df
 
-    def bus_factor(self, ignore_globs=None, include_globs=None, by='projectd'):
+    def bus_factor(self, ignore_globs=None, include_globs=None, by="projectd"):
         """Calculates the "bus factor" for the repositories.
 
         The bus factor is a measure of risk based on how concentrated the codebase knowledge is
@@ -837,36 +977,45 @@ class ProjectDirectory(object):
             few contributors. A higher bus factor indicates knowledge is better distributed.
         """
 
-        if by == 'file':
-            raise NotImplementedError('File-wise bus factor')
-        elif by == 'projectd':
-            blame = self.blame(ignore_globs=ignore_globs, include_globs=include_globs, by='repository')
-            blame = blame.sort_values(by=['loc'], ascending=False)
+        if by == "file":
+            raise NotImplementedError("File-wise bus factor")
+        elif by == "projectd":
+            blame = self.blame(ignore_globs=ignore_globs, include_globs=include_globs, by="repository")
+            blame = blame.sort_values(by=["loc"], ascending=False)
 
-            total = blame['loc'].sum()
+            total = blame["loc"].sum()
             cumulative = 0
             tc = 0
             for idx in range(blame.shape[0]):
-                cumulative += blame.iloc[idx]['loc']
+                cumulative += blame.iloc[idx]["loc"]
                 tc += 1
                 if cumulative >= total / 2:
                     break
 
-            return pd.DataFrame([['projectd', tc]], columns=['projectd', 'bus factor'])
-        elif by == 'repository':
-            df = pd.DataFrame(columns=['repository', 'bus factor'])
+            return pd.DataFrame([["projectd", tc]], columns=["projectd", "bus factor"])
+        elif by == "repository":
+            df = pd.DataFrame(columns=["repository", "bus factor"])
             for repo in self.repos:
                 try:
                     bf_df = repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)
                     if not bf_df.empty:
                         df = pd.concat([df, bf_df])
                 except GitCommandError:
-                    print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                    print(f"Warning! Repo: {repo} couldn't be inspected")
 
             df.reset_index()
             return df
 
-    def punchcard(self, branch='master', limit=None, days=None, by=None, normalize=None, ignore_globs=None, include_globs=None):
+    def punchcard(
+        self,
+        branch="master",
+        limit=None,
+        days=None,
+        by=None,
+        normalize=None,
+        ignore_globs=None,
+        include_globs=None,
+    ):
         """Generates a "punch card" visualization of commit activity.
 
         Creates a visualization of when commits occur, aggregated by day of week
@@ -898,10 +1047,7 @@ class ProjectDirectory(object):
 
         df = pd.DataFrame()
 
-        if by == 'repository':
-            repo_by = None
-        else:
-            repo_by = by
+        repo_by = None if by == "repository" else by
 
         for repo in self.repos:
             try:
@@ -912,31 +1058,26 @@ class ProjectDirectory(object):
                     by=repo_by,
                     normalize=None,
                     ignore_globs=ignore_globs,
-                    include_globs=include_globs
+                    include_globs=include_globs,
                 )
-                chunk['repository'] = repo.repo_name
+                chunk["repository"] = repo.repo_name
                 if not chunk.empty:
                     df = pd.concat([df, chunk])
             except GitCommandError:
-                print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
+                print(f"Warning! Repo: {repo} couldn't be inspected")
 
         df.reset_index()
 
-        aggs = ['hour_of_day', 'day_of_week']
+        aggs = ["hour_of_day", "day_of_week"]
         if by is not None:
             aggs.append(by)
 
-        punch_card = df.groupby(aggs).agg({
-            'lines': np.sum,
-            'insertions': np.sum,
-            'deletions': np.sum,
-            'net': np.sum
-        })
+        punch_card = df.groupby(aggs).agg({"lines": np.sum, "insertions": np.sum, "deletions": np.sum, "net": np.sum})
         punch_card.reset_index(inplace=True)
 
         # normalize all cols
         if normalize is not None:
-            for col in ['lines', 'insertions', 'deletions', 'net']:
+            for col in ["lines", "insertions", "deletions", "net"]:
                 punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
 
         return punch_card
@@ -982,15 +1123,15 @@ class GitHubProfile(ProjectDirectory):
         """
 
         # pull the git urls from github's api
-        uri = 'https://api.github.com/users/%s/repos' % username
+        uri = f"https://api.github.com/users/{username}/repos"
         data = requests.get(uri)
         repos = []
         for chunk in data.json():
             # if we are skipping forks
             if ignore_forks:
-                if not chunk['fork']:
-                    repos.append(chunk['git_url'])
+                if not chunk["fork"]:
+                    repos.append(chunk["git_url"])
             else:
-                repos.append(chunk['git_url'])
+                repos.append(chunk["git_url"])
 
         ProjectDirectory.__init__(self, working_dir=repos, ignore_repos=ignore_repos, verbose=verbose)

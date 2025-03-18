@@ -1,11 +1,6 @@
-from gitpandas.repository import Repository, GitFlowRepository
-from gitpandas.project import ProjectDirectory, GitHubProfile
+from gitpandas.project import GitHubProfile, ProjectDirectory
+from gitpandas.repository import GitFlowRepository, Repository
 
-__author__ = 'willmcginnis'
+__author__ = "willmcginnis"
 
-__all__ = [
-    'Repository',
-    'GitFlowRepository',
-    'ProjectDirectory',
-    'GitHubProfile'
-]
+__all__ = ["Repository", "GitFlowRepository", "ProjectDirectory", "GitHubProfile"]

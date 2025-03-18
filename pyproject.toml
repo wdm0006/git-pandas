@@ -68,13 +68,22 @@ source = ["gitpandas"]
 
 [tool.ruff]
 target-version = "py311"
-line-length = 88
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "C4", "SIM", "ERA"]
-ignore = ["ANN101"]  # Ignore missing type annotation for self
+line-length = 120
+exclude=["docs/**"]
 
-[tool.ruff.isort]
-known-first-party = ["git_pandas"]
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "UP", "C4", "SIM", "ERA"]
+ignore = []
 
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.isort]
+known-first-party = ["gitpandas"]
+
+[tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
-suppress-none-returning = true 
+suppress-none-returning = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto" 

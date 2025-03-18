@@ -8,5 +8,5 @@
 
 """
 
-__author__ = 'willmcginnis'
-__version__ = '2.0.0'
+__author__ = "willmcginnis"
+__version__ = "2.0.0"
