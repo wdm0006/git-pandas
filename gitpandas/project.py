@@ -198,9 +198,11 @@ class ProjectDirectory(object):
             for additional testing.
         """
 
-        columns = ['unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate', 'repository']
+        columns = ['repository', 'unique_committers', 'abs_rate_of_change', 'net_rate_of_change', 'net_change', 'abs_change', 'edit_rate']
         if coverage:
             columns += ['lines_covered', 'total_lines', 'coverage']
+        
+        # Initialize empty DataFrame with all required columns
         df = pd.DataFrame(columns=columns)
 
         for repo in self.repos:
@@ -213,15 +215,15 @@ class ProjectDirectory(object):
                     ignore_globs=ignore_globs,
                     include_globs=include_globs
                 )
-                fcr['repository'] = repo.repo_name
-                # Filter out empty DataFrames before concatenation
                 if not fcr.empty:
-                    df = pd.concat([df, fcr])
+                    fcr['repository'] = repo.repo_name
+                    df = pd.concat([df, fcr], sort=True)
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
-        df.reset_index()
-
+        # Ensure consistent column order and reset index
+        df = df[columns]
+        df = df.reset_index(drop=True)
         return df
 
     def hours_estimate(self, branch='master', grouping_window=0.5, single_commit_hours=0.5, limit=None, days=None, committer=True, by=None, ignore_globs=None, include_globs=None):
@@ -314,7 +316,8 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
-        df = pd.DataFrame(columns=['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
+        # Initialize empty DataFrame with all required columns
+        df = pd.DataFrame(columns=['repository', 'author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net'])
 
         for repo in self.repos:
             try:
@@ -325,15 +328,14 @@ class ProjectDirectory(object):
                     ignore_globs=ignore_globs,
                     include_globs=include_globs
                 )
-                ch['repository'] = repo.repo_name
-                # Filter out empty DataFrames before concatenation
                 if not ch.empty:
+                    ch['repository'] = repo.repo_name
                     df = pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
-        # Ensure consistent column order
-        df = df[['author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net', 'repository']]
+        # Ensure consistent column order and reset index
+        df = df[['repository', 'author', 'committer', 'date', 'message', 'commit_sha', 'lines', 'insertions', 'deletions', 'net']]
         df = df.reset_index(drop=True)
         return df
 
@@ -370,6 +372,7 @@ class ProjectDirectory(object):
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
 
+        # Initialize empty DataFrame with all required columns
         df = pd.DataFrame(columns=['repository', 'date', 'author', 'committer', 'message', 'rev', 'filename', 'insertions', 'deletions'])
 
         for repo in self.repos:
@@ -381,15 +384,15 @@ class ProjectDirectory(object):
                     ignore_globs=ignore_globs,
                     include_globs=include_globs
                 )
-                ch['repository'] = repo.repo_name
-                # Filter out empty DataFrames before concatenation
                 if not ch.empty:
-                    df = pd.concat([df, ch])
+                    ch['repository'] = repo.repo_name
+                    df = pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print('Warning! Repo: %s seems to not have the branch: %s' % (repo, branch))
 
-        df.reset_index()
-
+        # Ensure consistent column order and reset index
+        df = df[['repository', 'date', 'author', 'committer', 'message', 'rev', 'filename', 'insertions', 'deletions']]
+        df = df.reset_index(drop=True)
         return df
 
     def blame(self, committer=True, by='repository', ignore_globs=None, include_globs=None):
@@ -638,10 +641,20 @@ class ProjectDirectory(object):
                     ignore_globs=ignore_globs,
                     include_globs=include_globs
                 )
-                blames.append((repo.repo_name, blame))
+                if not blame.empty:
+                    blames.append((repo.repo_name, blame))
             except GitCommandError:
                 print('Warning! Repo: %s couldn\'t be inspected' % (repo, ))
                 pass
+
+        if not blames:
+            # Return empty DataFrame with expected columns if no data
+            if by == 'committer':
+                return pd.DataFrame(columns=['committer'])
+            elif by == 'project':
+                return pd.DataFrame(columns=['project'])
+            else:  # by == 'raw'
+                return pd.DataFrame()
 
         global_blame = blames[0][1]
         global_blame.columns = [x + '__' + str(blames[0][0]) for x in global_blame.columns.values]
