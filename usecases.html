@@ -1,589 +1,446 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Use Cases &mdash; git-pandas 1.2.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  
-  
-
-  
-
-  
-  
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
     
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Use Cases and Examples &mdash; git-pandas 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="git-pandas 1.2.0 documentation" href="index.html"/>
-        <link rel="next" title="Contributing Code" href="contributors.html"/>
-        <link rel="prev" title="Project Directory" href="project.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=73cda6fb"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing to Git-Pandas" href="contributors.html" />
+    <link rel="prev" title="Caching" href="cache.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
-            <a href="index.html" class="icon icon-home"> git-pandas
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            git-pandas
           </a>
-
-          
-            
-            
-              <div class="version">
-                1.2.0
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
 
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Use Cases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#example-setup">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#repository-name">Repository Name</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#is-bare">Is Bare</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tags">Tags</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#branches">Branches</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#revisions">Revisions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#blame">Blame</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#commit-history">Commit History</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Commit History</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-change-history">File Change History</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#bus-factor">Bus Factor</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Bus Factor</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#cumulative-blame">Cumulative Blame</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id6">Cumulative Blame</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#coverage">Coverage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id7">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#has-coverage">Has Coverage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id8">Coverage</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#file-change-rates">File Change Rates</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id9">Example Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id10">File Change Rates</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
-</ul>
-
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">git-pandas</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">git-pandas</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Use Cases</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Use Cases and Examples</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="_sources/usecases.txt" rel="nofollow"> View page source</a>
-          
-        
+            <a href="_sources/usecases.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="use-cases">
-<h1>Use Cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h1>
-<p>Git-Pandas aims to at the most basic level provide a pandas-based interface to the data contained in git
-repositories. Beyond that, there are many specific use cases pertaining to the management and analysis of
-multi-repo projects and organizations that git-pandas can help with.  Here we will outline some of the various
-use-cases that git-pandas is good at, and how you can use it in your projects or organizations.</p>
-<div class="section" id="attributes">
-<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>At the most basic level, git-pandas allows a panda&#8217;s based interaction with the basic attributes of a repo.</dt>
-<dd><p class="first">This includes:</p>
-<ul class="last simple">
-<li>estimated repository name</li>
-<li>tags</li>
-<li>branches</li>
-<li>revs</li>
-<li>blame</li>
-<li>is_bare</li>
-</ul>
-</dd>
-</dl>
-<div class="section" id="example-setup">
-<h3>Example Setup<a class="headerlink" href="#example-setup" title="Permalink to this headline">¶</a></h3>
-<p>The following examples exhibit the basic functionality of the ProjectDirectory and Repository objects, for gathering
-the basic attributes of them. In this section, we use the example: attributes.py, which can be found in the examples
-directory. For more detailed information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="repository-name">
-<h3>Repository Name<a class="headerlink" href="#repository-name" title="Permalink to this headline">¶</a></h3>
-<p>To access the approximate repository name of each:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Names:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Name:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Directory Names:
-   repository
-0  git-pandas
-1   lifelines
+             
+  <section id="use-cases-and-examples">
+<h1>Use Cases and Examples<a class="headerlink" href="#use-cases-and-examples" title="Permalink to this heading"></a></h1>
+<p>Git-Pandas provides a powerful interface for analyzing Git repositories using pandas DataFrames. This guide demonstrates common use cases and provides practical examples.</p>
+<section id="basic-repository-analysis">
+<h2>Basic Repository Analysis<a class="headerlink" href="#basic-repository-analysis" title="Permalink to this heading"></a></h2>
+<section id="repository-attributes">
+<h3>Repository Attributes<a class="headerlink" href="#repository-attributes" title="Permalink to this heading"></a></h3>
+<p>Get basic information about a repository:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
 
-Repository Name:
-git-pandas
-</pre></div>
-</div>
-</div>
-<div class="section" id="is-bare">
-<h3>Is Bare<a class="headerlink" href="#is-bare" title="Permalink to this headline">¶</a></h3>
-<p>To find out if the repositories are bare:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Is Bare:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Is Bare:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Directory Is Bare:
-   repository is_bare
-0  git-pandas   False
-1   lifelines   False
+<span class="c1"># Get repository name</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
 
-Repository Is Bare:
-False
-</pre></div>
-</div>
-</div>
-<div class="section" id="tags">
-<h3>Tags<a class="headerlink" href="#tags" title="Permalink to this headline">¶</a></h3>
-<p>To access the tags of each:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Tags:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">tags</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Tags:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">tags</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Tags:
-    repository       tag
-0   git-pandas     0.0.1
-1   git-pandas     0.0.2
-2   git-pandas     0.0.3
-3   git-pandas     0.0.4
-4   git-pandas     0.0.5
-0    lifelines     0.4.3
-1    lifelines     0.6.0
-2    lifelines    ignore
-3    lifelines      v0.4
-4    lifelines    v0.4.1
-5    lifelines    v0.4.2
-6    lifelines    v0.4.4
-7    lifelines  v0.4.4.1
-8    lifelines    v0.5.0
-9    lifelines    v0.5.1
-10   lifelines    v0.6.0
-11   lifelines    v0.7.0
-12   lifelines    v0.8.0
+<span class="c1"># Check if repository is bare</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
 
-Repository Tags:
-     tag  repository
-0  0.0.1  git-pandas
-1  0.0.2  git-pandas
-2  0.0.3  git-pandas
-3  0.0.4  git-pandas
-4  0.0.5  git-pandas
-</pre></div>
-</div>
-</div>
-<div class="section" id="branches">
-<h3>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h3>
-<p>To access the branches of each:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Branches:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">branches</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Branches:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">branches</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Branches:
-    branch   local   repository
-0   master    True   git-pandas
-1   master    False  git-pandas
-2   gh-pages  False  git-pandas
-0   master    True   lifelines
-1   0.6.0     False  lifelines
-...
+<span class="c1"># Get all tags</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">tags</span><span class="p">())</span>
 
-Repository Branches:
-     branch  local  repository
-0  gh-pages   True  git-pandas
-1    master   True  git-pandas
-2    master  False  git-pandas
-3  gh-pages  False  git-pandas
-</pre></div>
-</div>
-</div>
-<div class="section" id="revisions">
-<h3>Revisions<a class="headerlink" href="#revisions" title="Permalink to this headline">¶</a></h3>
-<p>To access the revisions of each:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Revisions:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Revisions:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Directory Revisions:
-           date  repository                                       rev
-0    1451844740  git-pandas  5cbf630d723f9ebdd0e164eb58a6fe952f1cb92c
-1    1451843631  git-pandas  0b72b01b2b4a0cf673f457e016cdcdde8fe82f15
-2    1451842103  git-pandas  4376d9451d1ff32089d0dd1bffa3de56fe35604d
-3    1451842081  git-pandas  ebfdadc6d09d613b948dadef986bd9cbea4240a2
-...
-0    1450720064   lifelines  e689d8d910b65cd2c2188c74e33ef2f722d361a4
-1    1450719167   lifelines  773670a6261326d96556816f48e159cbceaeeb2d
-2    1450718313   lifelines  d42a010cfa368975c0beaa251db8db2cacdf9be1
-3    1450718269   lifelines  a1543344f91918e2f3456cf15d1895ac6448f8a5
-...
+<span class="c1"># Get all branches</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">branches</span><span class="p">())</span>
 
-Repository Revisions:
-          date                                       rev
-0   1451844740  5cbf630d723f9ebdd0e164eb58a6fe952f1cb92c
-1   1451843631  0b72b01b2b4a0cf673f457e016cdcdde8fe82f15
-2   1451842103  4376d9451d1ff32089d0dd1bffa3de56fe35604d
-3   1451842081  ebfdadc6d09d613b948dadef986bd9cbea4240a2
-...
-</pre></div>
-</div>
-</div>
-<div class="section" id="blame">
-<h3>Blame<a class="headerlink" href="#blame" title="Permalink to this headline">¶</a></h3>
-<p>To access the current blame of each:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&#39;Project Directory Blame:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;*.py&#39;</span><span class="p">]))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">Repository Blame:&#39;</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;*.py&#39;</span><span class="p">]))</span>
-</pre></div>
-</div>
-<p>Which will yield:</p>
-<div class="highlight-none"><div class="highlight"><pre>Project Directory Blame:
-                         loc
-Cameron Davidson-Pilon  5537
-Will McGinnis           1789
-Jonas Kalderstam         434
-Will Mcginnis            316
-CamDavidsonPilon         236
-Ben Kuhn                  94
-Nick Evans                20
-Andrew Gartland           14
-Kyle                       9
-xantares                   6
-Niels Bantilan             5
-Ben Rifkind                1
-Nick Furlotte              1
+<span class="c1"># Get all revisions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
 
-Repository Blame:
-                loc
-committer
-Will McGinnis  1750
-Will Mcginnis   316
+<span class="c1"># Get blame information</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
+</section>
+<section id="commit-history-analysis">
+<h3>Commit History Analysis<a class="headerlink" href="#commit-history-analysis" title="Permalink to this heading"></a></h3>
+<p>Analyze commit patterns and history:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history</span>
+<span class="n">commits_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
+
+<span class="c1"># Get file change history</span>
+<span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
+
+<span class="c1"># Filter by file extension</span>
+<span class="n">python_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">])</span>
+
+<span class="c1"># Filter by directory</span>
+<span class="n">src_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;src/*&#39;</span><span class="p">])</span>
+</pre></div>
 </div>
+</section>
+</section>
+<section id="project-level-analysis">
+<h2>Project-Level Analysis<a class="headerlink" href="#project-level-analysis" title="Permalink to this heading"></a></h2>
+<section id="multiple-repository-analysis">
+<h3>Multiple Repository Analysis<a class="headerlink" href="#multiple-repository-analysis" title="Permalink to this heading"></a></h3>
+<p>Analyze multiple repositories simultaneously:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+
+<span class="c1"># Create project from multiple repositories</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">([</span>
+    <span class="s1">&#39;git://github.com/user/repo1.git&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;git://github.com/user/repo2.git&#39;</span>
+<span class="p">])</span>
+
+<span class="c1"># Get aggregated metrics</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">general_information</span><span class="p">())</span>
+
+<span class="c1"># Calculate bus factor</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">())</span>
+
+<span class="c1"># Get file change rates</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">())</span>
+
+<span class="c1"># Generate punchcard data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">punchcard</span><span class="p">())</span>
+</pre></div>
 </div>
-<div class="section" id="commit-history">
-<h2>Commit History<a class="headerlink" href="#commit-history" title="Permalink to this headline">¶</a></h2>
-<p>One of the simplest datasets to be pulled from a repository or collection of repositories is the
-commit history.  This is done via:</p>
-<blockquote>
-<div><ul class="simple">
-<li>commit history</li>
-<li>file change history</li>
+</section>
+</section>
+<section id="advanced-analysis">
+<h2>Advanced Analysis<a class="headerlink" href="#advanced-analysis" title="Permalink to this heading"></a></h2>
+<section id="cumulative-blame-analysis">
+<h3>Cumulative Blame Analysis<a class="headerlink" href="#cumulative-blame-analysis" title="Permalink to this heading"></a></h3>
+<p>Track code ownership over time:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cumulative blame</span>
+<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">cumulative_blame</span><span class="p">()</span>
+
+<span class="c1"># Plot cumulative blame</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Cumulative Blame Over Time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="bus-factor-analysis">
+<h3>Bus Factor Analysis<a class="headerlink" href="#bus-factor-analysis" title="Permalink to this heading"></a></h3>
+<p>Analyze project sustainability:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate bus factor</span>
+<span class="n">bus_factor</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
+
+<span class="c1"># Get detailed contributor metrics</span>
+<span class="n">contributors_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">contributor_metrics</span><span class="p">()</span>
+
+<span class="c1"># Analyze file ownership</span>
+<span class="n">ownership_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_ownership</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-optimization">
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permalink to this heading"></a></h2>
+<section id="using-caching">
+<h3>Using Caching<a class="headerlink" href="#using-caching" title="Permalink to this heading"></a></h3>
+<p>Optimize performance with caching:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable in-memory caching</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Use Redis for persistent caching</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
+    <span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cache_backend</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
+    <span class="n">redis_url</span><span class="o">=</span><span class="s1">&#39;redis://localhost:6379/0&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="visualization-examples">
+<h2>Visualization Examples<a class="headerlink" href="#visualization-examples" title="Permalink to this heading"></a></h2>
+<section id="commit-patterns">
+<h3>Commit Patterns<a class="headerlink" href="#commit-patterns" title="Permalink to this heading"></a></h3>
+<p>Visualize commit patterns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate punchcard data</span>
+<span class="n">punchcard_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">punchcard</span><span class="p">()</span>
+
+<span class="c1"># Plot commit patterns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">punchcard_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Commit Patterns&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="file-change-analysis">
+<h3>File Change Analysis<a class="headerlink" href="#file-change-analysis" title="Permalink to this heading"></a></h3>
+<p>Visualize file changes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get file change history</span>
+<span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
+
+<span class="c1"># Plot changes over time</span>
+<span class="n">changes_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;changes&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;File Changes Over Time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Use caching for expensive operations</p></li>
+<li><p>Filter data early to improve performance</p></li>
+<li><p>Leverage pandas operations for analysis</p></li>
+<li><p>Consider memory usage with large repositories</p></li>
+<li><p>Use appropriate visualization tools</p></li>
 </ul>
-</div></blockquote>
-<div class="section" id="id1">
-<h3>Example Setup<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>In this section, we use the example: commit_history.py, which can be found in the examples directory. For more detailed
-information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id2">
-<h3>Commit History<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-<div class="section" id="file-change-history">
-<h3>File Change History<a class="headerlink" href="#file-change-history" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-</div>
-<div class="section" id="bus-factor">
-<h2>Bus Factor<a class="headerlink" href="#bus-factor" title="Permalink to this headline">¶</a></h2>
-<p>One major block of functionality is to do bus factor analysis on repos and collections of repos.
-This includes at the highest level, and in hierarchical terms (in the future). This functionality is
-accessed by:</p>
-<blockquote>
-<div><ul class="simple">
-<li>bus factor</li>
-</ul>
-</div></blockquote>
-<div class="section" id="id3">
-<h3>Example Setup<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>In this section, we use the example: bus_factor.py, which can be found in the examples directory. For more detailed
-information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id4">
-<h3>Bus Factor<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-</div>
-<div class="section" id="cumulative-blame">
-<h2>Cumulative Blame<a class="headerlink" href="#cumulative-blame" title="Permalink to this headline">¶</a></h2>
-<p>Another major block of functionality in git-pandas is the cumulative blame interface.  This allows you to
-track and visualize the share of a project borne by individual committers or repositories over time.</p>
-<p>It is accessed by:</p>
-<blockquote>
-<div><ul class="simple">
-<li>cumulative_blame</li>
-</ul>
-</div></blockquote>
-<div class="section" id="id5">
-<h3>Example Setup<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<p>In this section, we use the example: cumulative_blame.py, which can be found in the examples directory. For more detailed
-information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id6">
-<h3>Cumulative Blame<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-</div>
-<div class="section" id="coverage">
-<h2>Coverage<a class="headerlink" href="#coverage" title="Permalink to this headline">¶</a></h2>
-<p>If a .coverage file is available, we have experimental support for integrating that data in with the git data.
-This functionality is accessed by:</p>
-<blockquote>
-<div><ul class="simple">
-<li>has_coverage</li>
-<li>coverage</li>
-</ul>
-</div></blockquote>
-<div class="section" id="id7">
-<h3>Example Setup<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
-<p>In this section, we use the example: coverage_data.py, which can be found in the examples directory. For more detailed
-information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="has-coverage">
-<h3>Has Coverage<a class="headerlink" href="#has-coverage" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-<div class="section" id="id8">
-<h3>Coverage<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-</div>
-<div class="section" id="file-change-rates">
-<h2>File Change Rates<a class="headerlink" href="#file-change-rates" title="Permalink to this headline">¶</a></h2>
-<p>File change rate, or risk, is a specialized dataframe aimed at identifying files which are likely to have bugs in them.
-If coverage data is available, that can be included in this table.</p>
-<blockquote>
-<div><ul class="simple">
-<li>file_change_rates</li>
-</ul>
-</div></blockquote>
-<div class="section" id="id9">
-<h3>Example Setup<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
-<p>In this section, we use the example: file_change_rates.py, which can be found in the examples directory. For more detailed
-information, please check the API reference in previous sections.</p>
-<p>For the following examples, we will use 2 objects, defined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">ProjectDirectory</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">,</span> <span class="s">&#39;git://github.com/CamDavidsonPilon/lifelines.git&#39;</span><span class="p">])</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;git://github.com/wdm0006/git-pandas.git&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id10">
-<h3>File Change Rates<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
-</div>
-</div>
-</div>
+<p>For more examples and detailed API documentation, see the <a class="reference internal" href="repository.html"><span class="doc">Repository</span></a> and <a class="reference internal" href="project.html"><span class="doc">Project Directory</span></a> pages.</p>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="contributors.html" class="btn btn-neutral float-right" title="Contributing Code" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="project.html" class="btn btn-neutral" title="Project Directory" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cache.html" class="btn btn-neutral float-left" title="Caching" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributors.html" class="btn btn-neutral float-right" title="Contributing to Git-Pandas" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2015, Will McGinnis.
-
-    </p>
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.2.0',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

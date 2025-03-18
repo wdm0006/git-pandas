@@ -1,746 +1,356 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Project Directory &mdash; git-pandas 1.2.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  
-  
-
-  
-
-  
-  
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
     
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Directory &mdash; git-pandas 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="git-pandas 1.2.0 documentation" href="index.html"/>
-        <link rel="next" title="Use Cases" href="usecases.html"/>
-        <link rel="prev" title="Repository" href="repository.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=73cda6fb"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Caching" href="cache.html" />
+    <link rel="prev" title="Repository" href="repository.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
-            <a href="index.html" class="icon icon-home"> git-pandas
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            git-pandas
           </a>
-
-          
-            
-            
-              <div class="version">
-                1.2.0
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Project Directory</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#directory-of-repositories">Directory Of Repositories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#explicit-local">Explicit Local</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#explicit-remote">Explicit Remote</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-gitpandas.project">Detailed API Documentation</a></li>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">git-pandas</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">git-pandas</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Project Directory</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Project Directory</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="_sources/project.txt" rel="nofollow"> View page source</a>
-          
-        
+            <a href="_sources/project.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="project-directory">
-<h1>Project Directory<a class="headerlink" href="#project-directory" title="Permalink to this headline">¶</a></h1>
-<p>The ProjectDirectory object represents a collection of git repositories (perhaps in a single directory).  It can be
-created in 3 main ways:</p>
-<blockquote>
-<div><ul class="simple">
-<li>By specifying the directory in which the repositories live locally</li>
-<li>By explicitly passing a list of local directories for each git repository</li>
-<li>By explicitly passing remote git repositories to be cloned locally in temporary directories.</li>
-</ul>
-</div></blockquote>
-<p>Once constructed, all work out equally, and as long as all are specified explicitly, you can even mix remote and local
-repositories.</p>
-<p>Using each method:</p>
-<div class="section" id="directory-of-repositories">
-<h2>Directory Of Repositories<a class="headerlink" href="#directory-of-repositories" title="Permalink to this headline">¶</a></h2>
-<p>To create a ProjectDirectory object from a directory that contains multiple repositories simply use:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
-<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s">&#39;/path/to/dir/&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+             
+  <section id="project-directory">
+<h1>Project Directory<a class="headerlink" href="#project-directory" title="Permalink to this heading"></a></h1>
+<p>The ProjectDirectory class enables analysis across multiple Git repositories. It can aggregate metrics and insights from multiple repositories into a single output.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
+<p>The ProjectDirectory class provides:
+* Aggregation of metrics across multiple repositories
+* Project-level insights and statistics
+* Cross-repository analysis capabilities
+* Development time estimation
+* Bus factor calculation</p>
+</section>
+<section id="creating-a-projectdirectory">
+<h2>Creating a ProjectDirectory<a class="headerlink" href="#creating-a-projectdirectory" title="Permalink to this heading"></a></h2>
+<p>You can create a ProjectDirectory object in three ways:</p>
+<section id="directory-of-repositories">
+<h3>Directory of Repositories<a class="headerlink" href="#directory-of-repositories" title="Permalink to this heading"></a></h3>
+<p>Create a ProjectDirectory from a directory containing multiple repositories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/dir/&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Where ignore can be a list of directories to explicitly ignore. This method uses os.walk to search the
-passed directory for any .git directories, so even if a repository is many directories deep below the passed
-working dir, it will be included.  To check what repositories are included in your object:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+<p>The <cite>ignore</cite> parameter can be a list of directories to exclude. This method uses <cite>os.walk</cite> to search for <cite>.git</cite> directories recursively.</p>
+<p>To check which repositories are included:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="explicit-local">
-<h2>Explicit Local<a class="headerlink" href="#explicit-local" title="Permalink to this headline">¶</a></h2>
-<p>Explicit local directories are passed by using a list rather than a string for working dir:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
-<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;/path/to/repo1/&#39;</span><span class="p">,</span> <span class="s">&#39;/path/to/repo2/&#39;</span><span class="p">],</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</section>
+<section id="explicit-local-repositories">
+<h3>Explicit Local Repositories<a class="headerlink" href="#explicit-local-repositories" title="Permalink to this heading"></a></h3>
+<p>Create a ProjectDirectory from a list of local repositories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/path/to/repo1/&#39;</span><span class="p">,</span> <span class="s1">&#39;/path/to/repo2/&#39;</span><span class="p">],</span>
+    <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>In this case, the subdirectories of the directories passed are not searched, so every directory passed
-must have a .git directory in it.</p>
-</div>
-<div class="section" id="explicit-remote">
-<h2>Explicit Remote<a class="headerlink" href="#explicit-remote" title="Permalink to this headline">¶</a></h2>
-<p>Explicit local directories are passed by using a list rather than a string for working dir:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">gitpandas</span> <span class="kn">import</span> <span class="n">ProjectDirectory</span>
-<span class="n">pd</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;git://github.com/user/repo.git&#39;</span><span class="p">],</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<p>Each directory must contain a <cite>.git</cite> directory. Subdirectories are not searched.</p>
+</section>
+<section id="explicit-remote-repositories">
+<h3>Explicit Remote Repositories<a class="headerlink" href="#explicit-remote-repositories" title="Permalink to this heading"></a></h3>
+<p>Create a ProjectDirectory from remote repositories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;git://github.com/user/repo.git&#39;</span><span class="p">],</span>
+    <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>As mentioned, you can mix explicit remote and explicit local repositories, the remote repos will be cloned
-into temporary directories and treated as local ones under the hood. Because of this, for large repos, it
-can be relatively slow to create ProjectDirectory objects with many explicit remote repositories.</p>
+<p>You can mix local and remote repositories. Remote repositories are cloned into temporary directories.</p>
+</section>
+</section>
+<section id="common-operations">
+<h2>Common Operations<a class="headerlink" href="#common-operations" title="Permalink to this heading"></a></h2>
+<p>Here are some common operations you can perform with a ProjectDirectory object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get general project information</span>
+<span class="n">info_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">general_information</span><span class="p">()</span>
+
+<span class="c1"># Calculate bus factor</span>
+<span class="n">bus_factor</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
+
+<span class="c1"># Get file change rates</span>
+<span class="n">changes_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">()</span>
+
+<span class="c1"># Generate punchcard data</span>
+<span class="n">punchcard_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">punchcard</span><span class="p">()</span>
+</pre></div>
 </div>
-<div class="section" id="module-gitpandas.project">
-<span id="detailed-api-documentation"></span><h2>Detailed API Documentation<a class="headerlink" href="#module-gitpandas.project" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-projectdirectory"></span><dl class="class">
-<dt id="gitpandas.project.GitHubProfile">
-<em class="property">class </em><code class="descclassname">gitpandas.project.</code><code class="descname">GitHubProfile</code><span class="sig-paren">(</span><em>username</em>, <em>ignore_forks=False</em>, <em>ignore_repos=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#GitHubProfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.GitHubProfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>An extension of the ProjectDirectory object that is based off of a single github.com user&#8217;s public profile.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="gitpandas.project.ProjectDirectory">
-<em class="property">class </em><code class="descclassname">gitpandas.project.</code><code class="descname">ProjectDirectory</code><span class="sig-paren">(</span><em>working_dir=None</em>, <em>ignore_repos=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory" title="Permalink to this definition">¶</a></dt>
-<dd><p>An object that refers to a directory full of git repositories, for bulk analysis.  It contains a collection of
-git-pandas repository objects, created by os.walk-ing a directory to file all child .git subdirectories.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>working_dir</strong> &#8211; (optional, default=None), the working directory to search for repositories in, None for cwd, or an explicit list of directories containing git repositories</li>
-<li><strong>ignore</strong> &#8211; (optional, default=None), a list of directories to ignore when searching for git repos.</li>
-<li><strong>verbose</strong> &#8211; (default=True), if True, will print out verbose logging to terminal</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.blame">
-<code class="descname">blame</code><span class="sig-paren">(</span><em>committer=True</em>, <em>by='repository'</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.blame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the blame from the current HEAD of the repositories as a DataFrame.  The DataFrame is grouped by committer
-name, so it will be the sum of all contributions to all repositories by each committer. As with the commit history
-method, extensions and ignore_dirs parameters can be passed to exclude certain directories, or focus on certain
-file extensions. The DataFrame will have the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>committer</li>
-<li>loc</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
-<li><strong>by</strong> &#8211; (optional, default=repository) whether to group by repository or by file</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.branches">
-<code class="descname">branches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.branches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.branches" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a data frame of all branches in origin.  The DataFrame will have the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>repository</li>
-<li>local</li>
-<li>branch</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.bus_factor">
-<code class="descname">bus_factor</code><span class="sig-paren">(</span><em>ignore_globs=None</em>, <em>include_globs=None</em>, <em>by='projectd'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Permalink to this definition">¶</a></dt>
-<dd><p>An experimental heuristic for truck factor of a repository calculated by the current distribution of blame in
-the repository&#8217;s primary branch.  The factor is the fewest number of contributors whose contributions make up at
-least 50% of the codebase&#8217;s LOC</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.commit_history">
-<code class="descname">commit_history</code><span class="sig-paren">(</span><em>branch</em>, <em>limit=None</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.commit_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.commit_history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a pandas DataFrame containing all of the commits for a given branch. The results from all repositories
-are appended to each other, resulting in one large data frame of size &lt;limit&gt;.  If a limit is provided, it is
-divided by the number of repositories in the project directory to find out how many commits to pull from each
-project. Future implementations will use date ordering across all projects to get the true most recent N commits
-across the project.</p>
-<p>Included in that DataFrame will be the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>repository</li>
-<li>date (index)</li>
-<li>author</li>
-<li>committer</li>
-<li>message</li>
-<li>lines</li>
-<li>insertions</li>
-<li>deletions</li>
-<li>net</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; the branch to return commits for</li>
-<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.coverage">
-<code class="descname">coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.coverage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will return a DataFrame with coverage information (if available) for each repo in the project).</p>
-<p>If there is a .coverage file available, this will attempt to form a DataFrame with that information in it, which
-will contain the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>repository</li>
-<li>filename</li>
-<li>lines_covered</li>
-<li>total_lines</li>
-<li>coverage</li>
-</ul>
-</div></blockquote>
-<p>If it can&#8217;t be found or parsed, an empty DataFrame of that form will be returned.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.cumulative_blame">
-<code class="descname">cumulative_blame</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>by='committer'</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em>, <em>committer=True</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.cumulative_blame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.cumulative_blame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a time series of cumulative blame for a collection of projects.  The goal is to return a dataframe for a
-collection of projects with the LOC attached to an entity at each point in time. The returned dataframe can be
-returned in 3 forms (switched with the by parameter, default &#8216;committer&#8217;):</p>
-<blockquote>
-<div><ul class="simple">
-<li>committer: one column per committer</li>
-<li>project: one column per project</li>
-<li>raw: one column per committed per project</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; (optional, default &#8216;master&#8217;) the branch to work in</li>
-<li><strong>limit</strong> &#8211; (optional, default None), the maximum number of revisions to return, None for no limit</li>
-<li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
-<li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
-<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
-<li><strong>by</strong> &#8211; (optional, default=&#8217;committer&#8217;) whether to arrange the output by committer or project</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.file_change_history">
-<code class="descname">file_change_history</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_history"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_history" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a DataFrame of all file changes (via the commit history) for the specified branch.  This is similar to
-the commit history DataFrame, but is one row per file edit rather than one row per commit (which may encapsulate
-many file changes). Included in the DataFrame will be the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>repository</li>
-<li>date (index)</li>
-<li>author</li>
-<li>committer</li>
-<li>message</li>
-<li>filename</li>
-<li>insertions</li>
-<li>deletions</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; the branch to return commits for</li>
-<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.file_change_rates">
-<code class="descname">file_change_rates</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>coverage=False</em>, <em>days=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_change_rates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_change_rates" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function will return a DataFrame containing some basic aggregations of the file change history data, and
-optionally test coverage data from a coverage_data.py .coverage file.  The aim here is to identify files in the
-project which have abnormal edit rates, or the rate of changes without growing the files size.  If a file has
-a high change rate and poor test coverage, then it is a great candidate for writing more tests.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; (optional, default=master) the branch to return commits for</li>
-<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>coverage</strong> &#8211; (optional, default=False) a bool for whether or not to attempt to join in coverage data.</li>
-<li><strong>days</strong> &#8211; (optional, default=None) number of days to return if limit is None</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.file_detail">
-<code class="descname">file_detail</code><span class="sig-paren">(</span><em>rev='HEAD'</em>, <em>committer=True</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.file_detail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.file_detail" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a table of all current files in the repos, with some high level information about each file (total LOC,
-file owner, extension, most recent edit date, etc.).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-<li><strong>committer</strong> &#8211; (optional, default=True) true if committer should be reported, false if author</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.has_coverage">
-<code class="descname">has_coverage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.has_coverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.has_coverage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a DataFrame of repo names and whether or not they have a .coverage file that can be parsed</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.hours_estimate">
-<code class="descname">hours_estimate</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>grouping_window=0.5</em>, <em>single_commit_hours=0.5</em>, <em>limit=None</em>, <em>days=None</em>, <em>committer=True</em>, <em>by=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.hours_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.hours_estimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>inspired by: <a class="reference external" href="https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143">https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</a></p>
-<p>Iterates through the commit history of repo to estimate the time commitement of each author or committer over
-the course of time indicated by limit/extensions/days/etc.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; the branch to return commits for</li>
-<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>grouping_window</strong> &#8211; (optional, default=0.5 hours) the threhold for how close two commits need to be to consider them part of one coding session</li>
-<li><strong>single_commit_hours</strong> &#8211; (optional, default 0.5 hours) the time range to associate with one single commit</li>
-<li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
-<li><strong>committer</strong> &#8211; (optional, default=True) whether to use committer vs. author</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.is_bare">
-<code class="descname">is_bare</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.is_bare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.is_bare" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataframe of repo names and whether or not they are bare.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.punchcard">
-<code class="descname">punchcard</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>days=None</em>, <em>by=None</em>, <em>normalize=None</em>, <em>ignore_globs=None</em>, <em>include_globs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.punchcard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.punchcard" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a pandas DataFrame containing all of the data for a punchcard.</p>
-<blockquote>
-<div><ul class="simple">
-<li>day_of_week</li>
-<li>hour_of_day</li>
-<li>author / committer</li>
-<li>lines</li>
-<li>insertions</li>
-<li>deletions</li>
-<li>net</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; the branch to return commits for</li>
-<li><strong>limit</strong> &#8211; (optional, default=None) a maximum number of commits to return, None for no limit</li>
-<li><strong>days</strong> &#8211; (optional, default=None) number of days to return, if limit is None</li>
-<li><strong>by</strong> &#8211; (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or &#8216;committer&#8217;, &#8216;author&#8217;, &#8216;repository&#8217;</li>
-<li><strong>normalize</strong> &#8211; (optional, default=None) if an integer, returns the data normalized to max value of that (for plotting)</li>
-<li><strong>ignore_globs</strong> &#8211; (optional, default=None) a list of globs to ignore, default none excludes nothing</li>
-<li><strong>include_globs</strong> &#8211; (optinal, default=None) a list of globs to include, default of None includes everything.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.repo_information">
-<code class="descname">repo_information</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.repo_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.repo_information" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a DataFrame with the properties of all repositories in the project directory. The returned DataFrame
-will have the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>local_directory</li>
-<li>branches</li>
-<li>bare</li>
-<li>remotes</li>
-<li>description</li>
-<li>references</li>
-<li>heads</li>
-<li>submodules</li>
-<li>tags</li>
-<li>active_branch</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.repo_name">
-<code class="descname">repo_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.repo_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.repo_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a DataFrame of the repo names present in this project directory</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.revs">
-<code class="descname">revs</code><span class="sig-paren">(</span><em>branch='master'</em>, <em>limit=None</em>, <em>skip=None</em>, <em>num_datapoints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.revs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.revs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dataframe of all revision tags and their timestamps for each project. It will have the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>date</li>
-<li>repository</li>
-<li>rev</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>branch</strong> &#8211; (optional, default &#8216;master&#8217;) the branch to work in</li>
-<li><strong>limit</strong> &#8211; (optional, default None), the maximum number of revisions to return, None for no limit</li>
-<li><strong>skip</strong> &#8211; (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other revision, None for no skipping.</li>
-<li><strong>num_datapoints</strong> &#8211; (optional, default=None) if limit and skip are none, and this isn&#8217;t, then num_datapoints evenly spaced revs will be used</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">DataFrame</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="gitpandas.project.ProjectDirectory.tags">
-<code class="descname">tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.tags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a data frame of all tags in origin.  The DataFrame will have the columns:</p>
-<blockquote>
-<div><ul class="simple">
-<li>repository</li>
-<li>tag</li>
-</ul>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">DataFrame</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-</div>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h2>
+</section>
+</section>
 
 
            </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="usecases.html" class="btn btn-neutral float-right" title="Use Cases" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="repository.html" class="btn btn-neutral" title="Repository" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="repository.html" class="btn btn-neutral float-left" title="Repository" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cache.html" class="btn btn-neutral float-right" title="Caching" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2015, Will McGinnis.
-
-    </p>
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.2.0',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

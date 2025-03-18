@@ -1,166 +1,357 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Git-Pandas &mdash; git-pandas 1.2.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  
-  
-
-  
-
-  
-  
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
     
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Git-Pandas Documentation &mdash; git-pandas 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="git-pandas 1.2.0 documentation" href="#"/>
-        <link rel="next" title="Repository" href="repository.html"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=73cda6fb"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Repository" href="repository.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
-            <a href="#" class="icon icon-home"> git-pandas
           
-
-          
+          <a href="#" class="icon icon-home">
+            git-pandas
           </a>
-
-          
-            
-            
-              <div class="version">
-                1.2.0
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul>
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a></li>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="#">git-pandas</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">git-pandas</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="#">Docs</a> &raquo;</li>
-      
-    <li>Git-Pandas</li>
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to Git-Pandas Documentation</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
-          
-        
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="git-pandas">
-<h1>Git-Pandas<a class="headerlink" href="#git-pandas" title="Permalink to this headline">¶</a></h1>
-<p>v2.0.0</p>
-<p>A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
-two primary objects:</p>
-<blockquote>
-<div><ul class="simple">
-<li>Repository</li>
-<li>ProjectDirectory</li>
+             
+  <section id="welcome-to-git-pandas-documentation">
+<h1>Welcome to Git-Pandas Documentation<a class="headerlink" href="#welcome-to-git-pandas-documentation" title="Permalink to this heading"></a></h1>
+<p>Git-Pandas is a powerful Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze and visualize your codebase’s history, contributors, and development patterns.</p>
+<img alt="Cumulative Blame Visualization" class="align-center" src="https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png" />
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading"></a></h2>
+<p>Install Git-Pandas using pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git-pandas
+</pre></div>
+</div>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading"></a></h3>
+<p>Analyze a single repository:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
+<span class="n">commits_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
+<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Analyze multiple repositories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">&#39;/path/to/project&#39;</span><span class="p">)</span>
+<span class="n">project_info</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">general_information</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Repository Analysis</strong>: Extract commit history, file changes, and blame information</p></li>
+<li><p><strong>Project Insights</strong>: Calculate bus factor, development time, and contributor metrics</p></li>
+<li><p><strong>GitHub Integration</strong>: Analyze GitHub profiles and repository metrics</p></li>
+<li><p><strong>Visualization Tools</strong>: Built-in plotting utilities for common Git analytics</p></li>
+<li><p><strong>Performance Optimization</strong>: Optional caching support for memory-intensive operations</p></li>
 </ul>
-</div></blockquote>
-<p>A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
-in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
-repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).</p>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>To install use:</p>
-<blockquote>
-<div>pip install git-pandas</div></blockquote>
+</section>
+<section id="core-components">
+<h2>Core Components<a class="headerlink" href="#core-components" title="Permalink to this heading"></a></h2>
+<p>The library is built around two main components:</p>
+<ul class="simple">
+<li><p><strong>Repository</strong>: A wrapper around a single Git repository</p></li>
+<li><p><strong>ProjectDirectory</strong>: A collection of Git repositories for aggregate analysis</p></li>
+</ul>
+<p>For detailed information about these components, see the <a class="reference internal" href="repository.html"><span class="doc">Repository</span></a> and <a class="reference internal" href="project.html"><span class="doc">Project Directory</span></a> documentation.</p>
+</section>
+<section id="documentation-contents">
+<h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
 </div>
-<div class="section" id="contributing">
-<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
-<p>We are looking for contributors, so if you are interested, please review our contributor guidelines in CONTRIBUTING.md,
-which includes some proposed starter issues, or if you have an idea of your own, send us a pull request.</p>
-</div>
-<div class="section" id="license">
-<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
-<p>This is BSD licensed (see LICENSE.md)</p>
-</div>
-</div>
-<div class="section" id="detailed-documentation">
-<h1>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="additional-resources">
+<h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a> - Complete API reference</p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a> - Module index</p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a> - Search the documentation</p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
+<p>This project is BSD licensed (see LICENSE.md)</p>
+</section>
+</section>
+<section id="detailed-documentation">
+<h1>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Permalink to this heading"></a></h1>
 <p>Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
 those two classes, as well as instructions on how to create the objects.  For detailed examples, check out the use-cases
 page.</p>
@@ -168,110 +359,84 @@ page.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#explicit-local">Explicit Local</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#explicit-remote">Explicit Remote</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#module-gitpandas.repository">Detailed API Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="project.html#directory-of-repositories">Directory Of Repositories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#explicit-local">Explicit Local</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#explicit-remote">Explicit Remote</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#module-gitpandas.project">Detailed API Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#attributes">Attributes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#commit-history">Commit History</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#bus-factor">Bus Factor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#cumulative-blame">Cumulative Blame</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#coverage">Coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#file-change-rates">File Change Rates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#how-to-contribute">How to Contribute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#guidelines">Guidelines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#running-tests">Running Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#easy-issues-getting-started">Easy Issues / Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</div>
+</section>
 
 
            </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="repository.html" class="btn btn-neutral float-right" title="Repository" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="repository.html" class="btn btn-neutral float-right" title="Repository" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2015, Will McGinnis.
-
-    </p>
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.2.0',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
