@@ -19,19 +19,19 @@ if __name__ == '__main__':
     print("Initializing project directory...")
     start_time = time.time()
     
-    # Use a repository that we know works well for examples
-    g = ProjectDirectory(working_dir=['https://github.com/pandas-dev/pandas.git'])
+    # Use pygeohash repository - a good size for examples
+    g = ProjectDirectory(working_dir=['https://github.com/wdm0006/pygeohash.git'])
     
     print("\nAnalyzing blame information...")
-    print("Using a limit of 50 commits and skipping every 5th commit for faster analysis")
+    print("Using a limit of 20 commits and skipping every 2nd commit for faster analysis")
     
     try:
         blame = g.cumulative_blame(
-            branch='main',
+            branch='master',  # Use master instead of main
             include_globs=['*.py'],  # Focus on Python files only
             by='committer',
-            limit=50,  # Limit to 50 commits
-            skip=5     # Skip every 5th commit
+            limit=20,  # Limit to 20 commits
+            skip=2     # Skip every other commit
         )
         
         print("\nGenerating visualization...")

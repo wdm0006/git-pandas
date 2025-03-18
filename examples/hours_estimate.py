@@ -18,17 +18,17 @@ if __name__ == '__main__':
     print("Initializing repository...")
     start_time = time.time()
     
-    # Use a smaller repository for faster analysis
-    repo = Repository(working_dir='https://github.com/wdm0006/cookiecutter-pipproject.git')
+    # Use pygeohash repository - a good size for examples
+    repo = Repository(working_dir='https://github.com/wdm0006/pygeohash.git')
     
     print("\nAnalyzing commit history...")
-    print("Using a limit of 50 commits for faster analysis")
+    print("Using a limit of 20 commits for faster analysis")
     
     # Get commit history with limits
     commits = repo.commit_history(
-        branch='main',
-        limit=50,  # Limit to 50 commits
-        skip=5     # Skip every 5th commit
+        branch='master',  # Use master instead of main
+        limit=20,  # Limit to 20 commits
+        include_globs=['*.py']  # Focus on Python files only
     )
     
     print("\nEstimating development hours...")

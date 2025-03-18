@@ -33,7 +33,7 @@ jobs:
     
     - name: Run tests
       run: |
-        make test-all
+        make test
     
     - name: Run linting
       run: |

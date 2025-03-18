@@ -75,9 +75,13 @@ def plot_punchcard(df, metric='lines', title='punchcard', by=None):
 
 def plot_cumulative_blame(df):
     """
+    Plot cumulative blame information as a stacked area chart.
 
-    :param df:
-    :return:
+    Args:
+        df (pandas.DataFrame): DataFrame with dates as index and committers as columns
+
+    Returns:
+        matplotlib.figure.Figure: The generated figure
     """
 
     if not HAS_MPL:
@@ -90,4 +94,72 @@ def plot_cumulative_blame(df):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.show()
+    
+    # Only try to show if not using Agg backend
+    if plt.get_backend() != 'Agg':
+        plt.show()
+    
+    return plt.gcf()
+
+
+def plot_lifeline(changes, ownership_changes, refactoring):
+    """
+    Plot file lifelines with ownership changes and refactoring events.
+
+    Args:
+        changes (pd.DataFrame): DataFrame containing file change history
+        ownership_changes (pd.DataFrame): DataFrame containing ownership change events
+        refactoring (pd.DataFrame): DataFrame containing refactoring events
+
+    Returns:
+        matplotlib.figure.Figure: The generated plot figure
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        raise ImportError("matplotlib is required for plotting. Please install it first.")
+
+    # Create a new figure
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Get unique files and sort them
+    files = changes.filename.unique()
+    files.sort()
+
+    # Create y-axis positions for each file
+    file_positions = {file: i for i, file in enumerate(files)}
+
+    # Plot lifelines
+    for file in files:
+        file_changes = changes[changes.filename == file]
+        ax.plot(file_changes.index, [file_positions[file]] * len(file_changes),
+                '-', label='_nolegend_', alpha=0.5)
+
+    # Plot ownership changes
+    if len(ownership_changes) > 0:
+        ax.scatter(ownership_changes.index,
+                  [file_positions[f] for f in ownership_changes.filename],
+                  marker='o', c='red', label='Ownership Change', alpha=0.7)
+
+    # Plot refactoring events
+    if len(refactoring) > 0:
+        ax.scatter(refactoring.index,
+                  [file_positions[f] for f in refactoring.filename],
+                  marker='s', c='blue', label='Refactoring', alpha=0.7)
+
+    # Customize the plot
+    ax.set_yticks(range(len(files)))
+    ax.set_yticklabels(files)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Files')
+    ax.set_title('File Lifelines with Ownership Changes and Refactoring Events')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # Rotate dates for better readability
+    plt.xticks(rotation=45)
+
+    # Adjust layout to prevent label cutoff
+    plt.tight_layout()
+
+    return fig
