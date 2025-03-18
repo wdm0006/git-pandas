@@ -7,7 +7,7 @@ name = "git-pandas"
 version = "2.0.0"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 license = {text = "BSD"}
 authors = [
     {name = "Will McGinnis", email = "will@pedalwrencher.com"},
@@ -21,7 +21,7 @@ keywords = ["git", "pandas", "data", "analysis"]
 dependencies = [
     "gitpython>=1.0.0",
     "numpy>=1.9.0",
-    "pandas>=0.16.0",
+    "pandas>=2.0.0",
     "requests",
     "redis",
 ]
@@ -37,6 +37,7 @@ dev = [
     "sphinx>=7.0.0",
     "sphinx-rtd-theme>=1.0.0",
     "ruff>=0.1.0",
+    "matplotlib",
 ]
 all = [
     "matplotlib",
@@ -53,19 +54,36 @@ packages = ["gitpandas"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = "test_*.py"
-python_functions = "test_*"
-python_classes = "Test*"
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+addopts = "--verbose"
+
+[tool.pytest.ini_options.markers]
+slow = "marks tests as slow (deselect with '-m \"not slow\"')"
+remote = "marks tests that require internet connection (deselect with '-m \"not remote\"')"
+
+[tool.coverage.run]
+source = ["gitpandas"]
 
 [tool.ruff]
-target-version = "py36"
-line-length = 88
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "C4", "SIM", "ERA"]
-ignore = ["ANN101"]  # Ignore missing type annotation for self
+target-version = "py311"
+line-length = 120
+exclude=["docs/**"]
 
-[tool.ruff.isort]
-known-first-party = ["git_pandas"]
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "UP", "C4", "SIM", "ERA"]
+ignore = []
 
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.isort]
+known-first-party = ["gitpandas"]
+
+[tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
-suppress-none-returning = true 
+suppress-none-returning = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto" 

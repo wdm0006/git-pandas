@@ -1,68 +1,97 @@
 Project Directory
-=================
+===============
 
-The ProjectDirectory object represents a collection of git repositories (perhaps in a single directory).  It can be
-created in 3 main ways:
+The ProjectDirectory class enables analysis across multiple Git repositories. It can aggregate metrics and insights from multiple repositories into a single output.
 
- * By specifying the directory in which the repositories live locally
- * By explicitly passing a list of local directories for each git repository
- * By explicitly passing remote git repositories to be cloned locally in temporary directories.
+Overview
+--------
 
-Once constructed, all work out equally, and as long as all are specified explicitly, you can even mix remote and local
-repositories.
+The ProjectDirectory class provides:
+* Aggregation of metrics across multiple repositories
+* Project-level insights and statistics
+* Cross-repository analysis capabilities
+* Development time estimation
+* Bus factor calculation
 
-Using each method:
-
-Directory Of Repositories
+Creating a ProjectDirectory
 -------------------------
 
-To create a ProjectDirectory object from a directory that contains multiple repositories simply use:
+You can create a ProjectDirectory object in three ways:
+
+Directory of Repositories
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a ProjectDirectory from a directory containing multiple repositories:
 
 .. code-block:: python
 
-   from gitpandas import ProjectDirectory
-   pd = ProjectDirectory(working_dir='/path/to/dir/', ignore=None, verbose=True)
+    from gitpandas import ProjectDirectory
+    project = ProjectDirectory(working_dir='/path/to/dir/', ignore=None, verbose=True)
 
+The `ignore` parameter can be a list of directories to exclude. This method uses `os.walk` to search for `.git` directories recursively.
 
-Where ignore can be a list of directories to explicitly ignore. This method uses os.walk to search the
-passed directory for any .git directories, so even if a repository is many directories deep below the passed
-working dir, it will be included.  To check what repositories are included in your object:
-
-.. code-block:: python
-
-   print(pd._repo_name())
-
-
-Explicit Local
---------------
-
-Explicit local directories are passed by using a list rather than a string for working dir:
+To check which repositories are included:
 
 .. code-block:: python
 
-   from gitpandas import ProjectDirectory
-   pd = ProjectDirectory(working_dir=['/path/to/repo1/', '/path/to/repo2/'], ignore=None, verbose=True)
+    print(project._repo_name())
 
-In this case, the subdirectories of the directories passed are not searched, so every directory passed
-must have a .git directory in it.
+Explicit Local Repositories
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Explicit Remote
+Create a ProjectDirectory from a list of local repositories:
+
+.. code-block:: python
+
+    from gitpandas import ProjectDirectory
+    project = ProjectDirectory(
+        working_dir=['/path/to/repo1/', '/path/to/repo2/'],
+        ignore=None,
+        verbose=True
+    )
+
+Each directory must contain a `.git` directory. Subdirectories are not searched.
+
+Explicit Remote Repositories
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a ProjectDirectory from remote repositories:
+
+.. code-block:: python
+
+    from gitpandas import ProjectDirectory
+    project = ProjectDirectory(
+        working_dir=['git://github.com/user/repo.git'],
+        ignore=None,
+        verbose=True
+    )
+
+You can mix local and remote repositories. Remote repositories are cloned into temporary directories.
+
+Common Operations
 ---------------
 
-Explicit local directories are passed by using a list rather than a string for working dir:
+Here are some common operations you can perform with a ProjectDirectory object:
 
 .. code-block:: python
 
-   from gitpandas import ProjectDirectory
-   pd = ProjectDirectory(working_dir=['git://github.com/user/repo.git'], ignore=None, verbose=True)
+    # Get general project information
+    info_df = project.general_information()
+    
+    # Calculate bus factor
+    bus_factor = project.bus_factor()
+    
+    # Get file change rates
+    changes_df = project.file_change_rates()
+    
+    # Generate punchcard data
+    punchcard_df = project.punchcard()
 
-As mentioned, you can mix explicit remote and explicit local repositories, the remote repos will be cloned
-into temporary directories and treated as local ones under the hood. Because of this, for large repos, it
-can be relatively slow to create ProjectDirectory objects with many explicit remote repositories.
-
-
-Detailed API Documentation
---------------------------
+API Reference
+------------
 
 .. automodule:: gitpandas.project
    :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:

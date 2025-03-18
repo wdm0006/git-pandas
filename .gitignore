@@ -4,7 +4,7 @@
 # these should be torn down after every test, but if a test is interupted,
 # they won't be until the next test
 tests/**/repos
-
+uv.lock
 # scratch stuff
 scratch
 

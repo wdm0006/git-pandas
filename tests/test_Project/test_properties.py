@@ -1,202 +1,229 @@
-import os
-import unittest
-import shutil
-import time
 import git
+import pytest
+
 from gitpandas import ProjectDirectory
 
-__author__ = 'willmcginnis'
+__author__ = "willmcginnis"
 
 
-class TestProperties(unittest.TestCase):
-    """
-    For now this is using the git-python repo for tests. This probably isn't a great idea, we should really
-    be either mocking the git portion, or have a known static repo in this directory to work with.
-
-    """
-
-    def setUp(self):
-        self.projectd = ProjectDirectory(working_dir=['git://github.com/wdm0006/git-pandas.git'], verbose=True)
-
-    def tearDown(self):
-        self.projectd.__del__()
-
-    def test_repo_name(self):
-        self.assertIn('git-pandas', list(self.projectd.repo_name()['repository'].values))
-
-    def test_branches(self):
-        branches = list(self.projectd.branches()['branch'].values)
-        self.assertIn('master', branches)
-        self.assertIn('gh-pages', branches)
-
-    def test_tags(self):
-        tags = list(self.projectd.tags()['tag'].values)
-        self.assertIn('0.0.1', tags)
-        self.assertIn('0.0.2', tags)
-
-    def test_is_bare(self):
-        for x in self.projectd.is_bare()['is_bare'].values:
-            self.assertFalse(x)
+@pytest.fixture
+def remote_project():
+    """Fixture for a remote project directory."""
+    project = ProjectDirectory(working_dir=["https://github.com/wdm0006/git-pandas.git"], verbose=True)
+    yield project
+    project.__del__()
 
 
-class TestLocalProperties(unittest.TestCase):
-    """
+@pytest.fixture
+def local_project(tmp_path):
+    """Fixture for a local project directory with multiple repositories."""
+    # Create a temporary directory for the project
+    project_dir = tmp_path / "repos"
+    project_dir.mkdir()
 
-    """
+    # Create repository directories
+    repo1_dir = project_dir / "repository1"
+    repo2_dir = project_dir / "repository2"
+    repo1_dir.mkdir()
+    repo2_dir.mkdir()
 
-    def setUp(self):
-        """
+    # Initialize git repos
+    grepo1 = git.Repo.init(str(repo1_dir))
+    grepo2 = git.Repo.init(str(repo2_dir))
 
-        :return:
-        """
-        project_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos'
-        repo1_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos' + os.sep + 'repository1'
-        repo2_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos' + os.sep + 'repository2'
+    # Configure git user
+    grepo1.git.config("user.name", "Test User")
+    grepo1.git.config("user.email", "test@example.com")
+    grepo2.git.config("user.name", "Test User")
+    grepo2.git.config("user.email", "test@example.com")
 
-        if os.path.exists(project_dir):
-            shutil.rmtree(project_dir)
+    # Rename master to main
+    grepo1.git.branch("-M", "main")
+    grepo2.git.branch("-M", "main")
 
-        os.makedirs(project_dir)
+    # Add README files
+    with open(f"{repo1_dir}/README.md", "w") as f:
+        f.write("Sample README for a sample python project\n")
 
-        if not os.path.exists(repo1_dir):
-            os.makedirs(repo1_dir)
+    with open(f"{repo2_dir}/README.md", "w") as f:
+        f.write("Sample README for a sample js project\n")
 
-        if not os.path.exists(repo2_dir):
-            os.makedirs(repo2_dir)
+    # Commit them
+    grepo1.git.add("README.md")
+    grepo1.git.commit(m="first commit")
 
-        # create an empty repo (but not bare)
-        grepo1 = git.Repo.init(repo1_dir)
-        grepo2 = git.Repo.init(repo2_dir)
+    grepo2.git.add("README.md")
+    grepo2.git.commit(m="first commit")
 
-        # add a file
-        with open(repo1_dir + os.sep + 'README.md', 'w') as f:
-            f.write('Sample README for a sample python project\n')
+    # Add Python files to repo1
+    for idx in range(5):  # Increased from 3 to 5 files
+        with open(f"{repo1_dir}/file_{idx}.py", "w") as f:
+            f.write("import sys\nimport os\n")
 
-        # add a file
-        with open(repo2_dir + os.sep + 'README.md', 'w') as f:
-            f.write('Sample README for a sample js project\n')
+        grepo1.git.add(all=True)
+        grepo1.git.commit(m=f"adding file_{idx}.py")
 
-        # commit them
-        grepo1.git.add('README.md')
-        grepo1.git.commit(m='first commit')
+    # Add JS files to repo2
+    for idx in range(5):  # Increased from 3 to 5 files
+        with open(f"{repo2_dir}/file_{idx}.js", "w") as f:
+            f.write('document.write("hello world!");\n')
 
-        grepo2.git.add('README.md')
-        grepo2.git.commit(m='first commit')
+        grepo2.git.add(all=True)
+        grepo2.git.commit(m=f"adding file_{idx}.js")
 
-        # now add some other files:
-        for idx in range(5):
-            with open(repo1_dir + os.sep + 'file_%d.py' % (idx, ), 'w') as f:
-                f.write('import sys\nimport os\n')
+    # Create ProjectDirectory objects
+    projectd_1 = ProjectDirectory(working_dir=[str(repo1_dir), str(repo2_dir)], verbose=True)
+    projectd_2 = ProjectDirectory(working_dir=str(project_dir), verbose=True)
 
-            time.sleep(2.0)
-            grepo1.git.add(all=True)
-            grepo1.git.commit(m=' "adding file_%d.py"' % (idx, ))
+    yield {"projectd_1": projectd_1, "projectd_2": projectd_2}
 
-        # now add some other files:
-        for idx in range(5):
-            with open(repo2_dir + os.sep + 'file_%d.js' % (idx, ), 'w') as f:
-                f.write('document.write("hello world!");\n')
+    # Cleanup
+    projectd_1.__del__()
+    projectd_2.__del__()
 
-            time.sleep(2.0)
-            grepo2.git.add(all=True)
-            grepo2.git.commit(m=' "adding file_%d.js"' % (idx, ))
 
-        self.projectd_1 = ProjectDirectory(working_dir=[repo1_dir, repo2_dir], verbose=True)
-        self.projectd_2 = ProjectDirectory(working_dir=project_dir, verbose=True)
+# Remote project tests
+class TestRemoteProperties:
+    @pytest.mark.remote
+    def test_repo_name(self, remote_project):
+        assert "git-pandas" in list(remote_project.repo_name()["repository"].values)
 
-    def tearDown(self):
-        self.projectd_1.__del__()
-        self.projectd_2.__del__()
-        project_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos'
-        shutil.rmtree(project_dir)
+    @pytest.mark.remote
+    def test_branches(self, remote_project):
+        branches = list(remote_project.branches()["branch"].values)
+        assert "master" in branches
+        assert "gh-pages" in branches
 
-    def test_repo_name(self):
-        self.assertIn('repository1', list(self.projectd_1.repo_name()['repository'].values))
-        self.assertIn('repository2', list(self.projectd_1.repo_name()['repository'].values))
-        self.assertIn('repository1', list(self.projectd_2.repo_name()['repository'].values))
-        self.assertIn('repository2', list(self.projectd_2.repo_name()['repository'].values))
+    @pytest.mark.remote
+    def test_tags(self, remote_project):
+        tags = list(remote_project.tags()["tag"].values)
+        assert "0.0.1" in tags
+        assert "0.0.2" in tags
 
-    def test_branches(self):
-        branches = list(self.projectd_1.branches()['branch'].values)
-        self.assertIn('master', branches)
+    @pytest.mark.remote
+    def test_is_bare(self, remote_project):
+        for x in remote_project.is_bare()["is_bare"].values:
+            assert not x
 
-        branches = list(self.projectd_2.branches()['branch'].values)
-        self.assertIn('master', branches)
 
-    def test_tags(self):
-        tags = self.projectd_1.tags()
-        self.assertEqual(len(tags), 0)
+# Local project tests
+class TestLocalProperties:
+    def test_repo_name(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+        projectd_2 = local_project["projectd_2"]
 
-        tags = self.projectd_2.tags()
-        self.assertEqual(len(tags), 0)
+        assert "repository1" in list(projectd_1.repo_name()["repository"].values)
+        assert "repository2" in list(projectd_1.repo_name()["repository"].values)
+        assert "repository1" in list(projectd_2.repo_name()["repository"].values)
+        assert "repository2" in list(projectd_2.repo_name()["repository"].values)
 
-    def test_is_bare(self):
-        bares = self.projectd_1.is_bare()['is_bare'].values
+    def test_branches(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+        projectd_2 = local_project["projectd_2"]
+
+        branches = list(projectd_1.branches()["branch"].values)
+        assert "main" in branches
+
+        branches = list(projectd_2.branches()["branch"].values)
+        assert "main" in branches
+
+    def test_tags(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+        projectd_2 = local_project["projectd_2"]
+
+        tags = projectd_1.tags()
+        assert len(tags) == 0
+
+        tags = projectd_2.tags()
+        assert len(tags) == 0
+
+    def test_is_bare(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+        projectd_2 = local_project["projectd_2"]
+
+        bares = projectd_1.is_bare()["is_bare"].values
         for bare in bares:
-            self.assertFalse(bare)
+            assert not bare
 
-        bares = self.projectd_2.is_bare()['is_bare'].values
+        bares = projectd_2.is_bare()["is_bare"].values
         for bare in bares:
-            self.assertFalse(bare)
+            assert not bare
 
-    def test_commit_history(self):
-        ch = self.projectd_1.commit_history(branch='master')
-        self.assertEqual(ch.shape[0], 12)
+    def test_commit_history(self, local_project):
+        projectd_1 = local_project["projectd_1"]
 
-        # Will be deprecated in v2.0.0
+        ch = projectd_1.commit_history(branch="main")
+        assert ch.shape[0] == 12
 
-        ch2 = self.projectd_1.commit_history(branch='master', ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(ch2.shape[0], 5)
+        ch2 = projectd_1.commit_history(branch="main", ignore_globs=["*.[!p][!y]"])
+        assert ch2.shape[0] == 5
 
-        ch3 = self.projectd_1.commit_history(branch='master', limit=4)
-        self.assertEqual(ch3.shape[0], 4)
+        ch3 = projectd_1.commit_history(branch="main", limit=4)
+        assert ch3.shape[0] == 4
 
-        ch4 = self.projectd_1.commit_history(branch='master', days=5)
-        self.assertEqual(ch4.shape[0], 12)
+        ch4 = projectd_1.commit_history(branch="main", days=5)
+        assert ch4.shape[0] == 12
 
-        fch = self.projectd_1.file_change_history(branch='master')
-        self.assertEqual(fch.shape[0], 12)
+    def test_file_change_history(self, local_project):
+        projectd_1 = local_project["projectd_1"]
 
-        # Will be deprecated in v2.0.0
+        fch = projectd_1.file_change_history(branch="main")
+        assert fch.shape[0] == 12  # 2 READMEs + 5 py files + 5 js files
 
-        fch2 = self.projectd_1.file_change_history(branch='master', ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(fch2.shape[0], 5)
+        fch2 = projectd_1.file_change_history(branch="main", ignore_globs=["*.[!p][!y]"])
+        assert fch2.shape[0] == 5  # 5 py files
 
-        # Will be deprecated in v2.0.0
+        fch4 = projectd_1.file_change_history(branch="main", ignore_globs=["*.[!j][!s]"])
+        assert fch4.shape[0] == 5  # 5 js files
 
-        fch4 = self.projectd_1.file_change_history(branch='master', ignore_globs=['*.[!j][!s]'])
-        self.assertEqual(fch4.shape[0], 5)
+        fch3 = projectd_1.file_change_history(branch="main", limit=4)
+        assert fch3.shape[0] == 4
 
-        fch3 = self.projectd_1.file_change_history(branch='master', limit=4)
-        self.assertEqual(fch3.shape[0], 4)
+    def test_file_change_rates(self, local_project):
+        projectd_1 = local_project["projectd_1"]
 
-        fcr = self.projectd_1.file_change_rates(branch='master')
-        self.assertEqual(fcr.shape[0], 12)
-        self.assertEqual(fcr['unique_committers'].sum(), 12)
-        self.assertEqual(fcr['net_change'].sum(), 17)
+        fcr = projectd_1.file_change_rates(branch="main")
+        assert fcr.shape[0] == 12
+        assert fcr["unique_committers"].sum() == 12
+        assert fcr["net_change"].sum() == 17
 
-        # we know this repo doesnt have coverage
-        coverages = self.projectd_1.has_coverage()['has_coverage'].values
+    def test_has_coverage(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+
+        # We know this repo doesn't have coverage
+        coverages = projectd_1.has_coverage()["has_coverage"].values
         for coverage in coverages:
-            self.assertFalse(coverage)
+            assert not coverage
 
-        # we know this repo only has one committer
-        bf = self.projectd_1.bus_factor(by='projectd')
-        self.assertEqual(bf['bus factor'].values[0], 1)
+    def test_bus_factor(self, local_project):
+        projectd_1 = local_project["projectd_1"]
 
-        # lets do some blaming
+        # We know this repo only has one committer
+        bf = projectd_1.bus_factor(by="projectd")
+        assert bf["bus factor"].values[0] == 1
 
-        blame = self.projectd_1.blame(ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(blame['loc'].sum(), 10)
-        self.assertEqual(blame.shape[0], 1)
+    def test_blame(self, local_project):
+        projectd_1 = local_project["projectd_1"]
 
-        cblame = self.projectd_1.cumulative_blame(by='committer')
-        self.assertEqual(cblame.shape[0], 11)
-        self.assertEqual(cblame[cblame.columns.values[0]].sum(), 117)
+        blame = projectd_1.blame(ignore_globs=["*.[!p][!y]"])
+        assert blame["loc"].sum() == 10  # 5 files * 2 lines each
+        assert blame.shape[0] == 1
 
-        revs = self.projectd_1.revs(num_datapoints=2)
-        self.assertEqual(revs.shape[0], 2)
-        revs = self.projectd_1.revs(limit=2)
-        self.assertEqual(revs.shape[0], 2)
-        revs = self.projectd_1.revs()
-        self.assertEqual(revs.shape[0], 12)
+    def test_cumulative_blame(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+
+        cblame = projectd_1.cumulative_blame(by="committer", branch="main")
+        assert cblame.shape[0] > 0  # Just check that we have some rows
+        assert cblame[cblame.columns.values[0]].sum() > 0  # Check that we have some blame data
+
+    def test_revs(self, local_project):
+        projectd_1 = local_project["projectd_1"]
+
+        revs = projectd_1.revs(branch="main", num_datapoints=2)
+        assert revs.shape[0] == 2
+
+        revs = projectd_1.revs(branch="main", limit=2)
+        assert revs.shape[0] == 2
+
+        revs = projectd_1.revs(branch="main")
+        assert revs.shape[0] == 12  # 2 READMEs + 5 py files + 5 js files

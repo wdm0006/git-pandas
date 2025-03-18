@@ -1,1 +1,5 @@
-__author__ = 'willmcginnis'
+"""
+Test suite for git-pandas.
+"""
+
+__author__ = "willmcginnis"

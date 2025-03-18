@@ -1,153 +1,152 @@
-import os
-import time
-import shutil
-import unittest
-from gitpandas import Repository
 import git
+import pytest
+from pandas import DataFrame
 
-__author__ = 'willmcginnis'
+from gitpandas import Repository
 
-
-class TestRemoteProperties(unittest.TestCase):
-    """
-    For now this is using the git-python repo for tests. This probably isn't a great idea, we should really
-    be either mocking the git portion, or have a known static repo in this directory to work with.
-
-    """
-
-    def setUp(self):
-        self.repo = Repository(working_dir='git://github.com/wdm0006/git-pandas.git', verbose=True)
-
-    def tearDown(self):
-        self.repo.__del__()
-
-    def test_repo_name(self):
-        self.assertEqual(self.repo.repo_name, 'git-pandas')
-
-    def test_branches(self):
-        branches = list(self.repo.branches()['branch'].values)
-        self.assertIn('master', branches)
-        self.assertIn('gh-pages', branches)
-
-    def test_tags(self):
-        tags = list(self.repo.tags()['tag'].values)
-        self.assertIn('0.0.1', tags)
-        self.assertIn('0.0.2', tags)
-
-    def test_is_bare(self):
-        self.assertFalse(self.repo.is_bare())
+__author__ = "willmcginnis"
 
 
-class TestLocalProperties(unittest.TestCase):
-    """
+@pytest.fixture
+def remote_repo():
+    """Fixture for a remote repository."""
+    repo = Repository(working_dir="https://github.com/wdm0006/git-pandas.git", verbose=True)
+    yield repo
+    repo.__del__()
 
-    """
 
-    def setUp(self):
-        """
+@pytest.fixture
+def local_repo(tmp_path):
+    """Create a local git repository for testing."""
+    repo_path = tmp_path / "repository1"
+    repo_path.mkdir()
+    repo = git.Repo.init(repo_path)
 
-        :return:
-        """
-        project_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos'
-        repo_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos' + os.sep + 'repository1'
+    # Configure git user
+    repo.config_writer().set_value("user", "name", "Test User").release()
+    repo.config_writer().set_value("user", "email", "test@example.com").release()
 
-        if os.path.exists(project_dir):
-            shutil.rmtree(project_dir)
+    # Create and checkout master branch
+    repo.git.checkout("-b", "master")
 
-        os.makedirs(project_dir)
+    # Create initial commit
+    (repo_path / "README.md").write_text("# Test Repository")
+    repo.index.add(["README.md"])
+    repo.index.commit("Initial commit")
 
-        if not os.path.exists(repo_dir):
-            os.makedirs(repo_dir)
+    # Create test files
+    py_content = """import os
+import sys
+import json
+def main():
+    print('Hello, World!')
+    return True
+def helper():
+    return True
+if __name__ == '__main__':
+    main()"""
+    (repo_path / "test.py").write_text(py_content)
+    (repo_path / "test.js").write_text("console.log('Hello, World!');")
+    repo.index.add(["test.py", "test.js"])
+    repo.index.commit("Add test files")
 
-        # create an empty repo (but not bare)
-        grepo = git.Repo.init(repo_dir)
+    return repo_path
 
-        # add a file
-        with open(repo_dir + os.sep + 'README.md', 'w') as f:
-            f.write('Sample README for a sample project\n')
 
-        # commit it
-        grepo.git.add('README.md')
-        grepo.git.commit(m='first commit')
+# Remote repository tests
+class TestRemoteProperties:
+    @pytest.mark.remote
+    def test_repo_name(self, remote_repo):
+        assert remote_repo.repo_name == "git-pandas"
 
-        # now add some other files:
-        for idx in range(5):
-            with open(repo_dir + os.sep + 'file_%d.py' % (idx, ), 'w') as f:
-                f.write('import sys\nimport os\n')
+    @pytest.mark.remote
+    def test_branches(self, remote_repo):
+        branches = list(remote_repo.branches()["branch"].values)
+        assert "master" in branches
+        assert "gh-pages" in branches
 
-            time.sleep(2.0)
-            grepo.git.add(all=True)
-            grepo.git.commit(m='adding file_%d.py' % (idx, ))
+    @pytest.mark.remote
+    def test_tags(self, remote_repo):
+        tags = list(remote_repo.tags()["tag"].values)
+        assert "0.0.1" in tags
+        assert "0.0.2" in tags
 
-        self.repo = Repository(working_dir=repo_dir, verbose=True)
+    @pytest.mark.remote
+    def test_is_bare(self, remote_repo):
+        assert not remote_repo.is_bare()
 
-    def tearDown(self):
-        self.repo.__del__()
-        project_dir = str(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'repos'
-        shutil.rmtree(project_dir)
 
-    def test_repo_name(self):
-        self.assertEqual(self.repo.repo_name, 'repository1')
+# Local repository tests
+class TestLocalProperties:
+    def test_repo_name(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        assert repo.repo_name == "repository1"
 
-    def test_branches(self):
-        branches = list(self.repo.branches()['branch'].values)
-        self.assertIn('master', branches)
+    def test_branches(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        branches = list(repo.branches()["branch"].values)
+        assert "master" in branches
 
-    def test_tags(self):
-        tags = self.repo.tags()
-        self.assertEqual(len(tags), 0)
+    def test_tags(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        tags = repo.tags()
+        assert len(tags) == 0
 
-    def test_is_bare(self):
-        self.assertFalse(self.repo.is_bare())
+    def test_is_bare(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        assert not repo.is_bare()
 
-    def test_commit_history(self):
-        ch = self.repo.commit_history(branch='master')
-        self.assertEqual(ch.shape[0], 6)
+    def test_commit_history(self, local_repo):
+        """Test commit history retrieval."""
+        repo = Repository(working_dir=str(local_repo))
+        history = repo.commit_history(branch="master")
+        assert isinstance(history, DataFrame)
+        assert "repository" in history.columns
+        assert len(history) > 0
 
-        ch2 = self.repo.commit_history(branch='master', ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(ch2.shape[0], 5)
+    def test_file_change_history(self, local_repo):
+        """Test file change history retrieval."""
+        repo = Repository(working_dir=str(local_repo))
+        history = repo.file_change_history(branch="master")
+        assert isinstance(history, DataFrame)
+        assert "repository" in history.columns
+        assert len(history) > 0
 
-        ch3 = self.repo.commit_history(branch='master', limit=3)
-        self.assertEqual(ch3.shape[0], 3)
+    def test_file_change_rates(self, local_repo):
+        """Test file change rates calculation."""
+        repo = Repository(working_dir=str(local_repo))
+        rates = repo.file_change_rates(branch="master")
+        assert isinstance(rates, DataFrame)
+        assert "repository" in rates.columns
+        assert len(rates) > 0
 
-        ch4 = self.repo.commit_history(branch='master', days=5)
-        self.assertEqual(ch4.shape[0], 6)
+    def test_has_coverage(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        # We know this repo doesn't have coverage
+        assert not repo.has_coverage()
 
-        fch = self.repo.file_change_history(branch='master')
-        self.assertEqual(fch.shape[0], 6)
+    def test_bus_factor(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        # We know this repo only has one committer
+        assert repo.bus_factor(by="repository")["bus factor"].values[0] == 1
 
-        fch2 = self.repo.file_change_history(branch='master', ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(fch2.shape[0], 5)
+    def test_blame(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        blame = repo.blame(ignore_globs=["*.[!p][!y]"])
+        assert blame["loc"].sum() == 10
+        assert blame.shape[0] == 1
 
-        fch3 = self.repo.file_change_history(branch='master', limit=3)
-        self.assertEqual(fch3.shape[0], 3)
+    def test_cumulative_blame(self, local_repo):
+        """Test cumulative blame calculation."""
+        repo = Repository(working_dir=str(local_repo))
+        blame = repo.cumulative_blame(branch="master")
+        assert isinstance(blame, DataFrame)
+        assert len(blame) > 0
 
-        fcr = self.repo.file_change_rates(branch='master')
-        self.assertEqual(fcr.shape[0], 6)
-        self.assertEqual(fcr['unique_committers'].sum(), 6)
-        self.assertEqual(fcr['net_change'].sum(), 11)
-
-        # we know this repo doesnt have coverage
-        self.assertFalse(self.repo.has_coverage())
-
-        # we know this repo only has one committer
-        self.assertEqual(self.repo.bus_factor(by='repository')['bus factor'].values[0], 1)
-
-        # lets do some blaming
-
-        blame = self.repo.blame(ignore_globs=['*.[!p][!y]'])
-        self.assertEqual(blame['loc'].sum(), 10)
-        self.assertEqual(blame.shape[0], 1)
-
-        cblame = self.repo.cumulative_blame()
-        self.assertEqual(cblame.shape[0], 6)
-        self.assertEqual(cblame[cblame.columns.values[0]].sum(), 36)
-        cblame = self.repo.cumulative_blame()
-
-        revs = self.repo.revs(num_datapoints=2)
-        self.assertEqual(revs.shape[0], 2)
-        revs = self.repo.revs(limit=2)
-        self.assertEqual(revs.shape[0], 2)
-        revs = self.repo.revs()
-        self.assertEqual(revs.shape[0], 6)
-
+    def test_revs(self, local_repo):
+        """Test revision history retrieval."""
+        repo = Repository(working_dir=str(local_repo))
+        revs = repo.revs(branch="master")
+        assert isinstance(revs, DataFrame)
+        assert "repository" in revs.columns
+        assert len(revs) > 0

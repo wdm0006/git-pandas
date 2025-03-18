@@ -1,0 +1,4 @@
+sphinx>=4.0.0
+sphinx-rtd-theme>=1.0.0
+sphinx-rtd-dark-mode>=1.0.0
+sphinxcontrib-googleanalytics>=0.3 

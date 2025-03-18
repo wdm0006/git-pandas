@@ -1,69 +1,123 @@
-Contributing Code
-=================
+Contributing to Git-Pandas
+=========================
 
-Git-pandas is a python library for analyzing git repositories with pandas.  Our goal is twofold:
+We welcome contributions to Git-Pandas! Our goal is to make Git repository analysis simple, fast, and accessible to developers interested in data analysis.
 
- * To make the analysis of git repositories or collections of repositories simple, fast, and pleasant.
- * To give developers interested in data analysis a simple interface to datasets that they understand and have already (git data)
+Getting Started
+--------------
 
-With that in mind, we welcome and in fact would love some help.
-
-How to Contribute
------------------
-
-The preferred workflow to contribute to git-pandas is:
-
- 1. Fork this repository into your own github account.
- 2. Clone the fork on your account onto your local disk:
+1. Fork the repository on GitHub
+2. Clone your fork locally:
 
 .. code-block:: shell
 
     git clone git@github.com:YourLogin/git-pandas.git
     cd git-pandas
 
-
- 3. Create a branch for your new awesome feature, do not work in the master branch:
-
-.. code-block:: shell
-
-    git checkout -b new-awesome-feature
-
-
- 4. Write some code, or docs, or tests.
- 5. When you are done, submit a pull request.
-
-Guidelines
-----------
-
-Git-pandas is still a very young project, but we do have a few guiding principles:
-
- 1. Maintain feature and API parity between Repository and ProjectDirectory
- 2. Write detailed docstrings in sphinx format
- 3. Slow or potentially memory intensive functions should have a limit option
-
-Running Tests
--------------
-
-Test coverage is admittedly pretty bad right now, so help out by writing tests for new code. To run the tests, use:
+3. Create a feature branch:
 
 .. code-block:: shell
 
-    nosetests --with-coverage
-    coverage html
+    git checkout -b feature/your-awesome-feature
 
+4. Make your changes
+5. Submit a pull request
 
-Easy Issues / Getting Started
------------------------------
+Development Guidelines
+--------------------
 
-There are a number of issues on the near term horizon that would be great to have help with.
+Code Style
+~~~~~~~~~
 
- 1. Testing: we have no testing whatsoever as is, beyond examples. So setting up proper unit testing with some dummy git repositories is a pretty critical near-term goal.
- 2. Diff: it would be really nice to be able to call a function with 2 revs and return the diff as a dataframe. So columns for line number, filename, path, change, author, timestamp, etc.
- 3. Docs: We have a lot of examples, but they are largely not present in the documentation.  Adding some plotting to the examples using pyplot and putting them into the docs would help out new users a lot.
- 4. Docs Deployment: currently we host the docs on Github pages, which has a kind of awkward deployment process. Anyone with experience automating this (or scripting even) would be very useful.
- 5. File-level tracking: it would be really cool to be able to get a dataframe of one file's history in great detail. It likely would be a subset of the existing file change history function.
- 6. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the  results of other functions across multiple branches.
- 7. Verbose Mode: add logging in more functions when verbose is set to True.
- 8. Heirarchical bus factor: what's the bus factor of a file, directory, repo, project directory, etc.
- 9. Language analytics: what languages do we use most, what are bus factors of those languages? Who should we hire next?
+* Follow PEP 8 style guide
+* Use 4 spaces for indentation
+* Maximum line length of 88 characters (Black default)
+* Use snake_case for variables and functions
+* Use CamelCase for classes
+* Add docstrings following Google style guide
+
+Documentation
+~~~~~~~~~~~
+
+* Write detailed docstrings for all public APIs
+* Include type hints for function parameters and return values
+* Document exceptions that may be raised
+* Add examples where appropriate
+* Update the documentation for any new features
+
+Testing
+~~~~~~~
+
+* Write unit tests for new code
+* Maintain or improve test coverage
+* Run tests before submitting PR:
+
+.. code-block:: shell
+
+    make test
+    make coverage
+
+API Design Principles
+~~~~~~~~~~~~~~~~~~~
+
+* Maintain feature parity between Repository and ProjectDirectory
+* Include limit options for memory-intensive functions
+* Keep the API simple and intuitive
+* Consider performance implications
+
+Current Development Focus
+------------------------
+
+High Priority
+~~~~~~~~~~~
+
+* Improve test coverage with proper unit tests
+* Add diff functionality between revisions
+* Enhance documentation with more examples and visualizations
+* Streamline documentation deployment
+
+Feature Ideas
+~~~~~~~~~~~
+
+* File-level history tracking
+* Cross-branch analytics
+* Enhanced verbose logging
+* Hierarchical bus factor analysis
+* Language analytics and insights
+
+Development Setup
+---------------
+
+1. Install development dependencies:
+
+.. code-block:: shell
+
+    make install-dev
+
+2. Set up pre-commit hooks:
+
+.. code-block:: shell
+
+    make pre-commit
+
+3. Run tests:
+
+.. code-block:: shell
+
+    make test
+
+4. Build documentation:
+
+.. code-block:: shell
+
+    make docs
+
+Questions?
+---------
+
+* Open an issue for bug reports or feature requests
+* Join our discussions on GitHub
+* Check existing issues for similar problems
+
+Thank you for contributing to Git-Pandas!
 
