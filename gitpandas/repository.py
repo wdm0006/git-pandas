@@ -90,6 +90,11 @@ class Repository(object):
         self._git_repo_name = None
         self.cache_backend = cache_backend
         self._labels_to_add = labels_to_add or []
+        
+        # Convert PosixPath to string if needed
+        if working_dir is not None:
+            working_dir = str(working_dir)
+            
         if working_dir is not None:
             if working_dir.startswith(('git://', 'https://', 'http://')):
                 # if a tmp dir is passed, clone into that, otherwise make a temp directory.

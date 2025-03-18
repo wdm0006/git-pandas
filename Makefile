@@ -20,7 +20,7 @@ setup-all:
 	$(UV) pip install -e ".[all]"
 
 test:
-	$(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing
+	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing
 
 lint:
 	$(UV) run ruff check .

@@ -17,7 +17,7 @@ __author__ = 'willmcginnis'
 
 def repository():
     # build an example repository object then check the attributes
-    r = Repository('git://github.com/wdm0006/git-pandas.git')
+    r = Repository('https://github.com/wdm0006/git-pandas.git')
     print('\nRepository Name')
     print(r.repo_name)
     print('\nRepository Branches:')
@@ -34,7 +34,7 @@ def repository():
 
 def project():
     # build an example project directory object then check the attributes
-    p = ProjectDirectory(['git://github.com/wdm0006/git-pandas.git', 'git://github.com/CamDavidsonPilon/lifelines.git'])
+    p = ProjectDirectory(['https://github.com/wdm0006/git-pandas.git', 'https://github.com/CamDavidsonPilon/lifelines.git'])
     print('\nProject Directory Name')
     print(p.repo_name())
     print('\nProject Directory Branches:')

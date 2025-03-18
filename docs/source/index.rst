@@ -3,38 +3,87 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Git-Pandas
-==========
+Welcome to Git-Pandas Documentation
+=================================
 
-v2.0.0
+Git-Pandas is a powerful Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze and visualize your codebase's history, contributors, and development patterns.
 
-A simple set of wrappers around gitpython for creating pandas dataframes out of git data. The project is centered around
-two primary objects:
+.. image:: https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png
+   :alt: Cumulative Blame Visualization
+   :align: center
 
- * Repository
- * ProjectDirectory
+Quick Start
+----------
 
-A Repository object contains a single git repo, and is used to interact with it.  A ProjectDirectory references a directory
-in your filesystem which may have in it multiple git repositories. The subdirectories are all walked to find any child
-repos, and any analysis is aggregated up from all of those into a single output (pandas dataframe).
+Install Git-Pandas using pip:
 
-Installation
-------------
-
-To install use:
+.. code-block:: bash
 
     pip install git-pandas
 
-Contributing
-------------
+Basic Usage
+~~~~~~~~~~
 
-We are looking for contributors, so if you are interested, please review our contributor guidelines in CONTRIBUTING.md,
-which includes some proposed starter issues, or if you have an idea of your own, send us a pull request.
+Analyze a single repository:
+
+.. code-block:: python
+
+    from gitpandas import Repository
+    repo = Repository('/path/to/repo')
+    commits_df = repo.commit_history()
+    blame_df = repo.blame()
+
+Analyze multiple repositories:
+
+.. code-block:: python
+
+    from gitpandas import ProjectDirectory
+    project = ProjectDirectory('/path/to/project')
+    project_info = project.general_information()
+
+Key Features
+-----------
+
+* **Repository Analysis**: Extract commit history, file changes, and blame information
+* **Project Insights**: Calculate bus factor, development time, and contributor metrics
+* **GitHub Integration**: Analyze GitHub profiles and repository metrics
+* **Visualization Tools**: Built-in plotting utilities for common Git analytics
+* **Performance Optimization**: Optional caching support for memory-intensive operations
+
+Core Components
+-------------
+
+The library is built around two main components:
+
+* **Repository**: A wrapper around a single Git repository
+* **ProjectDirectory**: A collection of Git repositories for aggregate analysis
+
+For detailed information about these components, see the :doc:`repository` and :doc:`project` documentation.
+
+Documentation Contents
+-------------------
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   repository
+   project
+   cache
+   usecases
+   contributors
+
+Additional Resources
+------------------
+
+* :ref:`genindex` - Complete API reference
+* :ref:`modindex` - Module index
+* :ref:`search` - Search the documentation
 
 License
 -------
 
-This is BSD licensed (see LICENSE.md)
+This project is BSD licensed (see LICENSE.md)
 
 
 Detailed Documentation

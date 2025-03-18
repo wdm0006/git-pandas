@@ -70,13 +70,12 @@ class EphemeralCache():
 
     def get(self, k):
         if self.exists(k):
+            # Move the key to the end of the list (most recently used)
+            idx = self._key_list.index(k)
+            self._key_list.pop(idx)
+            self._key_list.append(k)
             return self._cache[k]
         else:
-            try:
-                idx = self._key_list.index(k)
-                self._key_list.pop(idx)
-            except ValueError as e:
-                pass
             raise CacheMissException(k)
 
     def exists(self, k):
@@ -129,6 +128,10 @@ class RedisDFCache():
     def get(self, orik):
         k = self.prefix + orik
         if self.exists(orik):
+            # Move the key to the end of the list (most recently used)
+            idx = self._key_list.index(k)
+            self._key_list.pop(idx)
+            self._key_list.append(k)
             # Use pickle instead of msgpack for DataFrame deserialization
             return pickle.loads(self._cache.get(k))
         else:

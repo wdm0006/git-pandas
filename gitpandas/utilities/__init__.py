@@ -9,3 +9,4 @@
 """
 
 __author__ = 'willmcginnis'
+__version__ = '0.1.0'

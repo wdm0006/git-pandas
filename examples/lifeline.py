@@ -1,61 +1,61 @@
+"""
+Example of analyzing file lifelines and ownership changes.
+
+This example demonstrates:
+1. Creating a repository instance
+2. Analyzing file change history
+3. Identifying ownership changes and refactoring events
+4. Visualizing survival curves for file owners
+"""
+
 from gitpandas import Repository
-import numpy as np
-import lifelines
-import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+from gitpandas.utilities.plotting import plot_lifeline
+import time
+import os
 
 __author__ = 'willmcginnis'
 
 
 if __name__ == '__main__':
-    threshold = 100
-    repo = Repository(working_dir='git://github.com/scikit-learn/scikit-learn.git', verbose=True)
-    fch = repo.file_change_history(limit=None, include_globs=['*.py'])
-
-    fch['file_owner'] = ''
-    fch['refactor'] = 0
-    fch['timestamp'] = fch.index.astype(np.int64) // (24 * 3600 * 10**9)
-    fch['observed'] = False
-    fch = fch.reindex()
-    fch = fch.reset_index()
-
-    # add in the file owner and whether or not each item is a refactor
-    for idx, row in fch.iterrows():
-        fch.at[idx, 'file_owner'] = repo.file_owner(row.rev, row.filename)
-        if abs(row.insertions - row.deletions) > threshold:
-            fch.at[idx, 'refactor'] = 1
-        else:
-            fch.at[idx, 'refactor'] = 0
-
-    # add in the time since column
-    fch['time_until_refactor'] = 0
-    for idx, row in fch.iterrows():
-        ts = None
-        chunk = fch[(fch['timestamp'] > row.timestamp) & (fch['refactor'] == 1) & (fch['filename'] == row.filename)]
-        if chunk.shape[0] > 0:
-            ts = chunk['timestamp'].min()
-            fch.at[idx, 'observed'] = True
-        else:
-            ts = fch['timestamp'].max()
-        fch.at[idx, 'time_until_refactor'] = ts - row.timestamp
-
-    # fch.to_csv('lifelines_data_t_%s.csv' % (threshold, ))
-    # fch = pd.read_csv('lifelines_data_t_%s.csv' % (threshold, ))
-
-    # plot out some survival curves
-    fig = plt.figure()
-    ax = plt.subplot(111)
-    for filename in set(fch['file_owner'].values):
-        sample = fch[fch['file_owner'] == filename]
-        if sample.shape[0] > 500:
-            print('Evaluating %s' % (filename, ))
-            kmf = lifelines.KaplanMeierFitter()
-            kmf.fit(sample['time_until_refactor'].values, event_observed=sample['observed'], timeline=list(range(365)), label=filename)
-            ax = kmf.survival_function_.plot(ax=ax)
-
-    plt.title('Survival function of file owners (thres=%s)' % (threshold, ))
-    plt.xlabel('Lifetime (days)')
-    plt.show()
+    print("Initializing repository...")
+    start_time = time.time()
+    
+    # Use a smaller repository for faster analysis
+    repo = Repository(working_dir='https://github.com/wdm0006/cookiecutter-pipproject.git')
+    
+    print("\nAnalyzing file change history...")
+    print("Using a limit of 50 commits for faster analysis")
+    
+    # Get file change history with limits
+    changes = repo.file_change_history(
+        branch='main',
+        limit=50,  # Limit to 50 commits
+        skip=5     # Skip every 5th commit
+    )
+    
+    print("\nIdentifying ownership changes...")
+    # Identify ownership changes
+    ownership_changes = changes.ownership_changes()
+    
+    print("\nIdentifying refactoring events...")
+    # Identify refactoring events
+    refactoring = changes.refactoring_events()
+    
+    print("\nGenerating visualization...")
+    # Create the plot and save it
+    fig = plot_lifeline(changes, ownership_changes, refactoring)
+    output_path = os.path.join('img', 'lifeline.png')
+    fig.savefig(output_path)
+    print(f"Plot saved to {output_path}")
+    
+    end_time = time.time()
+    print(f"\nAnalysis completed in {end_time - start_time:.2f} seconds")
+    
+    # Print summary statistics
+    print(f"\nSummary:")
+    print(f"Total files analyzed: {len(changes.file.unique())}")
+    print(f"Total ownership changes: {len(ownership_changes)}")
+    print(f"Total refactoring events: {len(refactoring)}")
 
 
 
