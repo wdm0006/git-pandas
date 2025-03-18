@@ -1218,12 +1218,17 @@ class Repository(object):
             modification times.
         """
 
-        tmp = self.repo.git.log('-n 1 -- %s' % (filename,)).split('\n')
-        date_string = [x for x in tmp if x.startswith('Date:')]
+        try:
+            tmp = self.repo.git.log('-n', '1', '--', filename).split('\n')
+            date_string = [x for x in tmp if x.startswith('Date:')]
 
-        if len(date_string) > 0:
-            return date_string[0].replace('Date:', '').strip()
-        else:
+            if len(date_string) > 0:
+                return date_string[0].replace('Date:', '').strip()
+            else:
+                return None
+        except GitCommandError:
+            if self.verbose:
+                print('Could not get last edit date for %s' % (filename,))
             return None
 
     @multicache(
