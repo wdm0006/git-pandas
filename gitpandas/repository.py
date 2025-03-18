@@ -316,11 +316,11 @@ class Repository(object):
                           x.message,
                           x.hexsha,
                           self.__check_extension(x.stats.files, ignore_globs=ignore_globs, include_globs=include_globs)
-                      ] for x in self.repo.iter_commits(branch, max_count=sys.maxsize)]
+                      ] for x in self.repo.iter_commits(branch)]
             else:
                 ds = []
                 c_date = time.time()
-                commits = self.repo.iter_commits(branch, max_count=sys.maxsize)
+                commits = self.repo.iter_commits(branch)
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
