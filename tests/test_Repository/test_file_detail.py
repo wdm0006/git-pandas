@@ -20,6 +20,9 @@ def local_repo(tmp_path):
     grepo.git.config('user.name', 'Test User')
     grepo.git.config('user.email', 'test@example.com')
     
+    # Create and checkout master branch
+    grepo.git.checkout('-b', 'master')
+    
     # Add a README file
     readme_path = repo_dir / "README.md"
     readme_path.write_text('Sample README for a sample project\n')
@@ -136,7 +139,7 @@ class TestFileDetail:
         
         # Get file detail for the first commit
         # This should only include the README.md file
-        first_commit = local_repo.revs(branch='main').iloc[-1]['rev']
+        first_commit = local_repo.revs(branch='master').iloc[-1]['rev']
         file_detail_first = local_repo.file_detail(rev=first_commit)
         
         # Check that we have fewer files in the first commit

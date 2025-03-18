@@ -20,7 +20,7 @@ def remote_repo():
 @pytest.fixture
 def local_repo(tmp_path):
     """Create a local git repository for testing."""
-    repo_path = tmp_path / "test_repo"
+    repo_path = tmp_path / "repository1"
     repo_path.mkdir()
     repo = git.Repo.init(repo_path)
     
@@ -28,19 +28,29 @@ def local_repo(tmp_path):
     repo.config_writer().set_value("user", "name", "Test User").release()
     repo.config_writer().set_value("user", "email", "test@example.com").release()
     
+    # Create and checkout master branch
+    repo.git.checkout('-b', 'master')
+    
     # Create initial commit
     (repo_path / "README.md").write_text("# Test Repository")
     repo.index.add(["README.md"])
     repo.index.commit("Initial commit")
     
     # Create test files
-    (repo_path / "test.py").write_text("print('Hello, World!')")
+    py_content = """import os
+import sys
+import json
+def main():
+    print('Hello, World!')
+    return True
+def helper():
+    return True
+if __name__ == '__main__':
+    main()"""
+    (repo_path / "test.py").write_text(py_content)
     (repo_path / "test.js").write_text("console.log('Hello, World!');")
     repo.index.add(["test.py", "test.js"])
     repo.index.commit("Add test files")
-    
-    # Ensure we're on master branch
-    repo.git.branch('-M', 'master')
     
     return repo_path
 
@@ -71,18 +81,22 @@ class TestRemoteProperties:
 # Local repository tests
 class TestLocalProperties:
     def test_repo_name(self, local_repo):
-        assert local_repo.repo_name == 'repository1'
+        repo = Repository(working_dir=str(local_repo))
+        assert repo.repo_name == 'repository1'
         
     def test_branches(self, local_repo):
-        branches = list(local_repo.branches()['branch'].values)
+        repo = Repository(working_dir=str(local_repo))
+        branches = list(repo.branches()['branch'].values)
         assert 'master' in branches
         
     def test_tags(self, local_repo):
-        tags = local_repo.tags()
+        repo = Repository(working_dir=str(local_repo))
+        tags = repo.tags()
         assert len(tags) == 0
         
     def test_is_bare(self, local_repo):
-        assert not local_repo.is_bare()
+        repo = Repository(working_dir=str(local_repo))
+        assert not repo.is_bare()
         
     def test_commit_history(self, local_repo):
         """Test commit history retrieval."""
@@ -109,15 +123,18 @@ class TestLocalProperties:
         assert len(rates) > 0
         
     def test_has_coverage(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
         # We know this repo doesn't have coverage
-        assert not local_repo.has_coverage()
+        assert not repo.has_coverage()
         
     def test_bus_factor(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
         # We know this repo only has one committer
-        assert local_repo.bus_factor(by='repository')['bus factor'].values[0] == 1
+        assert repo.bus_factor(by='repository')['bus factor'].values[0] == 1
         
     def test_blame(self, local_repo):
-        blame = local_repo.blame(ignore_globs=['*.[!p][!y]'])
+        repo = Repository(working_dir=str(local_repo))
+        blame = repo.blame(ignore_globs=['*.[!p][!y]'])
         assert blame['loc'].sum() == 10
         assert blame.shape[0] == 1
         

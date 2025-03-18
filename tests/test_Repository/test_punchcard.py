@@ -20,6 +20,9 @@ def local_repo(tmp_path):
     grepo.git.config('user.name', 'Test User')
     grepo.git.config('user.email', 'test@example.com')
     
+    # Create and checkout master branch
+    grepo.git.checkout('-b', 'master')
+    
     # Add a README file
     readme_path = repo_dir / "README.md"
     readme_path.write_text('Sample README for a sample project\n')
