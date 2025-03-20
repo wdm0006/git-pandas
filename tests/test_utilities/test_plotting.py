@@ -1,9 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
+import warnings
 
 from gitpandas.utilities.plotting import plot_cumulative_blame, plot_punchcard
 
+# Suppress matplotlib warnings about non-interactive backend
+warnings.filterwarnings("ignore", category=UserWarning, message="FigureCanvasAgg is non-interactive")
 
 class TestPlotting:
     @pytest.fixture

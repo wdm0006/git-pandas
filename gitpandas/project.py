@@ -242,7 +242,7 @@ class ProjectDirectory:
             columns += ["lines_covered", "total_lines", "coverage"]
 
         # Initialize empty DataFrame with all required columns
-        df = pd.DataFrame(columns=columns)
+        df = None
 
         for repo in self.repos:
             try:
@@ -256,9 +256,16 @@ class ProjectDirectory:
                 )
                 if not fcr.empty:
                     fcr["repository"] = repo.repo_name
-                    df = pd.concat([df, fcr], sort=True)
+                    if df is None:
+                        df = fcr
+                    else:
+                        df = pd.concat([df, fcr], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
+
+        if df is None:
+            # If no data was collected, return empty DataFrame with correct columns
+            df = pd.DataFrame(columns=columns)
 
         # Ensure consistent column order and reset index
         df = df[columns]
@@ -365,20 +372,7 @@ class ProjectDirectory:
             limit = int(limit / len(self.repo_dirs))
 
         # Initialize empty DataFrame with all required columns
-        df = pd.DataFrame(
-            columns=[
-                "repository",
-                "author",
-                "committer",
-                "date",
-                "message",
-                "commit_sha",
-                "lines",
-                "insertions",
-                "deletions",
-                "net",
-            ]
-        )
+        df = None
 
         for repo in self.repos:
             try:
@@ -391,11 +385,31 @@ class ProjectDirectory:
                 )
                 if not ch.empty:
                     ch["repository"] = repo.repo_name
-                    df = pd.concat([df, ch], sort=True)
+                    # Reset the index to make date a regular column before concatenation
+                    ch = ch.reset_index()
+                    if df is None:
+                        df = ch
+                    else:
+                        df = pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
-        # Ensure consistent column order and reset index
+        if df is None:
+            # If no data was collected, return empty DataFrame with correct columns
+            df = pd.DataFrame(columns=[
+                "repository",
+                "author",
+                "committer",
+                "date",
+                "message",
+                "commit_sha",
+                "lines",
+                "insertions",
+                "deletions",
+                "net",
+            ])
+
+        # Ensure consistent column order
         df = df[
             [
                 "repository",
@@ -410,7 +424,6 @@ class ProjectDirectory:
                 "net",
             ]
         ]
-        df = df.reset_index(drop=True)
         return df
 
     def file_change_history(
@@ -454,19 +467,7 @@ class ProjectDirectory:
             limit = int(limit / len(self.repo_dirs))
 
         # Initialize empty DataFrame with all required columns
-        df = pd.DataFrame(
-            columns=[
-                "repository",
-                "date",
-                "author",
-                "committer",
-                "message",
-                "rev",
-                "filename",
-                "insertions",
-                "deletions",
-            ]
-        )
+        df = None
 
         for repo in self.repos:
             try:
@@ -479,11 +480,30 @@ class ProjectDirectory:
                 )
                 if not ch.empty:
                     ch["repository"] = repo.repo_name
-                    df = pd.concat([df, ch], sort=True)
+                    # Reset the index to make date a regular column before concatenation
+                    ch = ch.reset_index()
+                    if df is None:
+                        df = ch
+                    else:
+                        df = pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
-        # Ensure consistent column order and reset index
+        if df is None:
+            # If no data was collected, return empty DataFrame with correct columns
+            df = pd.DataFrame(columns=[
+                "repository",
+                "date",
+                "author",
+                "committer",
+                "message",
+                "rev",
+                "filename",
+                "insertions",
+                "deletions",
+            ])
+
+        # Ensure consistent column order
         df = df[
             [
                 "repository",
@@ -497,7 +517,6 @@ class ProjectDirectory:
                 "deletions",
             ]
         ]
-        df = df.reset_index(drop=True)
         return df
 
     def blame(self, committer=True, by="repository", ignore_globs=None, include_globs=None):
