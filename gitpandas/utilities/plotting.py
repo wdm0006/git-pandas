@@ -11,6 +11,7 @@
 try:
     import matplotlib.pyplot as plt
     import matplotlib.style
+    import pandas as pd
 
     matplotlib.style.use("ggplot")
     HAS_MPL = True
@@ -32,6 +33,21 @@ def plot_punchcard(df, metric="lines", title="punchcard", by=None):
 
     if not HAS_MPL:
         raise ImportError("Must have matplotlib installed to use the plotting functions")
+
+    # Validate input DataFrame
+    required_columns = ["hour_of_day", "day_of_week", metric]
+    if df.empty or not all(col in df.columns for col in required_columns):
+        raise KeyError(f"DataFrame must contain columns: {required_columns}")
+
+    # Validate data types and ranges
+    if not pd.api.types.is_numeric_dtype(df[metric]):
+        raise ValueError(f"Metric column '{metric}' must be numeric")
+    
+    if not all(0 <= x <= 6 for x in df["day_of_week"]):
+        raise ValueError("day_of_week values must be between 0 and 6")
+    
+    if not all(0 <= x <= 23 for x in df["hour_of_day"]):
+        raise ValueError("hour_of_day values must be between 0 and 23")
 
     # find how many plots we are making
     unique_vals = set(df[by].values.tolist()) if by is not None else ["foo"]
@@ -88,6 +104,13 @@ def plot_cumulative_blame(df):
     if not HAS_MPL:
         raise ImportError("Must have matplotlib installed to use the plotting functions")
 
+    # Validate input DataFrame
+    if df.empty:
+        raise ValueError("DataFrame cannot be empty")
+
+    # Handle NaN values by filling with 0
+    df = df.fillna(0)
+
     ax = df.plot(kind="area", stacked=True)
     plt.title("Cumulative Blame")
     plt.xlabel("date")
@@ -117,6 +140,21 @@ def plot_lifeline(changes, ownership_changes, refactoring):
     """
     if not HAS_MPL:
         raise ImportError("matplotlib is required for plotting. Please install it first.")
+
+    # Validate input DataFrames
+    if changes.empty:
+        raise ValueError("changes DataFrame cannot be empty")
+
+    # Validate that all files in ownership_changes and refactoring exist in changes
+    if not ownership_changes.empty:
+        invalid_files = set(ownership_changes.filename) - set(changes.filename)
+        if invalid_files:
+            raise ValueError(f"Files in ownership_changes not found in changes: {invalid_files}")
+
+    if not refactoring.empty:
+        invalid_files = set(refactoring.filename) - set(changes.filename)
+        if invalid_files:
+            raise ValueError(f"Files in refactoring not found in changes: {invalid_files}")
 
     # Create a new figure
     fig, ax = plt.subplots(figsize=(12, 6))
