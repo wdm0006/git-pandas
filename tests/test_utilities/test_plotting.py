@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import warnings
+from unittest.mock import MagicMock, patch
 
-from gitpandas.utilities.plotting import plot_cumulative_blame, plot_punchcard
+from gitpandas.utilities.plotting import plot_cumulative_blame, plot_punchcard, plot_lifeline, HAS_MPL
 
 # Suppress matplotlib warnings about non-interactive backend
 warnings.filterwarnings("ignore", category=UserWarning, message="FigureCanvasAgg is non-interactive")
@@ -86,3 +87,93 @@ class TestPlotting:
         # Should raise ImportError
         with pytest.raises(ImportError):
             plot_cumulative_blame(cumulative_blame_data)
+
+    def test_plot_lifeline_basic(self):
+        """Test the plot_lifeline function with basic input."""
+        if not HAS_MPL:
+            pytest.skip("matplotlib is not installed")
+        
+        # Mock matplotlib functions to avoid display issues
+        with patch('matplotlib.pyplot.show'), patch('matplotlib.pyplot.subplots', return_value=(MagicMock(), MagicMock())):
+            # Create test data
+            dates = pd.date_range(start='2023-01-01', periods=10)
+            
+            # File change history
+            changes = pd.DataFrame({
+                'filename': ['file1.py', 'file2.py', 'file1.py', 'file3.py'],
+                'author': ['User1', 'User1', 'User2', 'User1'],
+                'committer': ['User1', 'User1', 'User2', 'User1'],
+                'insertions': [10, 5, 8, 12],
+                'deletions': [2, 0, 3, 0],
+            }, index=dates[:4])
+            
+            # Ownership changes
+            ownership_changes = pd.DataFrame({
+                'filename': ['file1.py'],
+                'author': ['User2'],
+                'committer': ['User2'],
+            }, index=[dates[2]])
+            
+            # Refactoring events
+            refactoring = pd.DataFrame({
+                'filename': ['file2.py'],
+                'message': ['Refactored code'],
+            }, index=[dates[1]])
+            
+            # Call the function
+            fig = plot_lifeline(changes, ownership_changes, refactoring)
+            
+            # Assert that the figure was created
+            assert fig is not None
+
+    def test_plot_lifeline_empty_events(self):
+        """Test plot_lifeline with empty ownership changes and refactoring."""
+        if not HAS_MPL:
+            pytest.skip("matplotlib is not installed")
+        
+        # Create test data with empty events
+        dates = pd.date_range(start='2023-01-01', periods=5)
+        
+        # File change history
+        changes = pd.DataFrame({
+            'filename': ['file1.py', 'file2.py', 'file1.py'],
+            'author': ['User1', 'User1', 'User1'],
+            'committer': ['User1', 'User1', 'User1'],
+        }, index=dates[:3])
+        
+        # Empty ownership changes and refactoring
+        ownership_changes = pd.DataFrame({
+            'filename': [],
+            'author': [],
+            'committer': [],
+        })
+        
+        refactoring = pd.DataFrame({
+            'filename': [],
+            'message': [],
+        })
+        
+        # Set a non-interactive backend
+        import matplotlib
+        matplotlib.use('Agg')
+        
+        # Call the function
+        fig = plot_lifeline(changes, ownership_changes, refactoring)
+        
+        # Assert that the figure was created
+        assert fig is not None
+
+    def test_plot_lifeline_no_matplotlib(self, monkeypatch):
+        """Test that plot_lifeline raises ImportError when matplotlib is not available."""
+        # Temporarily patch HAS_MPL to simulate matplotlib not being available
+        monkeypatch.setattr('gitpandas.utilities.plotting.HAS_MPL', False)
+        
+        # Create dummy data
+        dates = pd.date_range(start='2023-01-01', periods=3)
+        changes = pd.DataFrame({'filename': ['file1.py']}, index=[dates[0]])
+        ownership_changes = pd.DataFrame({'filename': []})
+        refactoring = pd.DataFrame({'filename': []})
+        
+        # Check that the function raises the expected exception
+        with pytest.raises(ImportError):
+            plot_lifeline(changes, ownership_changes, refactoring)

@@ -59,8 +59,9 @@ python_functions = ["test_*"]
 python_classes = ["Test*"]
 addopts = "--verbose --strict-markers"
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "remote: marks tests that require internet connection (deselect with '-m \"not remote\"')",
+    "slow: marks tests as slow (run with pytest -m slow)",
+    "remote: marks tests that require remote access",
+    "redis: marks tests that require Redis",
 ]
 
 [tool.coverage.run]

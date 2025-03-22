@@ -115,10 +115,8 @@ def plot_lifeline(changes, ownership_changes, refactoring):
     Returns:
         matplotlib.figure.Figure: The generated plot figure
     """
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError as err:
-        raise ImportError("matplotlib is required for plotting. Please install it first.") from err
+    if not HAS_MPL:
+        raise ImportError("matplotlib is required for plotting. Please install it first.")
 
     # Create a new figure
     fig, ax = plt.subplots(figsize=(12, 6))
