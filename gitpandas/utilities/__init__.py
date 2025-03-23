@@ -9,4 +9,10 @@
 """
 
 __author__ = "willmcginnis"
-__version__ = "2.0.0"
+__version__ = "2.1.0"
+
+try:
+    import joblib
+    _has_joblib = True
+except ImportError:
+    _has_joblib = False
