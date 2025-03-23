@@ -67,7 +67,37 @@ Here are some common operations you can perform with a Repository object:
 API Reference
 ------------
 
-.. automodule:: gitpandas.repository
+.. currentmodule:: gitpandas.repository
+
+.. autoclass:: Repository
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __init__, __str__, __repr__
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      ~Repository.commit_history
+      ~Repository.file_change_history
+      ~Repository.blame
+      ~Repository.cumulative_blame
+      ~Repository.branches
+      ~Repository.tags
+      ~Repository.revs
+      ~Repository.bus_factor
+      ~Repository.is_bare
+      ~Repository.has_coverage
+
+   .. rubric:: Properties
+
+   .. autosummary::
+      :nosignatures:
+      ~Repository.repo_name
+
+.. autoclass:: GitFlowRepository
    :members:
    :undoc-members:
    :show-inheritance:

@@ -29,6 +29,10 @@ jobs:
         with:
           docs-folder: "./docs/"
       
+      - name: Create CNAME file
+        run: |
+          echo "gitpandas.mcginniscommawill.com" > ./docs/build/html/CNAME
+      
       - name: Deploy Docs
         uses: peaceiris/actions-gh-pages@v3
         with:

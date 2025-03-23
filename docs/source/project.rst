@@ -50,23 +50,19 @@ Create a ProjectDirectory from a list of local repositories:
         verbose=True
     )
 
-Each directory must contain a `.git` directory. Subdirectories are not searched.
-
 Explicit Remote Repositories
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create a ProjectDirectory from remote repositories:
+Create a ProjectDirectory from a list of remote repositories:
 
 .. code-block:: python
 
     from gitpandas import ProjectDirectory
     project = ProjectDirectory(
-        working_dir=['git://github.com/user/repo.git'],
+        working_dir=['git://github.com/user/repo1.git', 'git://github.com/user/repo2.git'],
         ignore=None,
         verbose=True
     )
-
-You can mix local and remote repositories. Remote repositories are cloned into temporary directories.
 
 Common Operations
 ---------------
@@ -75,23 +71,50 @@ Here are some common operations you can perform with a ProjectDirectory object:
 
 .. code-block:: python
 
-    # Get general project information
-    info_df = project.general_information()
+    # Get commit history across all repositories
+    commits_df = project.commit_history(branch='master')
     
-    # Calculate bus factor
-    bus_factor = project.bus_factor()
+    # Get blame information across all repositories
+    blame_df = project.blame()
     
-    # Get file change rates
-    changes_df = project.file_change_rates()
+    # Get branch information across all repositories
+    branches_df = project.branches()
     
-    # Generate punchcard data
-    punchcard_df = project.punchcard()
+    # Get tag information across all repositories
+    tags_df = project.tags()
+    
+    # Get file change history across all repositories
+    changes_df = project.file_change_history()
 
 API Reference
 ------------
 
-.. automodule:: gitpandas.project
+.. currentmodule:: gitpandas.project
+
+.. autoclass:: ProjectDirectory
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+   :special-members: __init__, __str__, __repr__
+
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      ~ProjectDirectory.commit_history
+      ~ProjectDirectory.file_change_history
+      ~ProjectDirectory.blame
+      ~ProjectDirectory.cumulative_blame
+      ~ProjectDirectory.branches
+      ~ProjectDirectory.tags
+      ~ProjectDirectory.revs
+      ~ProjectDirectory.bus_factor
+      ~ProjectDirectory.is_bare
+      ~ProjectDirectory.has_coverage
+
+   .. rubric:: Properties
+
+   .. autosummary::
+      :nosignatures:
+      ~ProjectDirectory.repo_name
