@@ -256,10 +256,7 @@ class ProjectDirectory:
                 )
                 if not fcr.empty:
                     fcr["repository"] = repo.repo_name
-                    if df is None:
-                        df = fcr
-                    else:
-                        df = pd.concat([df, fcr], sort=True)
+                    df = fcr if df is None else pd.concat([df, fcr], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
@@ -387,27 +384,26 @@ class ProjectDirectory:
                     ch["repository"] = repo.repo_name
                     # Reset the index to make date a regular column before concatenation
                     ch = ch.reset_index()
-                    if df is None:
-                        df = ch
-                    else:
-                        df = pd.concat([df, ch], sort=True)
+                    df = ch if df is None else pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         if df is None:
             # If no data was collected, return empty DataFrame with correct columns
-            df = pd.DataFrame(columns=[
-                "repository",
-                "author",
-                "committer",
-                "date",
-                "message",
-                "commit_sha",
-                "lines",
-                "insertions",
-                "deletions",
-                "net",
-            ])
+            df = pd.DataFrame(
+                columns=[
+                    "repository",
+                    "author",
+                    "committer",
+                    "date",
+                    "message",
+                    "commit_sha",
+                    "lines",
+                    "insertions",
+                    "deletions",
+                    "net",
+                ]
+            )
 
         # Ensure consistent column order
         df = df[
@@ -482,26 +478,25 @@ class ProjectDirectory:
                     ch["repository"] = repo.repo_name
                     # Reset the index to make date a regular column before concatenation
                     ch = ch.reset_index()
-                    if df is None:
-                        df = ch
-                    else:
-                        df = pd.concat([df, ch], sort=True)
+                    df = ch if df is None else pd.concat([df, ch], sort=True)
             except GitCommandError:
                 print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
 
         if df is None:
             # If no data was collected, return empty DataFrame with correct columns
-            df = pd.DataFrame(columns=[
-                "repository",
-                "date",
-                "author",
-                "committer",
-                "message",
-                "rev",
-                "filename",
-                "insertions",
-                "deletions",
-            ])
+            df = pd.DataFrame(
+                columns=[
+                    "repository",
+                    "date",
+                    "author",
+                    "committer",
+                    "message",
+                    "rev",
+                    "filename",
+                    "insertions",
+                    "deletions",
+                ]
+            )
 
         # Ensure consistent column order
         df = df[

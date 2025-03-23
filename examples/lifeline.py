@@ -10,9 +10,10 @@ This example demonstrates:
 
 import os
 import time
+
 import matplotlib
-matplotlib.use('Agg')  # Set the backend to Agg before importing pyplot
-import matplotlib.pyplot as plt
+
+matplotlib.use("Agg")  # Set the backend to Agg before importing pyplot
 
 from gitpandas import Repository
 from gitpandas.utilities.plotting import plot_lifeline

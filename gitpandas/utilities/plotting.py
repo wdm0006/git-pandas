@@ -42,10 +42,10 @@ def plot_punchcard(df, metric="lines", title="punchcard", by=None):
     # Validate data types and ranges
     if not pd.api.types.is_numeric_dtype(df[metric]):
         raise ValueError(f"Metric column '{metric}' must be numeric")
-    
+
     if not all(0 <= x <= 6 for x in df["day_of_week"]):
         raise ValueError("day_of_week values must be between 0 and 6")
-    
+
     if not all(0 <= x <= 23 for x in df["hour_of_day"]):
         raise ValueError("hour_of_day values must be between 0 and 23")
 
