@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import warnings
+import matplotlib
+matplotlib.use('Agg')  # Set the backend to Agg before importing pyplot
+import matplotlib.pyplot as plt
 from unittest.mock import MagicMock, patch
 
 from gitpandas.utilities.plotting import plot_cumulative_blame, plot_punchcard, plot_lifeline, HAS_MPL

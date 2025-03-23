@@ -1,5 +1,9 @@
 """ """
 
+import matplotlib
+matplotlib.use('Agg')  # Set the backend to Agg before importing pyplot
+import matplotlib.pyplot as plt
+
 from definitions import GIT_PANDAS_DIR
 
 from gitpandas import ProjectDirectory
