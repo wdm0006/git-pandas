@@ -1,6 +1,7 @@
 ---
-description: Overview of the pygeohash project
+description: Overview of the gitpandas project
 globs: 
+alwaysApply: false
 ---
 I'll do a thorough analysis of the gitpandas library to help new developers understand it. Let me start by exploring the codebase to get a comprehensive understanding.
 

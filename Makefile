@@ -1,4 +1,4 @@
-.PHONY: setup test test-all lint format clean docs build run-example
+.PHONY: setup test test-all lint format clean docs build run-example test-single
 
 # Use uv for all Python operations
 PYTHON = python
@@ -22,6 +22,14 @@ setup-all:
 
 test:
 	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing -m "not slow"
+
+test-single:
+	@if [ "$(test)" = "" ]; then \
+		echo "Error: Please specify a test using test=<path_to_test>"; \
+		echo "Example: make test-single test=tests/test_Repository/test_advanced.py::TestRepositoryAdvanced::test_parallel_cumulative_blame"; \
+		exit 1; \
+	fi
+	MPLBACKEND=Agg $(UV) run pytest $(test) -v
 
 test-all:
 	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing
@@ -76,6 +84,7 @@ help:
 	@echo "  setup-examples Install the package with examples dependencies"
 	@echo "  setup-all     Install the package with all dependencies"
 	@echo "  test          Run tests with pytest (excluding slow tests)"
+	@echo "  test-single   Run a single test (usage: make test-single test=<path_to_test>)"
 	@echo "  test-all      Run all tests including slow tests"
 	@echo "  lint          Run ruff linter"
 	@echo "  format        Format code with ruff"

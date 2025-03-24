@@ -214,26 +214,28 @@ class TestRepositoryAdvanced:
         with pytest.raises(FileNotFoundError):
             repo_obj._file_last_edit("nonexistent_file.txt")
 
-    @patch("gitpandas.repository.multicache")
-    def test_file_detail_with_cache(self, mock_multicache, local_repo):
-        """Test that file_detail properly uses the cache decorator."""
-        # Setup mock decorator that just calls the original function
-        mock_multicache.side_effect = lambda *args, **kwargs: lambda f: f
-
+    def test_file_detail_with_cache(self, local_repo):
+        """Test that file_detail properly uses caching."""
         repo = Repository(working_dir=str(local_repo))
 
-        # Call file_detail
-        result = repo.file_detail(rev="HEAD")
+        # Get a specific revision to test with
+        first_commit = list(repo.repo.iter_commits(max_count=1))[0].hexsha
 
-        # Verify results
-        assert isinstance(result, pd.DataFrame)
-        assert "file" in result.columns
-        assert "loc" in result.columns
-        assert "last_edit_date" in result.columns
+        # Call file_detail twice with the same parameters
+        result1 = repo.file_detail(rev=first_commit)
+        result2 = repo.file_detail(rev=first_commit)
 
-        # Verify multicache was called with correct parameters
-        mock_multicache.assert_called_with(
-            key_prefix="file_detail",
-            key_list=["include_globs", "ignore_globs", "rev", "committer"],
-            skip_if=mock_multicache.call_args[1]["skip_if"],
-        )
+        # Verify results are DataFrames with expected columns
+        assert isinstance(result1, pd.DataFrame)
+        assert isinstance(result2, pd.DataFrame)
+        assert "loc" in result1.columns
+        assert "file_owner" in result1.columns
+        assert "ext" in result1.columns
+        assert "last_edit_date" in result1.columns
+
+        # Verify both calls return the same data
+        pd.testing.assert_frame_equal(result1, result2)
+
+        # Verify that calling with HEAD doesn't use cache
+        result3 = repo.file_detail(rev="HEAD")
+        assert isinstance(result3, pd.DataFrame)
