@@ -75,7 +75,7 @@ exclude=["docs/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "C4", "SIM", "ERA"]
-ignore = []
+ignore = ["UP017"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["gitpandas"]
