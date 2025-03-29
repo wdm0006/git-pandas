@@ -12,7 +12,8 @@ __author__ = "willmcginnis"
 __version__ = "2.1.0"
 
 try:
-    import joblib
+    import joblib  # noqa: F401
+
     _has_joblib = True
 except ImportError:
     _has_joblib = False

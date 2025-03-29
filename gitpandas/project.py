@@ -36,7 +36,9 @@ def _branches_func(r):
 
 
 def _revs_func(repo, branch, limit, skip, num_datapoints):
-    return repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+    revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+    revs["repository"] = repo.repo_name
+    return revs
 
 
 def _tags_func(repo):
@@ -309,7 +311,7 @@ class ProjectDirectory:
         for repo in self.repos:
             try:
                 ch = repo.hours_estimate(
-                    branch,
+                    branch=branch,
                     grouping_window=grouping_window,
                     single_commit_hours=single_commit_hours,
                     limit=limit,
@@ -711,7 +713,7 @@ class ProjectDirectory:
 
         if _has_joblib:
             ds = Parallel(n_jobs=-1, backend="threading", verbose=0)(
-                delayed(_revs_func)(x, branch, limit, skip, num_datapoints) for x in self.repos
+                [delayed(_revs_func)(repo, branch, limit, skip, num_datapoints) for repo in self.repos]
             )
             for d in ds:
                 if not d.empty:

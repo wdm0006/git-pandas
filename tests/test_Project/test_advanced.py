@@ -194,8 +194,10 @@ class TestProjectDirectoryAdvanced:
         # Verify results are combined
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 4  # All files from both repos
-        assert set(result["repository"].unique()) == {"repo1", "repo2"}
-        assert set(result["file"].unique()) == {"file1.py", "file2.py", "file3.py", "file4.py"}
+        # Get unique repositories from the index
+        assert set(result.index.get_level_values("repository").unique()) == {"repo1", "repo2"}
+        # Get unique files from the index
+        assert set(result.index.get_level_values("file").unique()) == {"file1.py", "file2.py", "file3.py", "file4.py"}
 
         # Verify parameters were passed down correctly
         for repo in pd_obj.repos:

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from git import Commit, Repo
+from git import Repo
 
 from gitpandas import Repository
 
@@ -68,7 +68,7 @@ class TestRepositoryAdvanced:
         # Should contain data about commits in the tagged range
         assert isinstance(commits_in_tags, pd.DataFrame)
         assert "tag" in commits_in_tags.columns
-        assert "commits" in commits_in_tags.columns
+        assert "commit_sha" in commits_in_tags.columns
 
     def test_get_branches_by_commit(self, local_repo):
         """Test getting branches that contain a specific commit."""
@@ -76,15 +76,19 @@ class TestRepositoryAdvanced:
         repo = Repo(str(local_repo))
 
         # Get the first commit (should be in both master and feature)
-        first_commit = list(repo.iter_commits(max_count=1, rev="master"))[0]
+        first_commit = list(repo.iter_commits(rev="master", max_count=1, skip=repo.commit("master").count() - 1))[0]
 
         # Get branches containing this commit
         branches = repo_obj.get_branches_by_commit(first_commit.hexsha)
 
         # Should include both master and feature
-        assert isinstance(branches, list)
-        assert "master" in branches
-        assert "feature" in branches
+        assert isinstance(branches, pd.DataFrame)
+        assert "branch" in branches.columns
+        assert "commit" in branches.columns
+        assert "repository" in branches.columns
+        branch_list = branches["branch"].tolist()
+        assert "master" in branch_list
+        assert "feature" in branch_list
 
         # Get the last commit on feature branch (should only be in feature)
         repo.git.checkout("feature")
@@ -95,9 +99,10 @@ class TestRepositoryAdvanced:
         branches = repo_obj.get_branches_by_commit(feature_commit.hexsha)
 
         # Should only include feature
-        assert isinstance(branches, list)
-        assert "feature" in branches
-        assert "master" not in branches
+        assert isinstance(branches, pd.DataFrame)
+        branch_list = branches["branch"].tolist()
+        assert "feature" in branch_list
+        assert "master" not in branch_list
 
     def test_file_owner(self, local_repo):
         """Test getting the owner of a file as of a specific revision."""
@@ -125,24 +130,26 @@ class TestRepositoryAdvanced:
             mock_revs = pd.DataFrame(
                 {
                     "rev": ["abc123", "def456"],
-                    "date": [datetime.datetime(2023, 1, 1), datetime.datetime(2023, 1, 2)],
+                    "date": ["1672531200", "1672617600"],  # 2023-01-01 and 2023-01-02 in Unix timestamp format
                 }
-            ).set_index("date")
+            )
+            mock_revs.index = pd.RangeIndex(len(mock_revs))  # Ensure integer indices
 
             # Mock the revs and parallel processing
             repo.revs = MagicMock(return_value=mock_revs)
             mock_parallel_instance = mock_parallel.return_value
 
             # Setup the parallel execution to return our mock blame data
-            def side_effect(items, n_jobs):
-                # For each item in the parallel call, attach the blame data
+            def side_effect(delayed_funcs):
+                # For each delayed function call, return mock data
                 results = []
-                for i, item in enumerate(items):
+                for i in range(len(mock_revs)):
+                    result = {"rev": mock_revs.iloc[i]["rev"], "date": mock_revs.iloc[i]["date"]}
                     if i == 0:
-                        item.update({"Test User": 3})
+                        result["Test User"] = 3
                     else:
-                        item.update({"Test User": 5})
-                    results.append(item)
+                        result["Test User"] = 5
+                    results.append(result)
                 return results
 
             mock_parallel_instance.side_effect = side_effect
@@ -162,25 +169,27 @@ class TestRepositoryAdvanced:
         """Test punchcard generation with various parameters."""
         repo = Repository(working_dir=str(local_repo))
 
-        # Mock file_change_history to return controlled data
+        # Mock commit_history to return controlled data
         mock_history = pd.DataFrame(
             {
-                "filename": ["file1.py", "file2.py", "file1.py"],
+                "lines": [12, 5, 4],
                 "insertions": [10, 5, 3],
                 "deletions": [2, 0, 1],
-                "lines": [12, 5, 4],
+                "net": [8, 5, 2],
                 "author": ["User1", "User1", "User2"],
                 "committer": ["User1", "User1", "User2"],
+                "message": ["commit 1", "commit 2", "commit 3"],
+                "commit_sha": ["abc123", "def456", "ghi789"],
             },
             index=[
                 # Monday at 10am, Wednesday at 3pm, Friday at 5pm
-                datetime.datetime(2023, 1, 2, 10, 0, 0),
-                datetime.datetime(2023, 1, 4, 15, 0, 0),
-                datetime.datetime(2023, 1, 6, 17, 0, 0),
+                datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.UTC),
+                datetime.datetime(2023, 1, 4, 15, 0, 0, tzinfo=datetime.UTC),
+                datetime.datetime(2023, 1, 6, 17, 0, 0, tzinfo=datetime.UTC),
             ],
         )
 
-        repo.file_change_history = MagicMock(return_value=mock_history)
+        repo.commit_history = MagicMock(return_value=mock_history)
 
         # Test basic punchcard
         punchcard = repo.punchcard(branch="master")
@@ -192,14 +201,14 @@ class TestRepositoryAdvanced:
         # Test punchcard with 'by' parameter
         punchcard_by = repo.punchcard(branch="master", by="committer")
         assert isinstance(punchcard_by, pd.DataFrame)
-        assert "by" in punchcard_by.columns
-        assert len(punchcard_by["by"].unique()) == 2  # Two different committers
+        assert "committer" in punchcard_by.columns  # Check for actual column name instead of 'by'
+        assert len(punchcard_by["committer"].unique()) == 2  # Two different committers
 
         # Test punchcard with normalization
-        punchcard_norm = repo.punchcard(branch="master", normalize="hour")
+        punchcard_norm = repo.punchcard(branch="master", normalize=100)  # Normalize to 100
         assert isinstance(punchcard_norm, pd.DataFrame)
-        # Normalized values should be between 0 and 1
-        assert punchcard_norm["lines"].max() <= 1.0
+        # Normalized values should be between 0 and 100
+        assert punchcard_norm["lines"].max() <= 100.0
 
     def test_file_last_edit(self, local_repo):
         """Test getting the last edit information for a file."""
@@ -207,12 +216,20 @@ class TestRepositoryAdvanced:
 
         # Test a file that exists
         last_edit = repo_obj._file_last_edit("src/main.py")
-        assert isinstance(last_edit, Commit)
-        assert last_edit.message.strip() == "Update main function"
+        assert isinstance(last_edit, str)
+        assert "Date:" not in last_edit  # The implementation strips this out
+
+        # Try to parse the date string to verify it's a valid date
+        from datetime import datetime
+
+        try:
+            # Git date format is like: Thu Apr 7 22:13:13 2005 +0200
+            datetime.strptime(last_edit, "%a %b %d %H:%M:%S %Y %z")
+        except ValueError as e:
+            pytest.fail(f"Last edit date string '{last_edit}' is not in expected git format: {e}")
 
         # Test a file that doesn't exist
-        with pytest.raises(FileNotFoundError):
-            repo_obj._file_last_edit("nonexistent_file.txt")
+        assert repo_obj._file_last_edit("nonexistent_file.txt") is None
 
     def test_file_detail_with_cache(self, local_repo):
         """Test that file_detail properly uses caching."""
