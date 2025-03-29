@@ -183,9 +183,9 @@ class TestRepositoryAdvanced:
             },
             index=[
                 # Monday at 10am, Wednesday at 3pm, Friday at 5pm
-                datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.UTC),
-                datetime.datetime(2023, 1, 4, 15, 0, 0, tzinfo=datetime.UTC),
-                datetime.datetime(2023, 1, 6, 17, 0, 0, tzinfo=datetime.UTC),
+                datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.timezone.utc),
+                datetime.datetime(2023, 1, 4, 15, 0, 0, tzinfo=datetime.timezone.utc),
+                datetime.datetime(2023, 1, 6, 17, 0, 0, tzinfo=datetime.timezone.utc),
             ],
         )
 
