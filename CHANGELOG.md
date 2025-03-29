@@ -1,3 +1,10 @@
+v2.1.0
+======
+
+ * Imrpoved test suite
+ * Many bugfixes
+ * Updates for pandas v2
+
 v2.0.0
 ======
 

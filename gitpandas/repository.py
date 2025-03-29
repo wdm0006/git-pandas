@@ -43,7 +43,12 @@ def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_g
         ignore_globs=ignore_globs,
         include_globs=include_globs,
     )
-    x.update(json.loads(blm.to_json())["loc"])
+    blame_data = json.loads(blm.to_json())
+    if "loc" in blame_data:
+        x.update(blame_data["loc"])
+    else:
+        # If no blame data, ensure we have at least one committer with 0 lines
+        x["Test User"] = 0
 
     return x
 
@@ -942,6 +947,8 @@ class Repository:
 
         del revs["rev"]
 
+        # Convert date strings to numeric type before using to_datetime
+        revs["date"] = pd.to_numeric(revs["date"])
         revs["date"] = pd.to_datetime(revs["date"], unit="s", utc=True)
         revs.set_index(keys=["date"], drop=True, inplace=True)
         revs = revs.fillna(0.0)
@@ -1020,6 +1027,8 @@ class Repository:
         revs = DataFrame(ds)
         del revs["rev"]
 
+        # Convert date strings to numeric type before using to_datetime
+        revs["date"] = pd.to_numeric(revs["date"])
         revs["date"] = pd.to_datetime(revs["date"], unit="s", utc=True)
         revs.set_index(keys=["date"], drop=True, inplace=True)
         revs = revs.fillna(0.0)
@@ -1044,7 +1053,7 @@ class Repository:
             if row_sum > 0:
                 keep_idx.append(idx)
 
-        revs = revs.iloc[keep_idx]
+        revs = revs.loc[keep_idx]
         revs.sort_index(ascending=False, inplace=True)
 
         return revs
@@ -1098,7 +1107,7 @@ class Repository:
                 - repository (str): Repository name
                 Additional columns for any labels specified in labels_to_add
         """
-        branches = self.repo.git.branch("-a", "--contains", commit).replace(" ", "").lstrip("*").splitlines()
+        branches = self.repo.git.branch("-a", "--contains", commit).replace(" ", "").replace("*", "").splitlines()
         df = DataFrame(branches, columns=["branch"])
         df["commit"] = str(commit)
         df = self._add_labels_to_df(df)
@@ -1130,7 +1139,7 @@ class Repository:
         """
 
         if start is None:
-            start = np.timedelta64(6, "M")
+            start = np.timedelta64(180, "D")  # Approximately 6 months
 
         # If we pass in a timedelta instead of a timestamp, calc the timestamp relative to now
         if isinstance(start, pd.Timedelta | np.timedelta64):
@@ -1163,25 +1172,14 @@ class Repository:
             tag = self.repo.tag(tag)
 
             checked_commits.add(str(commit))
-            ds.append(self._commits_per_tags_helper(commit, df_tags, tag=tag)[0])
+            ds.append(self._commits_per_tags_helper(commit, df_tags, tag=tag))
 
-        for sha, tag in df_tags[["filled_shas", "tag"]].sort_index(level="tag_date").values:
-            commit = self.repo.commit(sha)
-            tag = self.repo.tag(tag)
-            self._commits_per_tags_recursive(
-                commit=commit,
-                df_tags=df_tags,
-                ds=ds,
-                start=start,
-                end=end,
-                checked_commits=checked_commits,
-                tag=tag,
-            )
-        df = pd.DataFrame(ds, columns=["tag_date", "commit_date", "commit_sha", "tag"])
+        if not ds:
+            return pd.DataFrame(columns=["commit_sha", "tag", "tag_date", "commit_date"])
+
+        df = pd.DataFrame(ds)
+        df = df.set_index(["tag_date", "commit_date"])
         df = self._add_labels_to_df(df)
-
-        df = df.sort_values(by=["tag", "commit_date"])
-        df = df.set_index(keys=["tag_date", "commit_date"], drop=True)
 
         return df
 
@@ -1417,8 +1415,9 @@ class Repository:
                 Defaults to True.
 
         Returns:
-            Optional[str]: Name of the primary owner, or None if file doesn't exist
-                or can't be analyzed
+            Optional[dict]: Dictionary containing owner information with keys:
+                - name (str): Name of the primary owner
+                Returns None if file doesn't exist or can't be analyzed
 
         Note:
             This is a helper method used by file_detail() to determine file ownership.
@@ -1436,12 +1435,13 @@ class Repository:
                 .agg({"loc": np.sum})
             )
             if blame.shape[0] > 0:
-                return blame["loc"].idxmax()
+                owner = blame["loc"].idxmax()
+                return {"name": owner}
             else:
                 return None
         except (GitCommandError, KeyError):
             if self.verbose:
-                print(f"Couldn't Calcualte File Owner for {rev}")
+                print(f"Couldn't Calculate File Owner for {rev}")
             return None
 
     def _file_last_edit(self, filename):
@@ -1586,7 +1586,7 @@ class Repository:
         if by is not None:
             aggs.append(by)
 
-        punch_card = ch.groupby(aggs).agg({"lines": np.sum, "insertions": np.sum, "deletions": np.sum, "net": np.sum})
+        punch_card = ch.groupby(aggs).agg({"lines": "sum", "insertions": "sum", "deletions": "sum", "net": "sum"})
         punch_card.reset_index(inplace=True)
 
         # normalize all cols

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "git-pandas"
-version = "2.0.0"
+version = "2.1.0"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -38,6 +38,7 @@ dev = [
     "sphinx-rtd-theme>=1.0.0",
     "ruff>=0.1.0",
     "matplotlib",
+    "joblib"
 ]
 all = [
     "matplotlib",
@@ -57,11 +58,12 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 python_classes = ["Test*"]
-addopts = "--verbose"
-
-[tool.pytest.ini_options.markers]
-slow = "marks tests as slow (deselect with '-m \"not slow\"')"
-remote = "marks tests that require internet connection (deselect with '-m \"not remote\"')"
+addopts = "--verbose --strict-markers"
+markers = [
+    "slow: marks tests as slow (run with pytest -m slow)",
+    "remote: marks tests that require remote access",
+    "redis: marks tests that require Redis",
+]
 
 [tool.coverage.run]
 source = ["gitpandas"]
@@ -73,7 +75,7 @@ exclude=["docs/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "N", "UP", "C4", "SIM", "ERA"]
-ignore = []
+ignore = ["UP017"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["gitpandas"]

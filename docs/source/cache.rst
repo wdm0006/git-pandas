@@ -48,34 +48,27 @@ You can configure cache behavior through the following parameters:
 * ``cache``: Enable/disable caching (default: False)
 * ``cache_backend``: Choose the cache backend ('memory' or 'redis')
 * ``cache_ttl``: Time-to-live for cached results in seconds
-* ``redis_url``: Redis connection URL (for Redis backend)
-
-Example Usage
-------------
-
-.. code-block:: python
-
-    from gitpandas import Repository
-    
-    # Create repository with Redis caching
-    repo = Repository(
-        working_dir='/path/to/repo',
-        cache=True,
-        cache_backend='redis',
-        cache_ttl=3600,  # Cache for 1 hour
-        redis_url='redis://localhost:6379/0'
-    )
-    
-    # First call will compute and cache the result
-    blame_df = repo.blame()
-    
-    # Subsequent calls will use cached result if available
-    blame_df = repo.blame()  # Much faster!
 
 API Reference
 ------------
 
-.. automodule:: gitpandas.cache
+.. currentmodule:: gitpandas.cache
+
+.. autoclass:: CacheBackend
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
+   :special-members: __init__, __getitem__, __setitem__, __delitem__
+
+.. autoclass:: MemoryCache
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+.. autoclass:: RedisCache
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
