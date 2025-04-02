@@ -1,3 +1,11 @@
+v2.2.0
+======
+
+ * Support for default branch setting instead of assuming master, will infer if not passed
+ * Better handling of ignore repos in project directory setup
+ * Added a branch exists helper in repository 
+ * Docs corrections
+
 v2.1.0
 ======
 

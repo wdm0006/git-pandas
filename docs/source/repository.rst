@@ -26,7 +26,11 @@ Create a Repository from a local Git repository:
 .. code-block:: python
 
     from gitpandas import Repository
-    repo = Repository(working_dir='/path/to/repo/', verbose=True)
+    repo = Repository(
+        working_dir='/path/to/repo/',
+        verbose=True,
+        default_branch='main'  # Optional, will auto-detect if not specified
+    )
 
 The directory must contain a `.git` directory. Subdirectories are not searched.
 
@@ -38,7 +42,11 @@ Create a Repository from a remote Git repository:
 .. code-block:: python
 
     from gitpandas import Repository
-    repo = Repository(working_dir='git://github.com/user/repo.git', verbose=True)
+    repo = Repository(
+        working_dir='git://github.com/user/repo.git',
+        verbose=True,
+        default_branch='main'  # Optional, will auto-detect if not specified
+    )
 
 The repository will be cloned locally into a temporary directory. This can be slow for large repositories.
 
@@ -63,6 +71,9 @@ Here are some common operations you can perform with a Repository object:
     
     # Get file change history
     changes_df = repo.file_change_history()
+    
+    # Get repository name
+    repo_name = repo.repo_name
 
 API Reference
 ------------
@@ -90,12 +101,16 @@ API Reference
       ~Repository.bus_factor
       ~Repository.is_bare
       ~Repository.has_coverage
+      ~Repository.has_branch
+      ~Repository.get_branches_by_commit
+      ~Repository.commits_in_tags
 
    .. rubric:: Properties
 
    .. autosummary::
       :nosignatures:
       ~Repository.repo_name
+      ~Repository.default_branch
 
 .. autoclass:: GitFlowRepository
    :members:

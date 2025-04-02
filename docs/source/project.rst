@@ -26,15 +26,20 @@ Create a ProjectDirectory from a directory containing multiple repositories:
 .. code-block:: python
 
     from gitpandas import ProjectDirectory
-    project = ProjectDirectory(working_dir='/path/to/dir/', ignore=None, verbose=True)
+    project = ProjectDirectory(
+        working_dir='/path/to/dir/',
+        ignore_repos=['repo_to_ignore'],
+        verbose=True,
+        default_branch='main'  # Optional, will auto-detect if not specified
+    )
 
-The `ignore` parameter can be a list of directories to exclude. This method uses `os.walk` to search for `.git` directories recursively.
+The `ignore_repos` parameter can be a list of repository names to exclude. This method uses `os.walk` to search for `.git` directories recursively.
 
 To check which repositories are included:
 
 .. code-block:: python
 
-    print(project._repo_name())
+    print(project.repo_name())
 
 Explicit Local Repositories
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,8 +51,9 @@ Create a ProjectDirectory from a list of local repositories:
     from gitpandas import ProjectDirectory
     project = ProjectDirectory(
         working_dir=['/path/to/repo1/', '/path/to/repo2/'],
-        ignore=None,
-        verbose=True
+        ignore_repos=['repo_to_ignore'],
+        verbose=True,
+        default_branch='main'  # Optional, will auto-detect if not specified
     )
 
 Explicit Remote Repositories
@@ -60,8 +66,9 @@ Create a ProjectDirectory from a list of remote repositories:
     from gitpandas import ProjectDirectory
     project = ProjectDirectory(
         working_dir=['git://github.com/user/repo1.git', 'git://github.com/user/repo2.git'],
-        ignore=None,
-        verbose=True
+        ignore_repos=['repo_to_ignore'],
+        verbose=True,
+        default_branch='main'  # Optional, will auto-detect if not specified
     )
 
 Common Operations
@@ -72,7 +79,7 @@ Here are some common operations you can perform with a ProjectDirectory object:
 .. code-block:: python
 
     # Get commit history across all repositories
-    commits_df = project.commit_history(branch='master')
+    commits_df = project.commit_history()
     
     # Get blame information across all repositories
     blame_df = project.blame()
@@ -85,6 +92,9 @@ Here are some common operations you can perform with a ProjectDirectory object:
     
     # Get file change history across all repositories
     changes_df = project.file_change_history()
+    
+    # Get detailed repository information
+    repo_info = project.repo_information()
 
 API Reference
 ------------
@@ -110,11 +120,5 @@ API Reference
       ~ProjectDirectory.tags
       ~ProjectDirectory.revs
       ~ProjectDirectory.bus_factor
-      ~ProjectDirectory.is_bare
-      ~ProjectDirectory.has_coverage
-
-   .. rubric:: Properties
-
-   .. autosummary::
-      :nosignatures:
+      ~ProjectDirectory.repo_information
       ~ProjectDirectory.repo_name

@@ -62,6 +62,7 @@ class ProjectDirectory:
         verbose (bool, optional): Whether to print verbose output. Defaults to True.
         tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
         cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
+        default_branch (str, optional): Name of the default branch to use. Defaults to 'main'.
 
     Attributes:
         repo_dirs (Union[set, list]): Set of repository directories or list of Repository instances
@@ -89,23 +90,70 @@ class ProjectDirectory:
         verbose=True,
         tmp_dir=None,
         cache_backend=None,
+        default_branch="main",
     ):
+        """Initialize a ProjectDirectory instance.
+
+        Args:
+            working_dir (Union[str, List[str], None]): The source of repositories to analyze:
+                - If None: Uses current working directory to find repositories
+                - If str: Path to directory containing git repositories
+                - If List[str]: List of paths to git repositories or Repository instances
+            ignore_repos (Optional[List[str]]): List of repository names to ignore
+            verbose (bool, optional): Whether to print verbose output. Defaults to True.
+            tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
+            cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
+            default_branch (str, optional): Name of the default branch to use. Defaults to 'main'.
+        """
+        # First get all potential repository paths
         if working_dir is None:
-            self.repo_dirs = {x[0].split(".git")[0] for x in os.walk(os.getcwd()) if ".git" in x[0]}
+            # When no working_dir is provided, look for git repos in current directory
+            potential_repos = {x[0].split(".git")[0] for x in os.walk(os.getcwd()) if ".git" in x[0]}
+            self.repo_dirs = {path for path in potential_repos if self._is_valid_git_repo(path)}
         elif isinstance(working_dir, list):
-            self.repo_dirs = working_dir
+            # For list input, keep Repository instances and validate paths
+            self.repo_dirs = []
+            for r in working_dir:
+                if isinstance(r, Repository):
+                    self.repo_dirs.append(r)
+                elif isinstance(r, str):
+                    # For URLs, add them directly as they'll be cloned later
+                    if r.startswith(("git://", "https://", "http://")) or self._is_valid_git_repo(r):
+                        self.repo_dirs.append(r)
+                    elif verbose:
+                        print(f"Warning! Skipping invalid git repository at {r}")
         else:
-            self.repo_dirs = {x[0].split(".git")[0] for x in os.walk(working_dir) if ".git" in x[0]}
+            # When working_dir is a directory path, look for git repos in it
+            potential_repos = {x[0].split(".git")[0] for x in os.walk(working_dir) if ".git" in x[0]}
+            self.repo_dirs = {path for path in potential_repos if self._is_valid_git_repo(path)}
 
+        # If we already have Repository instances, use them directly
         if all(isinstance(r, Repository) for r in self.repo_dirs):
-            self.repos = self.repo_dirs
+            # Filter Repository instances by repo_name if ignore_repos is specified
+            if ignore_repos is not None:
+                self.repos = [r for r in self.repo_dirs if r.repo_name not in ignore_repos]
+            else:
+                self.repos = self.repo_dirs
         else:
-            self.repos = [
-                Repository(r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend) for r in self.repo_dirs
-            ]
+            # For paths, filter before creating Repository objects
+            if ignore_repos is not None:
+                # Filter paths by repository name before creating any Repository objects
+                self.repo_dirs = [r for r in self.repo_dirs if self._get_repo_name_from_path(r) not in ignore_repos]
 
-        if ignore_repos is not None:
-            self.repos = [x for x in self.repos if x.repo_name not in ignore_repos]
+            # Now create Repository objects only for the filtered paths
+            self.repos = []
+            for r in self.repo_dirs:
+                try:
+                    repo = Repository(
+                        r, verbose=verbose, tmp_dir=tmp_dir, cache_backend=cache_backend, default_branch=default_branch
+                    )
+                    self.repos.append(repo)
+                except (GitCommandError, ValueError, OSError) as e:
+                    # Skip invalid repositories
+                    if verbose:
+                        print(f"Warning! Could not initialize repository at {r}: {str(e)}")
+
+        self.default_branch = default_branch
 
     def _repo_name(self):
         warnings.warn(
@@ -191,45 +239,33 @@ class ProjectDirectory:
 
     def file_change_rates(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         coverage=False,
         days=None,
         ignore_globs=None,
         include_globs=None,
     ):
-        """Analyzes the rate of changes to files across all repositories.
-
-        This method helps identify files with high change rates or unusual edit patterns.
-        When combined with test coverage data, it can help identify files that may need
-        additional test coverage based on their change frequency.
+        """
+        Will return a DataFrame containing some basic aggregations of the file change history data,
+        and optionally test coverage data from a coverage_data.py .coverage file. The aim here is to
+        identify files in the project which have abnormal edit rates, or the rate of changes without
+        growing the files size. If a file has a high change rate and poor test coverage, then it is
+        a great candidate for writing more tests.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
-            limit (Optional[int]): Maximum number of commits to analyze per repository
-            coverage (bool, optional): Whether to include test coverage data. Defaults to False.
-            days (Optional[int]): If provided, only analyze commits from the last N days
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of commits to return, None for no limit
+            coverage (bool, optional): Whether to include coverage data. Defaults to False.
+            days (Optional[int]): Number of days to return if limit is None
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - repository (str): Repository name
-                - unique_committers (int): Number of different committers
-                - abs_rate_of_change (float): Average number of lines changed per day
-                - net_rate_of_change (float): Average net lines changed per day
-                - net_change (int): Total net lines changed
-                - abs_change (int): Total absolute lines changed
-                - edit_rate (float): Ratio of changes to final size
-                If coverage=True, additional columns:
-                    - lines_covered (int): Number of lines covered by tests
-                    - total_lines (int): Total number of lines
-                    - coverage (float): Coverage percentage
-
-        Note:
-            Files with high change rates but low test coverage may be good candidates
-            for additional testing.
+            DataFrame: DataFrame with file change statistics and optionally coverage data
         """
+        if branch is None:
+            branch = self.default_branch
 
         columns = [
             "repository",
@@ -273,7 +309,7 @@ class ProjectDirectory:
 
     def hours_estimate(
         self,
-        branch="master",
+        branch=None,
         grouping_window=0.5,
         single_commit_hours=0.5,
         limit=None,
@@ -284,22 +320,25 @@ class ProjectDirectory:
         include_globs=None,
     ):
         """
-        inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
+        Returns a DataFrame containing the estimated hours spent by each committer/author.
 
-        Iterates through the commit history of repo to estimate the time commitement of each author or committer over
-        the course of time indicated by limit/extensions/days/etc.
+        Args:
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            grouping_window (float, optional): Hours threshold for considering commits part of same session.
+                Defaults to 0.5.
+            single_commit_hours (float, optional): Hours to assign to single commits. Defaults to 0.5.
+            limit (Optional[int]): Maximum number of commits to analyze
+            days (Optional[int]): If provided, only analyze commits from last N days
+            committer (bool, optional): If True use committer, if False use author. Defaults to True.
+            by (Optional[str]): How to group results. One of None, 'committer', 'author'
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to
-             consider them part of one coding session
-        :param single_commit_hours: (optional, default 0.5 hours) the time range to associate with one single commit
-        :param days: (optional, default=None) number of days to return, if limit is None
-        :param committer: (optional, default=True) whether to use committer vs. author
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Returns:
+            DataFrame: DataFrame with hours estimates
         """
+        if branch is None:
+            branch = self.default_branch
 
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
@@ -336,36 +375,29 @@ class ProjectDirectory:
 
         return df
 
-    def commit_history(self, branch, limit=None, days=None, ignore_globs=None, include_globs=None):
-        """Returns a DataFrame containing the commit history for all repositories.
-
-        For each repository, retrieves the commit history on the specified branch. Results from all
-        repositories are combined into a single DataFrame. If a limit is provided, it is divided by
-        the number of repositories to determine how many commits to fetch from each.
+    def commit_history(
+        self,
+        branch=None,
+        limit=None,
+        days=None,
+        ignore_globs=None,
+        include_globs=None,
+    ):
+        """
+        Returns a DataFrame containing the commit history for all repositories.
 
         Args:
-            branch (str): The branch to analyze (e.g. 'master', 'main')
-            limit (Optional[int]): Maximum number of total commits to return. If provided, divided among repos.
-            days (Optional[int]): If provided, only return commits from the last N days
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of commits to return
+            days (Optional[int]): If provided, only return commits from last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - repository (str): Name of the repository
-                - date (datetime, index): Timestamp of the commit
-                - author (str): Name of the commit author
-                - committer (str): Name of the committer
-                - message (str): Commit message
-                - lines (int): Total lines changed
-                - insertions (int): Lines added
-                - deletions (int): Lines removed
-                - net (int): Net lines changed (insertions - deletions)
-
-        Note:
-            If both ignore_globs and include_globs are provided, files must match an include pattern
-            and not match any ignore patterns to be included.
+            DataFrame: DataFrame with commit history
         """
+        if branch is None:
+            branch = self.default_branch
 
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
@@ -426,40 +458,27 @@ class ProjectDirectory:
 
     def file_change_history(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         days=None,
         ignore_globs=None,
         include_globs=None,
     ):
-        """Returns detailed history of all file changes across repositories.
-
-        Unlike commit_history which returns one row per commit, this method returns
-        one row per file change, as a single commit may modify multiple files.
+        """
+        Returns a DataFrame containing the file change history for all repositories.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
-            limit (Optional[int]): Maximum number of commits to analyze per repository
-            days (Optional[int]): If provided, only analyze commits from the last N days
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of commits to analyze
+            days (Optional[int]): If provided, only analyze commits from last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - repository (str): Repository name
-                - date (datetime): Timestamp of the change
-                - author (str): Name of the author
-                - committer (str): Name of the committer
-                - message (str): Commit message
-                - rev (str): Commit hash
-                - filename (str): Path of the changed file
-                - insertions (int): Lines added
-                - deletions (int): Lines removed
-
-        Note:
-            If both ignore_globs and include_globs are provided, files must match an include pattern
-            and not match any ignore patterns to be included.
+            DataFrame: DataFrame with file change history
         """
+        if branch is None:
+            branch = self.default_branch
 
         if limit is not None:
             limit = int(limit / len(self.repo_dirs))
@@ -678,30 +697,21 @@ class ProjectDirectory:
         df = df.reset_index(drop=True)
         return df
 
-    def revs(self, branch="master", limit=None, skip=None, num_datapoints=None):
-        """Returns revision information for each repository.
-
-        Retrieves revision (commit) information from each repository, with options
-        for limiting or sampling the revisions returned.
+    def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
+        """
+        Returns a DataFrame containing revision information for all repositories.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
-            limit (Optional[int]): Maximum number of revisions per repository
-            skip (Optional[int]): If provided, only return every Nth revision
-            num_datapoints (Optional[int]): If provided, evenly sample this many
-                revisions from each repository's history
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of revisions to return
+            skip (Optional[int]): Number of revisions to skip between samples
+            num_datapoints (Optional[int]): If provided, evenly sample this many revisions
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - repository (str): Repository name
-                - rev (str): Commit hash
-                - date (datetime): Timestamp of the revision
-
-        Note:
-            If num_datapoints is provided, it overrides limit and skip parameters.
-            The sampling will attempt to space the revisions evenly across the
-            repository's history.
+            DataFrame: DataFrame with revision information
         """
+        if branch is None:
+            branch = self.default_branch
 
         if limit is not None:
             limit = math.floor(float(limit) / len(self.repos))
@@ -738,7 +748,7 @@ class ProjectDirectory:
 
     def cumulative_blame(
         self,
-        branch="master",
+        branch=None,
         by="committer",
         limit=None,
         skip=None,
@@ -747,39 +757,24 @@ class ProjectDirectory:
         ignore_globs=None,
         include_globs=None,
     ):
-        """Analyzes how code ownership has evolved over time.
-
-        For each revision point, calculates the lines of code attributed to each
-        contributor, showing how ownership of the codebase has changed over time.
+        """
+        Returns a DataFrame containing cumulative blame information for all repositories.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
-            by (str, optional): How to group the results. One of:
-                - 'committer': One column per committer (default)
-                - 'project': One column per project
-                - 'raw': One column per committer per project
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            by (str, optional): How to group results. Defaults to 'committer'.
             limit (Optional[int]): Maximum number of revisions to analyze
-            skip (Optional[int]): If provided, only analyze every Nth revision
-            num_datapoints (Optional[int]): If provided, evenly sample this many points
-            committer (bool, optional): If True, use committer info. If False, use author.
-                Defaults to True.
+            skip (Optional[int]): Number of revisions to skip between samples
+            num_datapoints (Optional[int]): If provided, evenly sample this many revisions
+            committer (bool, optional): If True use committer, if False use author. Defaults to True.
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame indexed by date with columns depending on 'by':
-                If by='committer':
-                    One column per committer showing their LOC over time
-                If by='project':
-                    One column per project showing total LOC over time
-                If by='raw':
-                    One column per committer-project combination
-
-        Note:
-            Missing values are forward-filled, then filled with 0.
-            This assumes that if a contributor hasn't modified their code, they
-            maintain the same LOC count from their last contribution.
+            DataFrame: DataFrame with cumulative blame information
         """
+        if branch is None:
+            branch = self.default_branch
 
         blames = []
         for repo in self.repos:
@@ -1024,7 +1019,7 @@ class ProjectDirectory:
 
     def punchcard(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         days=None,
         by=None,
@@ -1032,34 +1027,23 @@ class ProjectDirectory:
         ignore_globs=None,
         include_globs=None,
     ):
-        """Generates a "punch card" visualization of commit activity.
-
-        Creates a visualization of when commits occur, aggregated by day of week
-        and hour of day. This helps identify patterns in development activity.
+        """
+        Returns a DataFrame containing punchcard data for all repositories.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of commits to analyze
-            days (Optional[int]): If provided, only analyze commits from the last N days
-            by (Optional[str]): Additional field to group by (e.g. 'committer')
-            normalize (Optional[int]): If provided, normalize counts to this value
+            days (Optional[int]): If provided, only analyze commits from last N days
+            by (Optional[str]): How to group results. One of None, 'committer', 'author'
+            normalize (Optional[int]): If provided, normalize values to this maximum
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - day (int): Day of week (0=Monday, 6=Sunday)
-                - hour (int): Hour of day (0-23)
-                - lines (int/float): Lines changed
-                - insertions (int/float): Lines added
-                - deletions (int/float): Lines removed
-                - net (int/float): Net lines changed
-                If by is specified, includes that column as well.
-
-        Note:
-            If normalize is provided, all numeric columns are normalized so their
-            sum equals the specified value.
+            DataFrame: DataFrame with punchcard data
         """
+        if branch is None:
+            branch = self.default_branch
 
         df = pd.DataFrame()
 
@@ -1107,6 +1091,48 @@ class ProjectDirectory:
 
         for repo in self.repos:
             repo.__del__()
+
+    def _is_valid_git_repo(self, path):
+        """Helper method to check if a path is a valid git repository.
+
+        Args:
+            path (str): Path to check
+
+        Returns:
+            bool: True if path is a valid git repository, False otherwise
+        """
+        try:
+            # Check if it's a directory first
+            if not os.path.isdir(path):
+                return False
+
+            # Check for .git directory (regular repository)
+            git_dir = os.path.join(path, ".git")
+            if os.path.exists(git_dir) and os.path.isdir(git_dir):
+                return True
+
+            # Check if it's a bare repository by looking for required files
+            # In a bare repo, these files are directly in the repository root
+            required_files = ["HEAD", "config", "objects", "refs"]
+            return all(os.path.exists(os.path.join(path, f)) for f in required_files)
+        except OSError:
+            # Handle filesystem-related errors
+            return False
+
+    def _get_repo_name_from_path(self, path):
+        """Helper method to get repository name from path.
+
+        Args:
+            path (str): Path to repository
+
+        Returns:
+            str: Repository name (last component of path)
+        """
+        # For URLs, get the last part before .git
+        if isinstance(path, str) and path.startswith(("git://", "https://", "http://")):
+            return path.rstrip("/").split("/")[-1].replace(".git", "")
+        # For local paths, use the last directory name
+        return os.path.basename(path.rstrip(os.sep))
 
 
 class GitHubProfile(ProjectDirectory):

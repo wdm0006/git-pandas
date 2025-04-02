@@ -69,6 +69,8 @@ class Repository:
         tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
         cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
         labels_to_add (Optional[List[str]]): Extra labels to add to output DataFrames
+        default_branch (Optional[str]): Name of the default branch to use. If None, will try to detect
+            'main' or 'master', and if neither exists, will raise ValueError.
 
     Attributes:
         verbose (bool): Whether verbose output is enabled
@@ -77,6 +79,10 @@ class Repository:
         cache_backend (Optional[object]): Cache backend being used
         _labels_to_add (List[str]): Labels to add to DataFrames
         _git_repo_name (Optional[str]): Repository name for remote repos
+        default_branch (str): Name of the default branch
+
+    Raises:
+        ValueError: If default_branch is None and neither 'main' nor 'master' branch exists
 
     Examples:
         >>> # Create from local repository
@@ -97,7 +103,25 @@ class Repository:
         tmp_dir=None,
         cache_backend=None,
         labels_to_add=None,
+        default_branch=None,
     ):
+        """Initialize a Repository instance.
+
+        Args:
+            working_dir (Optional[str]): Path to the git repository:
+                - If None: Uses current working directory
+                - If local path: Path must contain a .git directory
+                - If git URL: Repository will be cloned to a temporary directory
+            verbose (bool, optional): Whether to print verbose output. Defaults to False.
+            tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
+            cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
+            labels_to_add (Optional[List[str]]): Extra labels to add to output DataFrames
+            default_branch (Optional[str]): Name of the default branch to use. If None, will try to detect
+                'main' or 'master', and if neither exists, will raise ValueError.
+
+        Raises:
+            ValueError: If default_branch is None and neither 'main' nor 'master' branch exists
+        """
         self.verbose = verbose
         self.log = logging.getLogger("gitpandas")
         self.__delete_hook = False
@@ -130,8 +154,25 @@ class Repository:
             self.git_dir = os.getcwd()
             self.repo = Repo(self.git_dir)
 
+        # Smart default branch detection
+        if default_branch is None:
+            if self.has_branch("main"):
+                self.default_branch = "main"
+            elif self.has_branch("master"):
+                self.default_branch = "master"
+            else:
+                raise ValueError(
+                    "Could not detect default branch. Neither 'main' nor 'master' exists. "
+                    "Please specify default_branch explicitly."
+                )
+        else:
+            self.default_branch = default_branch
+
         if self.verbose:
-            print(f"Repository [{self._repo_name()}] instantiated at directory: {self.git_dir}")
+            print(
+                f"Repository [{self._repo_name()}] instantiated at directory: {self.git_dir} "
+                f"with default branch: {self.default_branch}"
+            )
 
     def __del__(self):
         """Cleanup method called when the object is destroyed.
@@ -231,7 +272,7 @@ class Repository:
 
     def hours_estimate(
         self,
-        branch="master",
+        branch=None,
         grouping_window=0.5,
         single_commit_hours=0.5,
         limit=None,
@@ -246,7 +287,7 @@ class Repository:
         Iterates through the commit history of repo to estimate the time commitement of each author or committer over
         the course of time indicated by limit/extensions/days/etc.
 
-        :param branch: the branch to return commits for
+        :param branch: (optional, default=None) the branch to return commits for, defaults to default_branch if None
         :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
         :param grouping_window: (optional, default=0.5 hours) the threhold for how close two commits need to be to
              consider them part of one coding session
@@ -257,6 +298,8 @@ class Repository:
         :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
+        if branch is None:
+            branch = self.default_branch
 
         max_diff_in_minutes = grouping_window * 60.0
         first_commit_addition_in_minutes = single_commit_hours * 60.0
@@ -302,7 +345,7 @@ class Repository:
 
     def commit_history(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         days=None,
         ignore_globs=None,
@@ -315,7 +358,7 @@ class Repository:
         the number of commits or time range, and filter which files to include.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of commits to return
             days (Optional[int]): If provided, only return commits from the last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
@@ -338,6 +381,8 @@ class Repository:
             If both ignore_globs and include_globs are provided, files must match an include
             pattern and not match any ignore patterns to be included.
         """
+        if branch is None:
+            branch = self.default_branch
 
         # setup the data-set of commits
         if limit is None:
@@ -444,7 +489,7 @@ class Repository:
 
     def file_change_history(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         days=None,
         ignore_globs=None,
@@ -457,7 +502,7 @@ class Repository:
         one row per file change, as a single commit may modify multiple files.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of commits to analyze
             days (Optional[int]): If provided, only analyze commits from the last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
@@ -480,6 +525,8 @@ class Repository:
             If both ignore_globs and include_globs are provided, files must match an include
             pattern and not match any ignore patterns to be included.
         """
+        if branch is None:
+            branch = self.default_branch
 
         # setup the dataset of commits
         if limit is None:
@@ -579,7 +626,7 @@ class Repository:
 
     def file_change_rates(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         coverage=False,
         days=None,
@@ -595,7 +642,7 @@ class Repository:
         more tests.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of commits to return, None for no limit
             coverage (bool, optional): Whether to include coverage data. Defaults to False.
             days (Optional[int]): Number of days to return if limit is None
@@ -605,6 +652,8 @@ class Repository:
         Returns:
             DataFrame: DataFrame with file change statistics and optionally coverage data
         """
+        if branch is None:
+            branch = self.default_branch
 
         fch = self.file_change_history(
             branch=branch,
@@ -829,22 +878,26 @@ class Repository:
 
         return blames_df
 
-    def revs(self, branch="master", limit=None, skip=None, num_datapoints=None):
+    def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
 
          * date
          * rev
 
-        :param branch: (optional, default 'master') the branch to work in
-        :param limit: (optional, default None), the maximum number of revisions to return, None for no limit
-        :param skip: (optional, default None), the number of revisions to skip. Ex: skip=2 returns every other
-            revision, None for no skipping.
-        :param num_datapoints: (optional, default=None) if limit and skip are none, and this isn't, then num_datapoints
-             evenly spaced revs will be used
-        :return: DataFrame
+        Args:
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of revisions to return, None for no limit
+            skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
+                revision, None for no skipping.
+            num_datapoints (Optional[int]): If limit and skip are none, and this isn't, then
+                num_datapoints evenly spaced revs will be used
 
+        Returns:
+            DataFrame: DataFrame with revision information
         """
+        if branch is None:
+            branch = self.default_branch
 
         if limit is None and skip is None and num_datapoints is not None:
             limit = sum(1 for _ in self.repo.iter_commits())
@@ -875,7 +928,7 @@ class Repository:
 
     def cumulative_blame(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         skip=None,
         num_datapoints=None,
@@ -888,7 +941,7 @@ class Repository:
         committer, with number of lines blamed to each committer at each timestamp as data.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of revisions to return, None for no limit
             skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
                 revision, None for no skipping.
@@ -906,6 +959,8 @@ class Repository:
             If both ignore_globs and include_globs are provided, files must match an include
             pattern and not match any ignore patterns to be included.
         """
+        if branch is None:
+            branch = self.default_branch
 
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
@@ -979,7 +1034,7 @@ class Repository:
 
     def parallel_cumulative_blame(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         skip=None,
         num_datapoints=None,
@@ -993,7 +1048,7 @@ class Repository:
         committer, with number of lines blamed to each committer at each timestamp as data.
 
         Args:
-            branch (str, optional): Branch to analyze. Defaults to 'master'.
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of revisions to return, None for no limit
             skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
                 revision, None for no skipping.
@@ -1007,6 +1062,8 @@ class Repository:
         Returns:
             DataFrame: DataFrame with blame information
         """
+        if branch is None:
+            branch = self.default_branch
 
         if not _has_joblib:
             raise ImportError("""Must have joblib installed to use parallel_cumulative_blame(), please use
@@ -1539,7 +1596,7 @@ class Repository:
 
     def punchcard(
         self,
-        branch="master",
+        branch=None,
         limit=None,
         days=None,
         by=None,
@@ -1558,17 +1615,22 @@ class Repository:
          * deletions
          * net
 
-        :param branch: the branch to return commits for
-        :param limit: (optional, default=None) a maximum number of commits to return, None for no limit
-        :param days: (optional, default=None) number of days to return, if limit is None
-        :param by: (optional, default=None) agg by options, None for no aggregation (just a high level punchcard), or
-             'committer', 'author'
-        :param normalize: (optional, default=None) if an integer, returns the data normalized to max value of
-            that (for plotting)
-        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
-        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
-        :return: DataFrame
+        Args:
+            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
+            limit (Optional[int]): Maximum number of commits to return, None for no limit
+            days (Optional[int]): Number of days to return if limit is None
+            by (Optional[str]): Agg by options, None for no aggregation (just a high level punchcard), or
+                'committer', 'author'
+            normalize (Optional[int]): If an integer, returns the data normalized to max value of
+                that (for plotting)
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            DataFrame: DataFrame with punchcard data
         """
+        if branch is None:
+            branch = self.default_branch
 
         ch = self.commit_history(
             branch=branch,
@@ -1595,6 +1657,28 @@ class Repository:
                 punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
 
         return punch_card
+
+    def has_branch(self, branch):
+        """Checks if a branch exists in the repository.
+
+        Args:
+            branch (str): Name of the branch to check
+
+        Returns:
+            bool: True if the branch exists, False otherwise
+
+        Note:
+            This checks both local and remote branches.
+        """
+        try:
+            # Get all branches (both local and remote)
+            branches = self.branches()
+            # Check if branch exists in the list of branch names
+            return branch in branches["branch"].values
+        except GitCommandError:
+            if self.verbose:
+                print(f"Warning! Could not check branches in repo: {self}")
+            return False
 
 
 class GitFlowRepository(Repository):
