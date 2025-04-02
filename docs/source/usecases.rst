@@ -17,7 +17,7 @@ Get basic information about a repository:
     repo = Repository('/path/to/repo')
     
     # Get repository name
-    print(repo._repo_name())
+    print(repo.repo_name)
     
     # Check if repository is bare
     print(repo.is_bare())
@@ -52,6 +52,9 @@ Analyze commit patterns and history:
     
     # Filter by directory
     src_changes = repo.file_change_history(include_globs=['src/*'])
+    
+    # Get commits in tags
+    tag_commits = repo.commits_in_tags()
 
 Project-Level Analysis
 --------------------
@@ -71,17 +74,17 @@ Analyze multiple repositories simultaneously:
         'git://github.com/user/repo2.git'
     ])
     
-    # Get aggregated metrics
-    print(project.general_information())
+    # Get repository information
+    print(project.repo_information())
     
     # Calculate bus factor
     print(project.bus_factor())
     
-    # Get file change rates
-    print(project.file_change_rates())
+    # Get file change history
+    print(project.file_change_history())
     
-    # Generate punchcard data
-    print(project.punchcard())
+    # Get blame information
+    print(project.blame())
 
 Advanced Analysis
 ---------------
@@ -96,7 +99,7 @@ Track code ownership over time:
     # Get cumulative blame
     blame_df = repo.cumulative_blame()
     
-    # Plot cumulative blame
+    # Plot cumulative blame using pandas plotting
     import matplotlib.pyplot as plt
     blame_df.plot(x='date', y='loc', title='Cumulative Blame Over Time')
     plt.show()
@@ -108,14 +111,14 @@ Analyze project sustainability:
 
 .. code-block:: python
 
-    # Calculate bus factor
-    bus_factor = project.bus_factor()
+    # Calculate bus factor for repository
+    bus_factor = repo.bus_factor()
     
-    # Get detailed contributor metrics
-    contributors_df = project.contributor_metrics()
+    # Get detailed blame information
+    blame_df = repo.blame(by='file')  # Get file-level blame details
     
-    # Analyze file ownership
-    ownership_df = project.file_ownership()
+    # Analyze ownership patterns
+    ownership_patterns = repo.blame(committer=True, by='repository')
 
 Performance Optimization
 ---------------------
@@ -127,33 +130,40 @@ Optimize performance with caching:
 
 .. code-block:: python
 
-    # Enable in-memory caching
-    repo = Repository('/path/to/repo', cache=True)
+    from gitpandas import Repository
+    from gitpandas.cache import EphemeralCache, RedisDFCache
     
-    # Use Redis for persistent caching
-    repo = Repository(
-        '/path/to/repo',
-        cache=True,
-        cache_backend='redis',
-        redis_url='redis://localhost:6379/0'
+    # Use in-memory caching
+    cache = EphemeralCache()
+    repo = Repository('/path/to/repo', cache_backend=cache)
+    
+    # Or use Redis for persistent caching
+    redis_cache = RedisDFCache(
+        host='localhost',
+        port=6379,
+        db=12,
+        ttl=3600  # Cache entries expire after 1 hour
     )
+    repo = Repository('/path/to/repo', cache_backend=redis_cache)
 
 Visualization Examples
 -------------------
 
-Commit Patterns
+Commit Analysis
 ~~~~~~~~~~~~~
 
 Visualize commit patterns:
 
 .. code-block:: python
 
-    # Generate punchcard data
-    punchcard_df = repo.punchcard()
+    # Get commit history
+    commit_df = repo.commit_history()
     
-    # Plot commit patterns
-    import matplotlib.pyplot as plt
-    punchcard_df.plot(kind='heatmap', title='Commit Patterns')
+    # Plot commits over time using pandas
+    commit_df.resample('D').size().plot(
+        kind='bar',
+        title='Commits per Day'
+    )
     plt.show()
 
 File Change Analysis
@@ -166,17 +176,21 @@ Visualize file changes:
     # Get file change history
     changes_df = repo.file_change_history()
     
-    # Plot changes over time
-    changes_df.plot(x='date', y='changes', title='File Changes Over Time')
+    # Plot changes over time using pandas
+    changes_df.groupby('filename')['insertions'].sum().plot(
+        kind='bar',
+        title='Lines Added by File'
+    )
     plt.show()
 
 Best Practices
 ------------
 
-* Use caching for expensive operations
-* Filter data early to improve performance
+* Use caching for expensive operations like blame analysis
+* Filter data early using include_globs/ignore_globs
 * Leverage pandas operations for analysis
 * Consider memory usage with large repositories
-* Use appropriate visualization tools
+* Use appropriate branch names (main/master)
+* Handle repository cleanup properly when using remote repositories
 
 For more examples and detailed API documentation, see the :doc:`repository` and :doc:`project` pages.
