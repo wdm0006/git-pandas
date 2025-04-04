@@ -60,11 +60,15 @@ The library is built around two main components:
 
 For detailed information about these components, see the :doc:`repository` and :doc:`project` documentation.
 
-Documentation Contents
--------------------
+Documentation
+------------
+
+Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
+those two classes, as well as instructions on how to create the objects. For detailed examples, check out the use-cases
+page.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    repository
@@ -84,31 +88,4 @@ License
 -------
 
 This project is BSD licensed (see LICENSE.md)
-
-
-Detailed Documentation
-======================
-
-Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
-those two classes, as well as instructions on how to create the objects.  For detailed examples, check out the use-cases
-page.
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   repository
-   project
-   cache
-   usecases
-   contributors
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
