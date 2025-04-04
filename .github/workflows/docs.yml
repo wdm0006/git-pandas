@@ -29,18 +29,6 @@ jobs:
         with:
           docs-folder: "./docs/"
       
-      - name: Debug directory structure
-        run: |
-          ls -la docs/
-          ls -la docs/build/ || echo "build dir not found"
-          ls -la docs/_build/ || echo "_build dir not found"
-      
-      - name: Create CNAME file
-        continue-on-error: true
-        run: |
-          mkdir -p docs/build/html/
-          echo "gitpandas.mcginniscommawill.com" > ./docs/build/html/CNAME
-      
       - name: Deploy Docs
         uses: peaceiris/actions-gh-pages@v3
         with:
