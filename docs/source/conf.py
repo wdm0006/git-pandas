@@ -53,6 +53,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
+    "sphinx.ext.autosummary",
     "sphinx_rtd_theme",
     "sphinx_rtd_dark_mode",
     "sphinxcontrib.googleanalytics",
