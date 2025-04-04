@@ -15,6 +15,16 @@
 import os
 import sys
 
+# Configure autodoc mock imports for documentation build
+autodoc_mock_imports = [
+    'git',  # Mock GitPython
+    'gitdb',  # Mock GitDB
+    'git.repo',  # Mock specific GitPython modules that might be imported directly
+    'git.repo.base',
+    'git.objects',
+    'git.refs'
+]
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

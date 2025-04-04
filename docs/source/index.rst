@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Git-Pandas Documentation
-=================================
+==================================
 
 Git-Pandas is a powerful Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze and visualize your codebase's history, contributors, and development patterns.
 
@@ -68,7 +68,7 @@ those two classes, as well as instructions on how to create the objects. For det
 page.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Contents:
 
    repository
