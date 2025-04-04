@@ -1,5 +1,5 @@
 Project Directory
-===============
+================
 
 The ProjectDirectory class enables analysis across multiple Git repositories. It can aggregate metrics and insights from multiple repositories into a single output.
 
@@ -57,7 +57,7 @@ Create a ProjectDirectory from a list of local repositories:
     )
 
 Explicit Remote Repositories
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a ProjectDirectory from a list of remote repositories:
 

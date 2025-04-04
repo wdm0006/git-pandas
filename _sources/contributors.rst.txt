@@ -37,7 +37,7 @@ Code Style
 * Add docstrings following Google style guide
 
 Documentation
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 * Write detailed docstrings for all public APIs
 * Include type hints for function parameters and return values
@@ -66,10 +66,10 @@ API Design Principles
 * Consider performance implications
 
 Current Development Focus
-------------------------
+-----------------------
 
 High Priority
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 * Improve test coverage with proper unit tests
 * Add diff functionality between revisions
@@ -77,7 +77,7 @@ High Priority
 * Streamline documentation deployment
 
 Feature Ideas
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 * File-level history tracking
 * Cross-branch analytics

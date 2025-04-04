@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview: module code &mdash; git-pandas 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=73cda6fb"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            git-pandas
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../repository.html#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository"><code class="docutils literal notranslate"><span class="pre">Repository</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.__init__"><code class="docutils literal notranslate"><span class="pre">Repository.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.__del__"><code class="docutils literal notranslate"><span class="pre">Repository.__del__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.is_bare"><code class="docutils literal notranslate"><span class="pre">Repository.is_bare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.has_coverage"><code class="docutils literal notranslate"><span class="pre">Repository.has_coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.coverage"><code class="docutils literal notranslate"><span class="pre">Repository.coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.hours_estimate"><code class="docutils literal notranslate"><span class="pre">Repository.hours_estimate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.commit_history"><code class="docutils literal notranslate"><span class="pre">Repository.commit_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.file_change_history"><code class="docutils literal notranslate"><span class="pre">Repository.file_change_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.file_change_rates"><code class="docutils literal notranslate"><span class="pre">Repository.file_change_rates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.blame"><code class="docutils literal notranslate"><span class="pre">Repository.blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.revs"><code class="docutils literal notranslate"><span class="pre">Repository.revs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.cumulative_blame"><code class="docutils literal notranslate"><span class="pre">Repository.cumulative_blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.parallel_cumulative_blame"><code class="docutils literal notranslate"><span class="pre">Repository.parallel_cumulative_blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.branches"><code class="docutils literal notranslate"><span class="pre">Repository.branches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.get_branches_by_commit"><code class="docutils literal notranslate"><span class="pre">Repository.get_branches_by_commit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.commits_in_tags"><code class="docutils literal notranslate"><span class="pre">Repository.commits_in_tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.tags"><code class="docutils literal notranslate"><span class="pre">Repository.tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.repo_name"><code class="docutils literal notranslate"><span class="pre">Repository.repo_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository._repo_name"><code class="docutils literal notranslate"><span class="pre">Repository._repo_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository._add_labels_to_df"><code class="docutils literal notranslate"><span class="pre">Repository._add_labels_to_df()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.__str__"><code class="docutils literal notranslate"><span class="pre">Repository.__str__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.__repr__"><code class="docutils literal notranslate"><span class="pre">Repository.__repr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.bus_factor"><code class="docutils literal notranslate"><span class="pre">Repository.bus_factor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.file_owner"><code class="docutils literal notranslate"><span class="pre">Repository.file_owner()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository._file_last_edit"><code class="docutils literal notranslate"><span class="pre">Repository._file_last_edit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.file_detail"><code class="docutils literal notranslate"><span class="pre">Repository.file_detail()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.punchcard"><code class="docutils literal notranslate"><span class="pre">Repository.punchcard()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.Repository.has_branch"><code class="docutils literal notranslate"><span class="pre">Repository.has_branch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.__del__"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.__del__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.__repr__"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.__repr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.__str__"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.__str__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository._add_labels_to_df"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository._add_labels_to_df()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository._file_last_edit"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository._file_last_edit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository._repo_name"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository._repo_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.blame"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.branches"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.branches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.bus_factor"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.bus_factor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.commit_history"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.commit_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.commits_in_tags"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.commits_in_tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.coverage"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.cumulative_blame"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.cumulative_blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.file_change_history"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.file_change_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.file_change_rates"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.file_change_rates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.file_detail"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.file_detail()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.file_owner"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.file_owner()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.get_branches_by_commit"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.get_branches_by_commit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.has_branch"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.has_branch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.has_coverage"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.has_coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.hours_estimate"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.hours_estimate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.is_bare"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.is_bare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.parallel_cumulative_blame"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.parallel_cumulative_blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.punchcard"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.punchcard()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.repo_name"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.repo_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.revs"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.revs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.tags"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../repository.html#gitpandas.repository.GitFlowRepository.__init__"><code class="docutils literal notranslate"><span class="pre">GitFlowRepository.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../project.html#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.__init__"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.repo_name"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.repo_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.is_bare"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.is_bare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.has_coverage"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.has_coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.coverage"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.coverage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.file_change_rates"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.file_change_rates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.hours_estimate"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.hours_estimate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.commit_history"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.commit_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.file_change_history"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.file_change_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.blame"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.file_detail"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.file_detail()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.branches"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.branches()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.revs"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.revs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.cumulative_blame"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.cumulative_blame()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.commits_in_tags"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.commits_in_tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.tags"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.tags()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.repo_information"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.repo_information()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.bus_factor"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.bus_factor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.punchcard"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.punchcard()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory.__del__"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory.__del__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory._is_valid_git_repo"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory._is_valid_git_repo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../project.html#gitpandas.project.ProjectDirectory._get_repo_name_from_path"><code class="docutils literal notranslate"><span class="pre">ProjectDirectory._get_repo_name_from_path()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cache.html#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache"><code class="docutils literal notranslate"><span class="pre">EphemeralCache</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache.__init__"><code class="docutils literal notranslate"><span class="pre">EphemeralCache.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache.evict"><code class="docutils literal notranslate"><span class="pre">EphemeralCache.evict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache.set"><code class="docutils literal notranslate"><span class="pre">EphemeralCache.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache.get"><code class="docutils literal notranslate"><span class="pre">EphemeralCache.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.EphemeralCache.exists"><code class="docutils literal notranslate"><span class="pre">EphemeralCache.exists()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache"><code class="docutils literal notranslate"><span class="pre">RedisDFCache</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.__init__"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.evict"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.evict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.set"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.get"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.exists"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.exists()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.sync"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../cache.html#gitpandas.cache.RedisDFCache.purge"><code class="docutils literal notranslate"><span class="pre">RedisDFCache.purge()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../cache.html#gitpandas.cache.multicache"><code class="docutils literal notranslate"><span class="pre">multicache()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#commit-analysis">Commit Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">git-pandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview: module code</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>All modules for which code is available</h1>
+<ul><li><a href="gitpandas/cache.html">gitpandas.cache</a></li>
+<li><a href="gitpandas/project.html">gitpandas.project</a></li>
+<li><a href="gitpandas/repository.html">gitpandas.repository</a></li>
+</ul>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
