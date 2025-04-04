@@ -1,5 +1,5 @@
 Repository
-=========
+==========
 
 The Repository class provides a powerful interface for analyzing a single Git repository. It can be created from either a local or remote repository.
 
@@ -14,12 +14,12 @@ The Repository class offers methods for:
 * Calculating file ownership and contribution patterns
 
 Creating a Repository
--------------------
+---------------------
 
 You can create a Repository object in two ways:
 
 Local Repository
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Create a Repository from a local Git repository:
 
@@ -35,7 +35,7 @@ Create a Repository from a local Git repository:
 The directory must contain a `.git` directory. Subdirectories are not searched.
 
 Remote Repository
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Create a Repository from a remote Git repository:
 
@@ -51,7 +51,7 @@ Create a Repository from a remote Git repository:
 The repository will be cloned locally into a temporary directory. This can be slow for large repositories.
 
 Common Operations
----------------
+-----------------
 
 Here are some common operations you can perform with a Repository object:
 
@@ -76,7 +76,7 @@ Here are some common operations you can perform with a Repository object:
     repo_name = repo.repo_name
 
 API Reference
-------------
+-------------
 
 .. currentmodule:: gitpandas.repository
 
@@ -87,30 +87,9 @@ API Reference
    :inherited-members:
    :special-members: __init__, __str__, __repr__
 
-   .. rubric:: Methods
-
-   .. autosummary::
-      :nosignatures:
-      ~Repository.commit_history
-      ~Repository.file_change_history
-      ~Repository.blame
-      ~Repository.cumulative_blame
-      ~Repository.branches
-      ~Repository.tags
-      ~Repository.revs
-      ~Repository.bus_factor
-      ~Repository.is_bare
-      ~Repository.has_coverage
-      ~Repository.has_branch
-      ~Repository.get_branches_by_commit
-      ~Repository.commits_in_tags
-
+   
    .. rubric:: Properties
 
-   .. autosummary::
-      :nosignatures:
-      ~Repository.repo_name
-      ~Repository.default_branch
 
 .. autoclass:: GitFlowRepository
    :members:

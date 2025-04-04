@@ -1,10 +1,10 @@
 Contributing to Git-Pandas
-=========================
+==========================
 
 We welcome contributions to Git-Pandas! Our goal is to make Git repository analysis simple, fast, and accessible to developers interested in data analysis.
 
 Getting Started
---------------
+---------------
 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
@@ -24,10 +24,10 @@ Getting Started
 5. Submit a pull request
 
 Development Guidelines
---------------------
+----------------------
 
 Code Style
-~~~~~~~~~
+~~~~~~~~~~
 
 * Follow PEP 8 style guide
 * Use 4 spaces for indentation
@@ -37,7 +37,7 @@ Code Style
 * Add docstrings following Google style guide
 
 Documentation
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 * Write detailed docstrings for all public APIs
 * Include type hints for function parameters and return values
@@ -58,7 +58,7 @@ Testing
     make coverage
 
 API Design Principles
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 * Maintain feature parity between Repository and ProjectDirectory
 * Include limit options for memory-intensive functions
@@ -66,10 +66,10 @@ API Design Principles
 * Consider performance implications
 
 Current Development Focus
------------------------
+-------------------------
 
 High Priority
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 * Improve test coverage with proper unit tests
 * Add diff functionality between revisions
@@ -77,7 +77,7 @@ High Priority
 * Streamline documentation deployment
 
 Feature Ideas
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 * File-level history tracking
 * Cross-branch analytics
@@ -86,7 +86,7 @@ Feature Ideas
 * Language analytics and insights
 
 Development Setup
----------------
+-----------------
 
 1. Install development dependencies:
 
@@ -113,7 +113,7 @@ Development Setup
     make docs
 
 Questions?
----------
+----------
 
 * Open an issue for bug reports or feature requests
 * Join our discussions on GitHub
