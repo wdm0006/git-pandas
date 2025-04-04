@@ -83,12 +83,12 @@
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -112,7 +112,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -165,12 +165,12 @@
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -194,7 +194,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -257,7 +257,7 @@
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
 
 <span class="c1"># Get repository name</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">repo_name</span><span class="p">)</span>
 
 <span class="c1"># Check if repository is bare</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">is_bare</span><span class="p">())</span>
@@ -290,6 +290,9 @@
 
 <span class="c1"># Filter by directory</span>
 <span class="n">src_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;src/*&#39;</span><span class="p">])</span>
+
+<span class="c1"># Get commits in tags</span>
+<span class="n">tag_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commits_in_tags</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -307,17 +310,17 @@
     <span class="s1">&#39;git://github.com/user/repo2.git&#39;</span>
 <span class="p">])</span>
 
-<span class="c1"># Get aggregated metrics</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">general_information</span><span class="p">())</span>
+<span class="c1"># Get repository information</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">repo_information</span><span class="p">())</span>
 
 <span class="c1"># Calculate bus factor</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">())</span>
 
-<span class="c1"># Get file change rates</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">())</span>
+<span class="c1"># Get file change history</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">())</span>
 
-<span class="c1"># Generate punchcard data</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">punchcard</span><span class="p">())</span>
+<span class="c1"># Get blame information</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">blame</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>
@@ -330,7 +333,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cumulative blame</span>
 <span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">cumulative_blame</span><span class="p">()</span>
 
-<span class="c1"># Plot cumulative blame</span>
+<span class="c1"># Plot cumulative blame using pandas plotting</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Cumulative Blame Over Time&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -340,14 +343,14 @@
 <section id="bus-factor-analysis">
 <h3>Bus Factor Analysis<a class="headerlink" href="#bus-factor-analysis" title="Permalink to this heading"></a></h3>
 <p>Analyze project sustainability:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate bus factor</span>
-<span class="n">bus_factor</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate bus factor for repository</span>
+<span class="n">bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
 
-<span class="c1"># Get detailed contributor metrics</span>
-<span class="n">contributors_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">contributor_metrics</span><span class="p">()</span>
+<span class="c1"># Get detailed blame information</span>
+<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>  <span class="c1"># Get file-level blame details</span>
 
-<span class="c1"># Analyze file ownership</span>
-<span class="n">ownership_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_ownership</span><span class="p">()</span>
+<span class="c1"># Analyze ownership patterns</span>
+<span class="n">ownership_patterns</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s1">&#39;repository&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -357,31 +360,38 @@
 <section id="using-caching">
 <h3>Using Caching<a class="headerlink" href="#using-caching" title="Permalink to this heading"></a></h3>
 <p>Optimize performance with caching:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable in-memory caching</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span><span class="p">,</span> <span class="n">RedisDFCache</span>
 
-<span class="c1"># Use Redis for persistent caching</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span>
-    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cache_backend</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
-    <span class="n">redis_url</span><span class="o">=</span><span class="s1">&#39;redis://localhost:6379/0&#39;</span>
+<span class="c1"># Use in-memory caching</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">()</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Or use Redis for persistent caching</span>
+<span class="n">redis_cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
+    <span class="n">db</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span>  <span class="c1"># Cache entries expire after 1 hour</span>
 <span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">redis_cache</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 </section>
 <section id="visualization-examples">
 <h2>Visualization Examples<a class="headerlink" href="#visualization-examples" title="Permalink to this heading"></a></h2>
-<section id="commit-patterns">
-<h3>Commit Patterns<a class="headerlink" href="#commit-patterns" title="Permalink to this heading"></a></h3>
+<section id="commit-analysis">
+<h3>Commit Analysis<a class="headerlink" href="#commit-analysis" title="Permalink to this heading"></a></h3>
 <p>Visualize commit patterns:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate punchcard data</span>
-<span class="n">punchcard_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">punchcard</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history</span>
+<span class="n">commit_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
 
-<span class="c1"># Plot commit patterns</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="n">punchcard_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;heatmap&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Commit Patterns&#39;</span><span class="p">)</span>
+<span class="c1"># Plot commits over time using pandas</span>
+<span class="n">commit_df</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Commits per Day&#39;</span>
+<span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -392,8 +402,11 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get file change history</span>
 <span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
 
-<span class="c1"># Plot changes over time</span>
-<span class="n">changes_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;changes&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;File Changes Over Time&#39;</span><span class="p">)</span>
+<span class="c1"># Plot changes over time using pandas</span>
+<span class="n">changes_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">)[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Lines Added by File&#39;</span>
+<span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -402,11 +415,12 @@
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>Use caching for expensive operations</p></li>
-<li><p>Filter data early to improve performance</p></li>
+<li><p>Use caching for expensive operations like blame analysis</p></li>
+<li><p>Filter data early using include_globs/ignore_globs</p></li>
 <li><p>Leverage pandas operations for analysis</p></li>
 <li><p>Consider memory usage with large repositories</p></li>
-<li><p>Use appropriate visualization tools</p></li>
+<li><p>Use appropriate branch names (main/master)</p></li>
+<li><p>Handle repository cleanup properly when using remote repositories</p></li>
 </ul>
 <p>For more examples and detailed API documentation, see the <a class="reference internal" href="repository.html"><span class="doc">Repository</span></a> and <a class="reference internal" href="project.html"><span class="doc">Project Directory</span></a> pages.</p>
 </section>

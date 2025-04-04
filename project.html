@@ -83,12 +83,12 @@
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -112,7 +112,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -165,12 +165,12 @@
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -194,7 +194,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -264,12 +264,17 @@
 <h3>Directory of Repositories<a class="headerlink" href="#directory-of-repositories" title="Permalink to this heading"></a></h3>
 <p>Create a ProjectDirectory from a directory containing multiple repositories:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/dir/&#39;</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/dir/&#39;</span><span class="p">,</span>
+    <span class="n">ignore_repos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repo_to_ignore&#39;</span><span class="p">],</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>The <cite>ignore</cite> parameter can be a list of directories to exclude. This method uses <cite>os.walk</cite> to search for <cite>.git</cite> directories recursively.</p>
+<p>The <cite>ignore_repos</cite> parameter can be a list of repository names to exclude. This method uses <cite>os.walk</cite> to search for <cite>.git</cite> directories recursively.</p>
 <p>To check which repositories are included:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">_repo_name</span><span class="p">())</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">repo_name</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>
@@ -279,41 +284,47 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span>
     <span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/path/to/repo1/&#39;</span><span class="p">,</span> <span class="s1">&#39;/path/to/repo2/&#39;</span><span class="p">],</span>
-    <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">ignore_repos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repo_to_ignore&#39;</span><span class="p">],</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Each directory must contain a <cite>.git</cite> directory. Subdirectories are not searched.</p>
 </section>
 <section id="explicit-remote-repositories">
 <h3>Explicit Remote Repositories<a class="headerlink" href="#explicit-remote-repositories" title="Permalink to this heading"></a></h3>
-<p>Create a ProjectDirectory from remote repositories:</p>
+<p>Create a ProjectDirectory from a list of remote repositories:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span>
-    <span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;git://github.com/user/repo.git&#39;</span><span class="p">],</span>
-    <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;git://github.com/user/repo1.git&#39;</span><span class="p">,</span> <span class="s1">&#39;git://github.com/user/repo2.git&#39;</span><span class="p">],</span>
+    <span class="n">ignore_repos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;repo_to_ignore&#39;</span><span class="p">],</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>You can mix local and remote repositories. Remote repositories are cloned into temporary directories.</p>
 </section>
 </section>
 <section id="common-operations">
 <h2>Common Operations<a class="headerlink" href="#common-operations" title="Permalink to this heading"></a></h2>
 <p>Here are some common operations you can perform with a ProjectDirectory object:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get general project information</span>
-<span class="n">info_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">general_information</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history across all repositories</span>
+<span class="n">commits_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
 
-<span class="c1"># Calculate bus factor</span>
-<span class="n">bus_factor</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
+<span class="c1"># Get blame information across all repositories</span>
+<span class="n">blame_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>
 
-<span class="c1"># Get file change rates</span>
-<span class="n">changes_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">()</span>
+<span class="c1"># Get branch information across all repositories</span>
+<span class="n">branches_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">branches</span><span class="p">()</span>
 
-<span class="c1"># Generate punchcard data</span>
-<span class="n">punchcard_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">punchcard</span><span class="p">()</span>
+<span class="c1"># Get tag information across all repositories</span>
+<span class="n">tags_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">tags</span><span class="p">()</span>
+
+<span class="c1"># Get file change history across all repositories</span>
+<span class="n">changes_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
+
+<span class="c1"># Get detailed repository information</span>
+<span class="n">repo_info</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">repo_information</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

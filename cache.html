@@ -83,12 +83,12 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -112,7 +112,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -165,12 +165,12 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Caching</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#in-memory-cache">In-Memory Cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#redis-cache">Redis Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-cache-decorator">Using the Cache Decorator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -194,7 +194,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-patterns">Commit Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
 </ul>
 </li>
@@ -254,62 +254,80 @@
 * In-memory caching for temporary results
 * Redis-based caching for persistent storage
 * Configurable cache durations
-* Automatic cache invalidation</p>
+* Automatic cache invalidation
+* Decorator-based caching for expensive operations</p>
 </section>
 <section id="available-cache-backends">
 <h2>Available Cache Backends<a class="headerlink" href="#available-cache-backends" title="Permalink to this heading"></a></h2>
-<section id="in-memory-cache">
-<h3>In-Memory Cache<a class="headerlink" href="#in-memory-cache" title="Permalink to this heading"></a></h3>
+<section id="in-memory-cache-ephemeralcache">
+<h3>In-Memory Cache (EphemeralCache)<a class="headerlink" href="#in-memory-cache-ephemeralcache" title="Permalink to this heading"></a></h3>
 <p>The default in-memory cache is ephemeral and will be cleared when the process ends:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Enable in-memory caching</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span>
+
+<span class="c1"># Create an in-memory cache with default settings</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">()</span>
+
+<span class="c1"># Or customize the cache size</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Use the cache with a repository</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="redis-cache">
-<h3>Redis Cache<a class="headerlink" href="#redis-cache" title="Permalink to this heading"></a></h3>
+<section id="redis-cache-redisdfcache">
+<h3>Redis Cache (RedisDFCache)<a class="headerlink" href="#redis-cache-redisdfcache" title="Permalink to this heading"></a></h3>
 <p>For persistent caching across sessions, use Redis:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span>
-    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cache_backend</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
-    <span class="n">redis_url</span><span class="o">=</span><span class="s1">&#39;redis://localhost:6379/0&#39;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisDFCache</span>
+
+<span class="c1"># Create a Redis cache with default settings</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">()</span>
+
+<span class="c1"># Or customize Redis connection and cache settings</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
+    <span class="n">db</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span>  <span class="c1"># Cache entries expire after 1 hour</span>
 <span class="p">)</span>
+
+<span class="c1"># Use the cache with a repository</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="using-the-cache-decorator">
+<h2>Using the Cache Decorator<a class="headerlink" href="#using-the-cache-decorator" title="Permalink to this heading"></a></h2>
+<p>The <cite>&#64;multicache</cite> decorator can be used to cache method results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">multicache</span>
+
+<span class="nd">@multicache</span><span class="p">(</span>
+    <span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;method_name&quot;</span><span class="p">,</span>
+    <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;param1&quot;</span><span class="p">,</span> <span class="s2">&quot;param2&quot;</span><span class="p">],</span>
+    <span class="n">skip_if</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;param1&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">expensive_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+    <span class="c1"># Method implementation</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
 </section>
 <section id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h2>
-<p>You can configure cache behavior through the following parameters:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cache</span></code>: Enable/disable caching (default: False)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cache_backend</span></code>: Choose the cache backend (‘memory’ or ‘redis’)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cache_ttl</span></code>: Time-to-live for cached results in seconds</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">redis_url</span></code>: Redis connection URL (for Redis backend)</p></li>
-</ul>
-</section>
-<section id="example-usage">
-<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
-
-<span class="c1"># Create repository with Redis caching</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span>
-    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cache_backend</span><span class="o">=</span><span class="s1">&#39;redis&#39;</span><span class="p">,</span>
-    <span class="n">cache_ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>  <span class="c1"># Cache for 1 hour</span>
-    <span class="n">redis_url</span><span class="o">=</span><span class="s1">&#39;redis://localhost:6379/0&#39;</span>
-<span class="p">)</span>
-
-<span class="c1"># First call will compute and cache the result</span>
-<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>
-
-<span class="c1"># Subsequent calls will use cached result if available</span>
-<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>  <span class="c1"># Much faster!</span>
-</pre></div>
-</div>
+<p>Cache backends can be configured with various parameters:</p>
+<p>EphemeralCache:
+* <code class="docutils literal notranslate"><span class="pre">max_keys</span></code>: Maximum number of keys to store in memory (default: 1000)</p>
+<p>RedisDFCache:
+* <code class="docutils literal notranslate"><span class="pre">host</span></code>: Redis host (default: ‘localhost’)
+* <code class="docutils literal notranslate"><span class="pre">port</span></code>: Redis port (default: 6379)
+* <code class="docutils literal notranslate"><span class="pre">db</span></code>: Redis database number (default: 12)
+* <code class="docutils literal notranslate"><span class="pre">max_keys</span></code>: Maximum number of keys to store (default: 1000)
+* <code class="docutils literal notranslate"><span class="pre">ttl</span></code>: Time-to-live in seconds for cache entries (default: None, no expiration)
+* Additional keyword arguments are passed to redis.StrictRedis</p>
 </section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h2>
