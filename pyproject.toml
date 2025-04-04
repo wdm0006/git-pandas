@@ -19,11 +19,6 @@ classifiers = [
 ]
 keywords = ["git", "pandas", "data", "analysis"]
 
-[project.urls]
-Documentation = "https://gitpandas.mcginniscommawill.com"
-Source = "https://github.com/wdm0006/git-pandas"
-Issues = "https://github.com/wdm0006/git-pandas/issues"
-
 dependencies = [
     "gitpython>=1.0.0",
     "numpy>=1.9.0",
@@ -31,6 +26,11 @@ dependencies = [
     "requests",
     "redis",
 ]
+
+[project.urls]
+Documentation = "https://gitpandas.mcginniscommawill.com"
+Source = "https://github.com/wdm0006/git-pandas"
+Issues = "https://github.com/wdm0006/git-pandas/issues"
 
 [project.optional-dependencies]
 examples = [
