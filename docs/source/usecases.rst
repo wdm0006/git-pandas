@@ -1,13 +1,13 @@
 Use Cases and Examples
-=====================
+======================
 
 Git-Pandas provides a powerful interface for analyzing Git repositories using pandas DataFrames. This guide demonstrates common use cases and provides practical examples.
 
 Basic Repository Analysis
-------------------------
+-------------------------
 
 Repository Attributes
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 Get basic information about a repository:
 
@@ -35,7 +35,7 @@ Get basic information about a repository:
     print(repo.blame(include_globs=['*.py']))
 
 Commit History Analysis
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Analyze commit patterns and history:
 
@@ -57,10 +57,10 @@ Analyze commit patterns and history:
     tag_commits = repo.commits_in_tags()
 
 Project-Level Analysis
---------------------
+----------------------
 
 Multiple Repository Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Analyze multiple repositories simultaneously:
 
@@ -87,10 +87,10 @@ Analyze multiple repositories simultaneously:
     print(project.blame())
 
 Advanced Analysis
----------------
+-----------------
 
 Cumulative Blame Analysis
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Track code ownership over time:
 
@@ -105,7 +105,7 @@ Track code ownership over time:
     plt.show()
 
 Bus Factor Analysis
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Analyze project sustainability:
 
@@ -121,10 +121,10 @@ Analyze project sustainability:
     ownership_patterns = repo.blame(committer=True, by='repository')
 
 Performance Optimization
----------------------
+------------------------
 
 Using Caching
-~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 Optimize performance with caching:
 
@@ -147,10 +147,10 @@ Optimize performance with caching:
     repo = Repository('/path/to/repo', cache_backend=redis_cache)
 
 Visualization Examples
--------------------
+----------------------
 
 Commit Analysis
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 Visualize commit patterns:
 
@@ -167,7 +167,7 @@ Visualize commit patterns:
     plt.show()
 
 File Change Analysis
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Visualize file changes:
 
@@ -184,7 +184,7 @@ Visualize file changes:
     plt.show()
 
 Best Practices
-------------
+--------------
 
 * Use caching for expensive operations like blame analysis
 * Filter data early using include_globs/ignore_globs

@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Git-Pandas Documentation
-==================================
+===================================
 
 Git-Pandas is a powerful Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze and visualize your codebase's history, contributors, and development patterns.
 
@@ -13,7 +13,7 @@ Git-Pandas is a powerful Python library that transforms Git repository data into
    :align: center
 
 Quick Start
-----------
+-----------
 
 Install Git-Pandas using pip:
 
@@ -22,7 +22,7 @@ Install Git-Pandas using pip:
     pip install git-pandas
 
 Basic Usage
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Analyze a single repository:
 
@@ -42,7 +42,7 @@ Analyze multiple repositories:
     project_info = project.general_information()
 
 Key Features
------------
+------------
 
 * **Repository Analysis**: Extract commit history, file changes, and blame information
 * **Project Insights**: Calculate bus factor, development time, and contributor metrics
@@ -51,7 +51,7 @@ Key Features
 * **Performance Optimization**: Optional caching support for memory-intensive operations
 
 Core Components
--------------
+---------------
 
 The library is built around two main components:
 
@@ -61,14 +61,14 @@ The library is built around two main components:
 For detailed information about these components, see the :doc:`repository` and :doc:`project` documentation.
 
 Documentation
-------------
+-------------
 
 Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
 those two classes, as well as instructions on how to create the objects. For detailed examples, check out the use-cases
 page.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    repository
@@ -78,7 +78,7 @@ page.
    contributors
 
 Additional Resources
-------------------
+--------------------
 
 * :ref:`genindex` - Complete API reference
 * :ref:`modindex` - Module index

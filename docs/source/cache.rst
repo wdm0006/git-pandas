@@ -14,10 +14,10 @@ The caching system provides:
 * Decorator-based caching for expensive operations
 
 Available Cache Backends
-----------------------
+------------------------
 
 In-Memory Cache (EphemeralCache)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The default in-memory cache is ephemeral and will be cleared when the process ends:
 
@@ -36,7 +36,7 @@ The default in-memory cache is ephemeral and will be cleared when the process en
     repo = Repository('/path/to/repo', cache_backend=cache)
 
 Redis Cache (RedisDFCache)
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For persistent caching across sessions, use Redis:
 
@@ -61,7 +61,7 @@ For persistent caching across sessions, use Redis:
     repo = Repository('/path/to/repo', cache_backend=cache)
 
 Using the Cache Decorator
-----------------------
+-------------------------
 
 The `@multicache` decorator can be used to cache method results:
 
@@ -79,7 +79,7 @@ The `@multicache` decorator can be used to cache method results:
         pass
 
 Configuration
-------------
+-------------
 
 Cache backends can be configured with various parameters:
 
@@ -95,7 +95,7 @@ RedisDFCache:
 * Additional keyword arguments are passed to redis.StrictRedis
 
 API Reference
-------------
+-------------
 
 .. currentmodule:: gitpandas.cache
 

@@ -1,5 +1,5 @@
 Project Directory
-================
+=================
 
 The ProjectDirectory class enables analysis across multiple Git repositories. It can aggregate metrics and insights from multiple repositories into a single output.
 
@@ -14,12 +14,12 @@ The ProjectDirectory class provides:
 * Bus factor calculation
 
 Creating a ProjectDirectory
--------------------------
+---------------------------
 
 You can create a ProjectDirectory object in three ways:
 
 Directory of Repositories
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a ProjectDirectory from a directory containing multiple repositories:
 
@@ -42,7 +42,7 @@ To check which repositories are included:
     print(project.repo_name())
 
 Explicit Local Repositories
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a ProjectDirectory from a list of local repositories:
 
@@ -57,7 +57,7 @@ Create a ProjectDirectory from a list of local repositories:
     )
 
 Explicit Remote Repositories
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a ProjectDirectory from a list of remote repositories:
 
@@ -72,7 +72,7 @@ Create a ProjectDirectory from a list of remote repositories:
     )
 
 Common Operations
----------------
+-----------------
 
 Here are some common operations you can perform with a ProjectDirectory object:
 
@@ -97,7 +97,7 @@ Here are some common operations you can perform with a ProjectDirectory object:
     repo_info = project.repo_information()
 
 API Reference
-------------
+-------------
 
 .. currentmodule:: gitpandas.project
 
@@ -109,16 +109,3 @@ API Reference
    :special-members: __init__, __str__, __repr__
 
    .. rubric:: Methods
-
-   .. autosummary::
-      :nosignatures:
-      ~ProjectDirectory.commit_history
-      ~ProjectDirectory.file_change_history
-      ~ProjectDirectory.blame
-      ~ProjectDirectory.cumulative_blame
-      ~ProjectDirectory.branches
-      ~ProjectDirectory.tags
-      ~ProjectDirectory.revs
-      ~ProjectDirectory.bus_factor
-      ~ProjectDirectory.repo_information
-      ~ProjectDirectory.repo_name
