@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "git-pandas"
-version = "2.2.0"
+version = "2.2.1"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "BSD"}
 authors = [
-    {name = "Will McGinnis", email = "will@pedalwrencher.com"},
+    {name = "Will McGinnis"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 keywords = ["git", "pandas", "data", "analysis"]
+
 dependencies = [
     "gitpython>=1.0.0",
     "numpy>=1.9.0",
@@ -25,6 +26,11 @@ dependencies = [
     "requests",
     "redis",
 ]
+
+[project.urls]
+Documentation = "https://gitpandas.mcginniscommawill.com"
+Source = "https://github.com/wdm0006/git-pandas"
+Issues = "https://github.com/wdm0006/git-pandas/issues"
 
 [project.optional-dependencies]
 examples = [
