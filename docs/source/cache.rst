@@ -99,23 +99,18 @@ API Reference
 
 .. currentmodule:: gitpandas.cache
 
-.. autoclass:: CacheBackend
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-   :special-members: __init__, __getitem__, __setitem__, __delitem__, __contains__, __len__
-
 .. autoclass:: EphemeralCache
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+   :special-members: __init__
 
 .. autoclass:: RedisDFCache
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+   :special-members: __init__
 
 .. autofunction:: multicache
