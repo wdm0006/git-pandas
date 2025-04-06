@@ -18,6 +18,7 @@ import pandas as pd
 import requests
 from git import GitCommandError
 
+from gitpandas.logging import logger  # Import the logger
 from gitpandas.repository import Repository
 
 try:
@@ -105,6 +106,7 @@ class ProjectDirectory:
             cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
             default_branch (str, optional): Name of the default branch to use. Defaults to 'main'.
         """
+        logger.info(f"Initializing ProjectDirectory with working_dir={working_dir}, ignore_repos={ignore_repos}")
         # First get all potential repository paths
         if working_dir is None:
             # When no working_dir is provided, look for git repos in current directory
@@ -121,7 +123,8 @@ class ProjectDirectory:
                     if r.startswith(("git://", "https://", "http://")) or self._is_valid_git_repo(r):
                         self.repo_dirs.append(r)
                     elif verbose:
-                        print(f"Warning! Skipping invalid git repository at {r}")
+                        # Use logger instead of print
+                        logger.warning(f"Skipping invalid git repository at {r}")
         else:
             # When working_dir is a directory path, look for git repos in it
             potential_repos = {x[0].split(".git")[0] for x in os.walk(working_dir) if ".git" in x[0]}
@@ -151,9 +154,11 @@ class ProjectDirectory:
                 except (GitCommandError, ValueError, OSError) as e:
                     # Skip invalid repositories
                     if verbose:
-                        print(f"Warning! Could not initialize repository at {r}: {str(e)}")
+                        # Use logger instead of print
+                        logger.warning(f"Could not initialize repository at {r}: {str(e)}")
 
         self.default_branch = default_branch
+        logger.info(f"Initialized ProjectDirectory with {len(self.repos)} repositories.")
 
     def _repo_name(self):
         warnings.warn(
@@ -170,9 +175,10 @@ class ProjectDirectory:
             pandas.DataFrame: A DataFrame with a single column:
                 - repository (str): Name of each repository
         """
-
+        logger.info("Generating repository name DataFrame.")
         ds = [[x.repo_name] for x in self.repos]
         df = pd.DataFrame(ds, columns=["repository"])
+        logger.debug("Generated repository name DataFrame.")
         return df
 
     def is_bare(self):
@@ -181,9 +187,10 @@ class ProjectDirectory:
 
         :return: DataFrame
         """
-
+        logger.info("Generating is_bare DataFrame.")
         ds = [[x.repo_name, x.is_bare()] for x in self.repos]
         df = pd.DataFrame(ds, columns=["repository", "is_bare"])
+        logger.debug("Generated is_bare DataFrame.")
         return df
 
     def has_coverage(self):
@@ -192,9 +199,10 @@ class ProjectDirectory:
 
         :return: DataFrame
         """
-
+        logger.info("Generating has_coverage DataFrame.")
         ds = [[x.repo_name, x.has_coverage()] for x in self.repos]
         df = pd.DataFrame(ds, columns=["repository", "has_coverage"])
+        logger.debug("Generated has_coverage DataFrame.")
         return df
 
     def coverage(self):
@@ -214,7 +222,7 @@ class ProjectDirectory:
 
         :return: DataFrame
         """
-
+        logger.info("Generating coverage report for project.")
         df = pd.DataFrame(
             columns=[
                 "filename",
@@ -232,9 +240,11 @@ class ProjectDirectory:
                 if not cov.empty:
                     df = pd.concat([df, cov])
             except GitCommandError:
-                print(f"Warning! Repo: {repo} seems to not have coverage")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} seems to not have coverage")
 
         df = df.reset_index(drop=True)
+        logger.info(f"Generated coverage report with {len(df)} rows.")
         return df
 
     def file_change_rates(
@@ -264,6 +274,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with file change statistics and optionally coverage data
         """
+        logger.info(f"Calculating file change rates for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -296,7 +307,8 @@ class ProjectDirectory:
                     fcr["repository"] = repo.repo_name
                     df = fcr if df is None else pd.concat([df, fcr], sort=True)
             except GitCommandError:
-                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
 
         if df is None:
             # If no data was collected, return empty DataFrame with correct columns
@@ -305,6 +317,7 @@ class ProjectDirectory:
         # Ensure consistent column order and reset index
         df = df[columns]
         df = df.reset_index(drop=True)
+        logger.info(f"Calculated file change rates with {len(df)} rows.")
         return df
 
     def hours_estimate(
@@ -337,6 +350,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with hours estimates
         """
+        logger.info(f"Estimating hours for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -362,7 +376,8 @@ class ProjectDirectory:
                 ch["repository"] = repo.repo_name
                 df = pd.concat([df, ch])
             except GitCommandError:
-                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
 
         df.reset_index()
 
@@ -373,6 +388,7 @@ class ProjectDirectory:
             df = df.groupby("repository").agg({"hours": sum})
             df = df.reset_index()
 
+        logger.info(f"Estimated hours: {df['hours'].sum() if not df.empty else 0} total hours.")
         return df
 
     def commit_history(
@@ -396,6 +412,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with commit history
         """
+        logger.info(f"Generating commit history for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -420,7 +437,8 @@ class ProjectDirectory:
                     ch = ch.reset_index()
                     df = ch if df is None else pd.concat([df, ch], sort=True)
             except GitCommandError:
-                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
 
         if df is None:
             # If no data was collected, return empty DataFrame with correct columns
@@ -454,6 +472,7 @@ class ProjectDirectory:
                 "net",
             ]
         ]
+        logger.info(f"Generated commit history with {len(df)} rows.")
         return df
 
     def file_change_history(
@@ -477,6 +496,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with file change history
         """
+        logger.info(f"Generating file change history for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -501,7 +521,8 @@ class ProjectDirectory:
                     ch = ch.reset_index()
                     df = ch if df is None else pd.concat([df, ch], sort=True)
             except GitCommandError:
-                print(f"Warning! Repo: {repo} seems to not have the branch: {branch}")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
 
         if df is None:
             # If no data was collected, return empty DataFrame with correct columns
@@ -533,6 +554,7 @@ class ProjectDirectory:
                 "deletions",
             ]
         ]
+        logger.info(f"Generated file change history with {len(df)} rows.")
         return df
 
     def blame(self, committer=True, by="repository", ignore_globs=None, include_globs=None):
@@ -566,7 +588,7 @@ class ProjectDirectory:
             If both ignore_globs and include_globs are provided, files must match an include pattern
             and not match any ignore patterns to be included.
         """
-
+        logger.info(f"Calculating blame grouped by {'committer' if committer else 'author'} and '{by}'.")
         df = None
 
         for repo in self.repos:
@@ -588,7 +610,8 @@ class ProjectDirectory:
                     if not blame_df.empty:
                         df = pd.concat([df, blame_df])
             except GitCommandError:
-                print(f"Warning! Repo: {repo} couldnt be blamed")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} couldnt be blamed")
                 pass
 
         # Reset all index levels
@@ -606,6 +629,7 @@ class ProjectDirectory:
                 df = df.groupby(["author", "file"])["loc"].sum().to_frame()
 
         df = df.sort_values(by=["loc"], ascending=False)
+        logger.info(f"Calculated blame with {len(df)} rows.")
         return df
 
     def file_detail(self, rev="HEAD", committer=True, ignore_globs=None, include_globs=None):
@@ -635,7 +659,7 @@ class ProjectDirectory:
             The primary committer/author is the person responsible for the most lines
             in the current version of the file.
         """
-
+        logger.info(f"Generating file detail for revision '{rev}'.")
         df = None
 
         for repo in self.repos:
@@ -659,10 +683,12 @@ class ProjectDirectory:
                     if not chunk.empty:
                         df = pd.concat([df, chunk])
             except GitCommandError:
-                print(f"Warning! Repo: {repo} couldnt be inspected")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} couldnt be inspected")
 
         df = df.reset_index()
         df = df.set_index(["file", "repository"])
+        logger.info(f"Generated file detail for {len(df)} files.")
         return df
 
     def branches(self):
@@ -677,7 +703,7 @@ class ProjectDirectory:
                 - local (bool): Whether the branch is local
                 - branch (str): Name of the branch
         """
-
+        logger.info("Fetching branch information for all repositories.")
         df = pd.DataFrame(columns=["repository", "local", "branch"])
 
         if _has_joblib:
@@ -692,9 +718,11 @@ class ProjectDirectory:
                     if not branches_df.empty:
                         df = pd.concat([df, branches_df])
                 except GitCommandError:
-                    print(f"Warning! Repo: {repo} couldn't be inspected")
+                    # Use logger instead of print
+                    logger.warning(f"Repo: {repo} couldn't be inspected")
 
         df = df.reset_index(drop=True)
+        logger.info(f"Fetched branch information for {len(df)} branches.")
         return df
 
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
@@ -710,6 +738,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with revision information
         """
+        logger.info(f"Fetching revisions for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -741,9 +770,11 @@ class ProjectDirectory:
                     if not revs.empty:
                         df = pd.concat([df, revs])
                 except GitCommandError:
-                    print(f"Warning! Repo: {repo} couldn't be inspected")
+                    # Use logger instead of print
+                    logger.warning(f"Repo: {repo} couldn't be inspected")
 
         df = df.reset_index(drop=True)
+        logger.info(f"Fetched {len(df)} revisions.")
         return df
 
     def cumulative_blame(
@@ -773,6 +804,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with cumulative blame information
         """
+        logger.info(f"Calculating cumulative blame for branch '{branch or self.default_branch}' grouped by '{by}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -791,7 +823,8 @@ class ProjectDirectory:
                 if not blame.empty:
                     blames.append((repo.repo_name, blame))
             except GitCommandError:
-                print(f"Warning! Repo: {repo} couldn't be inspected")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} couldn't be inspected")
                 pass
 
         if not blames:
@@ -855,6 +888,7 @@ class ProjectDirectory:
 
         global_blame = global_blame[~global_blame.index.duplicated()]
 
+        logger.info(f"Calculated cumulative blame with {len(global_blame)} time points.")
         return global_blame
 
     def commits_in_tags(self, **kwargs):
@@ -869,13 +903,16 @@ class ProjectDirectory:
 
         :returns: DataFrame
         """
+        logger.info(f"Analyzing commits in tags with kwargs: {kwargs}")
         dfs = []
         for repo in self.repos:
             try:
                 dfs.append(repo.commits_in_tags(**kwargs))
             except GitCommandError as e:
-                print(f"Warning! Repo: {repo} couldn't be inspected because of {e!r}")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} couldn't be inspected because of {e!r}")
         df = pd.concat(dfs)
+        logger.info(f"Analyzed commits in tags, found {len(df)} relevant commits.")
         return df
 
     def tags(self):
@@ -887,7 +924,7 @@ class ProjectDirectory:
 
         :returns: DataFrame
         """
-
+        logger.info("Fetching tags for all repositories.")
         if _has_joblib:
             dfs = Parallel(n_jobs=-1, backend="threading", verbose=0)(delayed(_tags_func)(x) for x in self.repos)
         else:
@@ -896,10 +933,12 @@ class ProjectDirectory:
                 try:
                     dfs.append(repo.tags())
                 except GitCommandError:
-                    print(f"Warning! Repo: {repo} couldn't be inspected")
+                    # Use logger instead of print
+                    logger.warning(f"Repo: {repo} couldn't be inspected")
         # Filter out empty DataFrames before concatenation
         dfs = [df for df in dfs if not df.empty]
         df = pd.concat(dfs) if dfs else pd.DataFrame()
+        logger.info(f"Fetched {len(df)} tags.")
         return df
 
     def repo_information(self):
@@ -921,7 +960,7 @@ class ProjectDirectory:
                 - tags (list): List of tags
                 - active_branch (str): Currently checked out branch
         """
-
+        logger.info("Fetching detailed repository information.")
         data = [
             [
                 repo.git_dir,
@@ -954,6 +993,7 @@ class ProjectDirectory:
             ],
         )
 
+        logger.info(f"Fetched detailed information for {len(df)} repositories.")
         return df
 
     def bus_factor(self, ignore_globs=None, include_globs=None, by="projectd"):
@@ -987,7 +1027,7 @@ class ProjectDirectory:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
             few contributors. A higher bus factor indicates knowledge is better distributed.
         """
-
+        logger.info(f"Calculating bus factor grouped by '{by}'.")
         if by == "file":
             raise NotImplementedError("File-wise bus factor")
         elif by == "projectd":
@@ -1003,6 +1043,7 @@ class ProjectDirectory:
                 if cumulative >= total / 2:
                     break
 
+            logger.info(f"Calculated bus factor for the project directory: {tc}")
             return pd.DataFrame([["projectd", tc]], columns=["projectd", "bus factor"])
         elif by == "repository":
             df = pd.DataFrame(columns=["repository", "bus factor"])
@@ -1012,9 +1053,11 @@ class ProjectDirectory:
                     if not bf_df.empty:
                         df = pd.concat([df, bf_df])
                 except GitCommandError:
-                    print(f"Warning! Repo: {repo} couldn't be inspected")
+                    # Use logger instead of print
+                    logger.warning(f"Repo: {repo} couldn't be inspected")
 
             df.reset_index()
+            logger.info(f"Calculated bus factor for {len(df)} repositories.")
             return df
 
     def punchcard(
@@ -1042,6 +1085,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with punchcard data
         """
+        logger.info(f"Generating punchcard data for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
@@ -1064,7 +1108,8 @@ class ProjectDirectory:
                 if not chunk.empty:
                     df = pd.concat([df, chunk])
             except GitCommandError:
-                print(f"Warning! Repo: {repo} couldn't be inspected")
+                # Use logger instead of print
+                logger.warning(f"Repo: {repo} couldn't be inspected")
 
         df.reset_index()
 
@@ -1079,7 +1124,9 @@ class ProjectDirectory:
         if normalize is not None:
             for col in ["lines", "insertions", "deletions", "net"]:
                 punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
+            logger.info(f"Normalized punchcard data to max value {normalize}.")
 
+        logger.info(f"Generated punchcard data with {len(punch_card)} entries.")
         return punch_card
 
     def __del__(self):
@@ -1088,9 +1135,13 @@ class ProjectDirectory:
         Ensures proper cleanup of all repository objects, including
         temporary directories for cloned repositories.
         """
-
+        logger.debug("Cleaning up ProjectDirectory resources.")
         for repo in self.repos:
-            repo.__del__()
+            try:
+                repo.__del__()
+            except Exception as e:
+                logger.error(f"Error during cleanup of repo {repo.repo_name}: {e}")
+        logger.debug("Finished cleaning up ProjectDirectory resources.")
 
     def _is_valid_git_repo(self, path):
         """Helper method to check if a path is a valid git repository.
@@ -1101,6 +1152,7 @@ class ProjectDirectory:
         Returns:
             bool: True if path is a valid git repository, False otherwise
         """
+        logger.debug(f"Checking if '{path}' is a valid git repository.")
         try:
             # Check if it's a directory first
             if not os.path.isdir(path):
@@ -1114,9 +1166,12 @@ class ProjectDirectory:
             # Check if it's a bare repository by looking for required files
             # In a bare repo, these files are directly in the repository root
             required_files = ["HEAD", "config", "objects", "refs"]
-            return all(os.path.exists(os.path.join(path, f)) for f in required_files)
-        except OSError:
+            is_valid = all(os.path.exists(os.path.join(path, f)) for f in required_files)
+            logger.debug(f"Path '{path}' is {'valid' if is_valid else 'invalid'} git repository.")
+            return is_valid
+        except OSError as e:
             # Handle filesystem-related errors
+            logger.error(f"OSError checking path '{path}': {e}")
             return False
 
     def _get_repo_name_from_path(self, path):
@@ -1128,11 +1183,14 @@ class ProjectDirectory:
         Returns:
             str: Repository name (last component of path)
         """
+        logger.debug(f"Getting repository name from path: '{path}'")
         # For URLs, get the last part before .git
         if isinstance(path, str) and path.startswith(("git://", "https://", "http://")):
             return path.rstrip("/").split("/")[-1].replace(".git", "")
         # For local paths, use the last directory name
-        return os.path.basename(path.rstrip(os.sep))
+        name = os.path.basename(path.rstrip(os.sep))
+        logger.debug(f"Determined repository name: '{name}'")
+        return name
 
 
 class GitHubProfile(ProjectDirectory):
@@ -1163,12 +1221,22 @@ class GitHubProfile(ProjectDirectory):
             ignore_repos (Optional[List[str]]): List of repository names to ignore
             verbose (bool, optional): Whether to print verbose output. Defaults to False.
         """
-
+        logger.info(f"Initializing GitHubProfile for user '{username}'.")
         # pull the git urls from github's api
         uri = f"https://api.github.com/users/{username}/repos"
-        data = requests.get(uri)
+        logger.debug(f"Fetching repositories from GitHub API: {uri}")
+        try:
+            data = requests.get(uri)
+            data.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            json_data = data.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch GitHub repositories for user {username}: {e}")
+            # Initialize with empty list if API call fails
+            ProjectDirectory.__init__(self, working_dir=[], ignore_repos=ignore_repos, verbose=verbose)
+            return
+
         repos = []
-        for chunk in data.json():
+        for chunk in json_data:
             # if we are skipping forks
             if ignore_forks:
                 if not chunk["fork"]:
@@ -1176,4 +1244,5 @@ class GitHubProfile(ProjectDirectory):
             else:
                 repos.append(chunk["git_url"])
 
+        logger.info(f"Found {len(repos)} repositories for user '{username}' (ignore_forks={ignore_forks}).")
         ProjectDirectory.__init__(self, working_dir=repos, ignore_repos=ignore_repos, verbose=verbose)
