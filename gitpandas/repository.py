@@ -8,7 +8,6 @@
 
 """
 
-import datetime
 import fnmatch
 import json
 import logging
@@ -17,7 +16,6 @@ import shutil
 import sys
 import tempfile
 import time
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -25,6 +23,7 @@ from git import GitCommandError, Repo
 from pandas import DataFrame, to_datetime
 
 from gitpandas.cache import multicache
+from gitpandas.logging import logger
 
 try:
     from joblib import Parallel, delayed
@@ -123,7 +122,6 @@ class Repository:
             ValueError: If default_branch is None and neither 'main' nor 'master' branch exists
         """
         self.verbose = verbose
-        self.log = logging.getLogger("gitpandas")
         self.__delete_hook = False
         self._git_repo_name = None
         self.cache_backend = cache_backend
@@ -143,6 +141,7 @@ class Repository:
                 else:
                     dir_path = tmp_dir
 
+                logger.info(f"Cloning remote repository {working_dir} to {dir_path}")
                 self.repo = Repo.clone_from(working_dir, dir_path)
                 self._git_repo_name = working_dir.split(os.sep)[-1].split(".")[0]
                 self.git_dir = dir_path
@@ -173,6 +172,10 @@ class Repository:
                 f"Repository [{self._repo_name()}] instantiated at directory: {self.git_dir} "
                 f"with default branch: {self.default_branch}"
             )
+        logger.info(
+            f"Repository [{self._repo_name()}] instantiated at directory: {self.git_dir} "
+            f"with default branch: {self.default_branch}"
+        )
 
     def __del__(self):
         """Cleanup method called when the object is destroyed.
@@ -211,7 +214,8 @@ class Repository:
                     blob = blob.split("!")[2]
                     json.loads(blob)
                 return True
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Could not parse .coverage file: {e}", exc_info=True)
                 return False
         else:
             return False
@@ -252,8 +256,7 @@ class Repository:
                     for _idx, _ in enumerate(f):
                         pass
             except FileNotFoundError:
-                if self.verbose:
-                    warnings.warn(f"Could not find file {filename} for coverage", stacklevel=2)
+                logger.warning(f"Could not find file {filename} for coverage analysis.")
 
             num_lines = _idx + 1
 
@@ -261,8 +264,7 @@ class Repository:
                 short_filename = filename.split(self.git_dir + os.sep)[1]
                 ds.append([short_filename, len(cov["lines"][filename]), num_lines])
             except IndexError:
-                if self.verbose:
-                    warnings.warn(f"Could not find file {filename} for coverage", stacklevel=2)
+                logger.warning(f"Could not determine relative path for file {filename} during coverage analysis.")
 
         df = DataFrame(ds, columns=["filename", "lines_covered", "total_lines"])
         df["coverage"] = df["lines_covered"] / df["total_lines"]
@@ -300,6 +302,8 @@ class Repository:
         """
         if branch is None:
             branch = self.default_branch
+
+        logger.info(f"Starting hours estimation for branch '{branch}'")
 
         max_diff_in_minutes = grouping_window * 60.0
         first_commit_addition_in_minutes = single_commit_hours * 60.0
@@ -341,6 +345,7 @@ class Repository:
         df = DataFrame(ds, columns=[by, "hours"])
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished hours estimation for branch '{branch}'. Found data for {len(df)} contributors.")
         return df
 
     def commit_history(
@@ -384,7 +389,10 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        logger.info(f"Fetching commit history for branch '{branch}'. Limit: {limit}, Days: {days}")
+
         # setup the data-set of commits
+        commit_count = 0
         if limit is None:
             if days is None:
                 ds = [
@@ -417,6 +425,9 @@ class Repository:
                         break
                     c_date = x.committed_date
                     if c_date > dlim:
+                        commit_count += 1
+                        if logger.isEnabledFor(logging.DEBUG) and commit_count % 1000 == 0:
+                            logger.debug(f"Processed {commit_count} commits (days filter)...")
                         ds.append(
                             [
                                 x.author.name,
@@ -448,6 +459,9 @@ class Repository:
                 ]
                 for x in self.repo.iter_commits(branch, max_count=limit)
             ]
+            commit_count = len(ds)  # Count is known due to max_count
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Processed {commit_count} commits (limit applied).")
 
         # aggregate stats
         ds = [
@@ -485,6 +499,7 @@ class Repository:
         df["branch"] = branch
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished fetching commit history for branch '{branch}'. Found {len(df)} relevant commits.")
         return df
 
     def file_change_history(
@@ -528,7 +543,13 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        logger.info(
+            f"Fetching file change history for branch '{branch}'. "
+            f"Limit: {limit}, Days: {days}, Ignore: {ignore_globs}, Include: {include_globs}"
+        )
+
         # setup the dataset of commits
+        commit_count = 0
         if limit is None:
             if days is None:
                 ds = [
@@ -562,6 +583,9 @@ class Repository:
 
                     c_date = x.committed_date
                     if c_date > dlim:
+                        commit_count += 1
+                        if logger.isEnabledFor(logging.DEBUG) and commit_count % 1000 == 0:
+                            logger.debug(f"Processed {commit_count} commits for file history (days filter)...")
                         ds.append(
                             [
                                 x.author.name,
@@ -593,7 +617,11 @@ class Repository:
                 ]
                 for x in self.repo.iter_commits(branch, max_count=limit)
             ]
+            commit_count = len(ds)  # Count is known due to max_count
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Processed {commit_count} commits for file history (limit applied).")
 
+        logger.debug(f"Raw file change data count: {len(ds)}")
         ds = [
             x[:-1] + [fn, x[-1][fn]["insertions"], x[-1][fn]["deletions"]]
             for x in ds
@@ -622,6 +650,7 @@ class Repository:
         df.index = df.index.tz_localize("UTC")  # Then localize the index
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished fetching file change history for '{branch}'. Found {len(df)} file changes.")
         return df
 
     def file_change_rates(
@@ -654,6 +683,12 @@ class Repository:
         """
         if branch is None:
             branch = self.default_branch
+
+        logger.info(
+            f"Calculating file change rates for branch '{branch}'. "
+            f"Limit: {limit}, Coverage: {coverage}, Days: {days}, "
+            f"Ignore: {ignore_globs}, Include: {include_globs}"
+        )
 
         fch = self.file_change_history(
             branch=branch,
@@ -718,10 +753,17 @@ class Repository:
             )
             file_history.sort_values(by=["edit_rate"], inplace=True)
 
-            if coverage and self.has_coverage():
-                file_history = file_history.merge(self.coverage(), left_index=True, right_on="filename", how="outer")
-                file_history.set_index(keys=["filename"], drop=True, inplace=True)
+            if coverage:
+                if self.has_coverage():
+                    logger.info("Merging coverage data into file change rates.")
+                    file_history = file_history.merge(
+                        self.coverage(), left_index=True, right_on="filename", how="outer"
+                    )
+                    file_history.set_index(keys=["filename"], drop=True, inplace=True)
+                else:
+                    logger.warning("Coverage data requested but not found or unparseable. Skipping merge.")
         else:
+            logger.info("No file change history data found, returning empty DataFrame.")
             file_history = DataFrame(
                 columns=[
                     "unique_committers",
@@ -735,6 +777,7 @@ class Repository:
 
         file_history = self._add_labels_to_df(file_history)
 
+        logger.info(f"Finished calculating file change rates for '{branch}'. Analyzed {file_history.shape[0]} files.")
         return file_history
 
     @staticmethod
@@ -747,6 +790,9 @@ class Repository:
         :param include_globs: a list of globs to include (if none, includes all).
         :return: dict
         """
+        logger.debug(
+            f"Checking extensions/globs. Files: {len(files)}, Ignore: {ignore_globs}, Include: {include_globs}"
+        )
 
         if include_globs is None or include_globs == []:
             include_globs = ["*"]
@@ -766,6 +812,7 @@ class Repository:
             if count_include > 0 and count_exclude == 0:
                 out[key] = files[key]
 
+        logger.debug(f"Finished checking extensions. Filtered files count: {len(out)}")
         return out
 
     @multicache(
@@ -812,6 +859,8 @@ class Repository:
             If both ignore_globs and include_globs are provided, files must match an include pattern
             and not match any ignore patterns to be included.
         """
+        logger.info(f"Calculating blame for rev '{rev}'. Group by: {by}, Committer: {committer}")
+        logger.debug(f"Blame Ignore: {ignore_globs}, Include: {include_globs}")
 
         blames = []
         file_names = [
@@ -825,10 +874,12 @@ class Repository:
             include_globs=include_globs,
         ):
             try:
+                logger.debug(f"Getting blame for file: {file} at rev: {rev}")
                 blame_output = self.repo.blame(rev, str(file).replace(self.git_dir + "/", ""))
                 for commit, lines in blame_output:
                     blames.append((commit, lines, str(file).replace(self.git_dir + "/", "")))
-            except GitCommandError:
+            except GitCommandError as e:
+                logger.warning(f"Failed to get blame for file: {file} at rev: {rev}. Error: {e}")
                 pass
 
         if committer:
@@ -876,6 +927,7 @@ class Repository:
 
         blames_df = self._add_labels_to_df(blames_df)
 
+        logger.info(f"Finished calculating blame for rev '{rev}'. Found {len(blames_df)} blame entries.")
         return blames_df
 
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
@@ -899,7 +951,12 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        logger.info(
+            f"Fetching revisions for branch '{branch}'. Limit: {limit}, Skip: {skip}, Num Datapoints: {num_datapoints}"
+        )
+
         if limit is None and skip is None and num_datapoints is not None:
+            logger.debug("Calculating skip based on num_datapoints")
             limit = sum(1 for _ in self.repo.iter_commits())
             skip = int(float(limit) / num_datapoints)
         else:
@@ -912,6 +969,7 @@ class Repository:
         df = DataFrame(ds, columns=["date", "rev"])
 
         if skip is not None:
+            logger.debug(f"Applying skip ({skip}) to revisions.")
             if skip == 0:
                 skip = 1
 
@@ -924,6 +982,7 @@ class Repository:
 
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} revisions.")
         return df
 
     def cumulative_blame(
@@ -962,9 +1021,15 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        logger.info(
+            f"Starting cumulative blame calculation for branch '{branch}'. "
+            f"Limit: {limit}, Skip: {skip}, Num Datapoints: {num_datapoints}, Committer: {committer}"
+        )
+
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
         # get the commit history to stub out committers (hacky and slow)
+        logger.debug("Fetching all committers to pre-populate columns...")
         if sys.version_info.major == 2:
             committers = {x.committer.name for x in self.repo.iter_commits(branch)}
         else:
@@ -975,17 +1040,12 @@ class Repository:
 
         if self.verbose:
             print("Beginning processing for cumulative blame:")
+        logger.debug(f"Processing {len(revs)} revisions for cumulative blame...")
 
         # now populate that table with some actual values
         for idx, row in revs.iterrows():
-            if self.verbose:
-                print(
-                    "{}. [{}] getting blame for rev: {}".format(
-                        str(idx),
-                        datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-                        row.rev,
-                    )
-                )
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Processing blame for rev: {row.rev} (Index: {idx})")
 
             blame = self.blame(
                 rev=row.rev,
@@ -998,6 +1058,7 @@ class Repository:
                     loc = blame.loc[y, "loc"]
                     revs.at[idx, y] = loc
                 except KeyError:
+                    logger.warning(f"Committer '{y}' not found in blame results for rev {row.rev}")
                     pass
 
         del revs["rev"]
@@ -1028,8 +1089,10 @@ class Repository:
             if row_sum > 0:
                 keep_idx.append(idx)
 
+        logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
         revs = revs.loc[keep_idx]
 
+        logger.info(f"Finished cumulative blame calculation for '{branch}'. Result shape: {revs.shape}")
         return revs
 
     def parallel_cumulative_blame(
@@ -1065,14 +1128,20 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        logger.info(
+            f"Starting parallel cumulative blame for branch '{branch}'. "
+            f"Limit: {limit}, Skip: {skip}, Num Datapoints: {num_datapoints}, "
+            f"Committer: {committer}, Workers: {workers}"
+        )
+
         if not _has_joblib:
+            logger.error("Joblib not installed. Cannot run parallel_cumulative_blame.")
             raise ImportError("""Must have joblib installed to use parallel_cumulative_blame(), please use
             cumulative_blame() instead.""")
 
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
 
-        if self.verbose:
-            print("Beginning processing for cumulative blame:")
+        logger.debug(f"Prepared {len(revs)} revisions for parallel processing.")
 
         revisions = json.loads(revs.to_json(orient="index"))
         revisions = [revisions[key] for key in revisions]
@@ -1110,9 +1179,11 @@ class Repository:
             if row_sum > 0:
                 keep_idx.append(idx)
 
+        logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
         revs = revs.loc[keep_idx]
         revs.sort_index(ascending=False, inplace=True)
 
+        logger.info(f"Finished parallel cumulative blame for '{branch}'. Result shape: {revs.shape}")
         return revs
 
     def branches(self):
@@ -1128,11 +1199,15 @@ class Repository:
                 Additional columns for any labels specified in labels_to_add
         """
 
+        logger.info("Fetching repository branches (local and remote).")
+
         # first pull the local branches
+        logger.debug("Fetching local branches...")
         local_branches = self.repo.branches
         data = [[x.name, True] for x in list(local_branches)]
 
         # then the remotes
+        logger.debug("Fetching remote branches...")
         remote_branches = self.repo.git.branch("-r").replace(" ", "").splitlines()
         rb = []
         for _i, remote in enumerate(remote_branches):
@@ -1149,6 +1224,7 @@ class Repository:
         df = DataFrame(data, columns=["branch", "local"])
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished fetching branches. Found {len(df)} total branches.")
         return df
 
     def get_branches_by_commit(self, commit):
@@ -1164,11 +1240,13 @@ class Repository:
                 - repository (str): Repository name
                 Additional columns for any labels specified in labels_to_add
         """
+        logger.info(f"Finding branches containing commit: {commit}")
         branches = self.repo.git.branch("-a", "--contains", commit).replace(" ", "").replace("*", "").splitlines()
         df = DataFrame(branches, columns=["branch"])
         df["commit"] = str(commit)
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Found {len(df)} branches containing commit {commit}.")
         return df
 
     def commits_in_tags(self, start=None, end=None):
@@ -1194,6 +1272,7 @@ class Repository:
             This is useful for generating changelogs or understanding the scope
             of changes between tagged releases.
         """
+        logger.info(f"Analyzing commits within tags. Start: {start}, End: {end}")
 
         if start is None:
             start = np.timedelta64(180, "D")  # Approximately 6 months
@@ -1219,25 +1298,30 @@ class Repository:
         checked_commits = set()
 
         df_tags["filled_shas"] = df_tags["tag_sha"].fillna(value=df_tags["commit_sha"])
-        for sha, tag in df_tags[["filled_shas", "tag"]].sort_index(level="tag_date").values:
+        logger.debug(f"Processing {len(df_tags)} tags within the specified date range.")
+        for sha, tag_name in df_tags[["filled_shas", "tag"]].sort_index(level="tag_date").values:
+            logger.debug(f"Processing tag '{tag_name}' starting from SHA: {sha}")
             commit = self.repo.commit(sha)
             before_start = start and commit.committed_date < start
             passed_end = end and commit.committed_date > end
             already_checked = str(commit) in checked_commits
             if before_start or passed_end or already_checked:
                 continue
-            tag = self.repo.tag(tag)
+            tag = self.repo.tag(tag_name)
 
             checked_commits.add(str(commit))
+            logger.debug(f"Adding commit {commit.hexsha[:7]} for tag '{tag.name}'")
             ds.append(self._commits_per_tags_helper(commit, df_tags, tag=tag))
 
         if not ds:
+            logger.info("No commits found within tags for the specified range.")
             return pd.DataFrame(columns=["commit_sha", "tag", "tag_date", "commit_date"])
 
         df = pd.DataFrame(ds)
         df = df.set_index(["tag_date", "commit_date"])
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished analyzing commits in tags. Found {len(df)} commits.")
         return df
 
     def _commits_per_tags_recursive(
@@ -1250,6 +1334,7 @@ class Repository:
         start=None,
         end=None,
     ):
+        logger.debug(f"Recursive check for commit {commit.hexsha[:7]} under tag '{tag.name if tag else None}'")
         ds = ds if ds is not None else []
         checked_commits = checked_commits if checked_commits is not None else set()
 
@@ -1258,6 +1343,9 @@ class Repository:
             passed_end = end and parent_commit.committed_date > end
             already_checked = str(parent_commit) in checked_commits
             if before_start or passed_end or already_checked:
+                logger.debug(
+                    f"Skipping parent commit {parent_commit.hexsha[:7]}: BeforeStart={before_start}, PassedEnd={passed_end}, AlreadyChecked={already_checked}"  # noqa: E501
+                )
                 continue
             checked_commits.add(str(parent_commit))
             commit_meta, tag = self._commits_per_tags_helper(commit=parent_commit, df_tags=df_tags, tag=tag)
@@ -1310,6 +1398,7 @@ class Repository:
             - commit_date is always the timestamp of the tagged commit
             - Both dates are timezone-aware UTC timestamps
         """
+        logger.info("Fetching repository tags.")
 
         tags = self.repo.tags
         tags_meta = []
@@ -1348,6 +1437,7 @@ class Repository:
         df = df.set_index(keys=["tag_date", "commit_date"], drop=True)
         df = df.sort_index(level=["tag_date", "commit_date"])
 
+        logger.info(f"Finished fetching tags. Found {len(df)} tags.")
         return df
 
     @property
@@ -1441,9 +1531,11 @@ class Repository:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
             few contributors. A higher bus factor indicates knowledge is better distributed.
         """
+        logger.info(f"Calculating bus factor. Group by: {by}, Ignore: {ignore_globs}, Include: {include_globs}")
 
         if by == "file":
-            raise NotImplementedError("File-wise bus factor")
+            logger.error("File-wise bus factor calculation is not implemented.")
+            raise NotImplementedError("File-wise bus factor calculation is not implemented.")
 
         blame = self.blame(include_globs=include_globs, ignore_globs=ignore_globs, by=by)
         blame = blame.sort_values(by=["loc"], ascending=False)
@@ -1457,6 +1549,7 @@ class Repository:
             if cumulative >= total / 2:
                 break
 
+        logger.info(f"Bus factor calculated: {tc}")
         return DataFrame([[self._repo_name(), tc]], columns=["repository", "bus factor"])
 
     def file_owner(self, rev, filename, committer=True):
@@ -1479,6 +1572,7 @@ class Repository:
         Note:
             This is a helper method used by file_detail() to determine file ownership.
         """
+        logger.debug(f"Determining file owner for: {filename} at rev: {rev}, Committer: {committer}")
         try:
             cm = "committer" if committer else "author"
 
@@ -1495,10 +1589,10 @@ class Repository:
                 owner = blame["loc"].idxmax()
                 return {"name": owner}
             else:
+                logger.debug(f"No blame information found for file {filename} at rev {rev}.")
                 return None
-        except (GitCommandError, KeyError):
-            if self.verbose:
-                print(f"Couldn't Calculate File Owner for {rev}")
+        except (GitCommandError, KeyError) as e:
+            logger.warning(f"Could not determine file owner for {filename} at rev {rev}: {e}")
             return None
 
     def _file_last_edit(self, filename):
@@ -1515,7 +1609,7 @@ class Repository:
             This is an internal helper method used by file_detail() to get file
             modification times.
         """
-
+        logger.debug(f"Getting last edit date for file: {filename}")
         try:
             tmp = self.repo.git.log("-n", "1", "--", filename).split("\n")
             date_string = [x for x in tmp if x.startswith("Date:")]
@@ -1523,10 +1617,10 @@ class Repository:
             if len(date_string) > 0:
                 return date_string[0].replace("Date:", "").strip()
             else:
+                logger.debug(f"No 'Date:' string found in log for {filename}.")
                 return None
-        except GitCommandError:
-            if self.verbose:
-                print(f"Could not get last edit date for {filename}")
+        except GitCommandError as e:
+            logger.warning(f"Could not get last edit date for {filename}: {e}")
             return None
 
     @multicache(
@@ -1562,8 +1656,13 @@ class Repository:
 
             This method is cached if a cache_backend was provided and rev is not HEAD.
         """
+        logger.info(
+            f"Fetching file details for rev '{rev}'. "
+            f"Ignore: {ignore_globs}, Include: {include_globs}, Committer: {committer}"
+        )
 
         # first get the blame
+        logger.debug("Calculating blame for file details...")
         blame = self.blame(
             include_globs=include_globs,
             ignore_globs=ignore_globs,
@@ -1575,23 +1674,28 @@ class Repository:
         blame = blame.reset_index(level=-1)
 
         # reduce it to files and total LOC
+        logger.debug("Reducing to files and total LOC...")
         df = blame.reindex(columns=["file", "loc"])
         df = df.groupby("file").agg({"loc": np.sum})
         df = df.reset_index(level=-1)
 
         # map in file owners
+        logger.debug("Mapping file owners...")
         df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer))
 
         # add extension (something like the language)
+        logger.debug("Extracting file extensions...")
         df["ext"] = df["file"].map(lambda x: x.split(".")[-1])
 
         # add in last edit date for the file
+        logger.debug("Mapping last edit dates...")
         df["last_edit_date"] = df["file"].map(self._file_last_edit)
         df["last_edit_date"] = to_datetime(df["last_edit_date"])
 
         df = df.set_index("file")
         df = self._add_labels_to_df(df)
 
+        logger.info(f"Finished fetching file details for rev '{rev}'. Found details for {len(df)} files.")
         return df
 
     def punchcard(
@@ -1629,9 +1733,16 @@ class Repository:
         Returns:
             DataFrame: DataFrame with punchcard data
         """
+        logger.info(
+            f"Generating punchcard data for branch '{branch}'. "
+            f"Limit: {limit}, Days: {days}, By: {by}, Normalize: {normalize}, "
+            f"Ignore: {ignore_globs}, Include: {include_globs}"
+        )
+
         if branch is None:
             branch = self.default_branch
 
+        logger.debug("Fetching commit history for punchcard...")
         ch = self.commit_history(
             branch=branch,
             limit=limit,
@@ -1648,14 +1759,17 @@ class Repository:
         if by is not None:
             aggs.append(by)
 
+        logger.debug(f"Aggregating punchcard data by: {aggs}")
         punch_card = ch.groupby(aggs).agg({"lines": "sum", "insertions": "sum", "deletions": "sum", "net": "sum"})
         punch_card.reset_index(inplace=True)
 
         # normalize all cols
         if normalize is not None:
+            logger.debug(f"Normalizing punchcard data to max value: {normalize}")
             for col in ["lines", "insertions", "deletions", "net"]:
                 punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
 
+        logger.info(f"Finished generating punchcard data for '{branch}'. Result shape: {punch_card.shape}")
         return punch_card
 
     def has_branch(self, branch):
@@ -1670,14 +1784,15 @@ class Repository:
         Note:
             This checks both local and remote branches.
         """
+        logger.info(f"Checking if branch '{branch}' exists.")
         try:
             # Get all branches (both local and remote)
             branches = self.branches()
-            # Check if branch exists in the list of branch names
-            return branch in branches["branch"].values
-        except GitCommandError:
-            if self.verbose:
-                print(f"Warning! Could not check branches in repo: {self}")
+            result = branch in branches["branch"].values
+            logger.info(f"Branch '{branch}' exists: {result}")
+            return result
+        except GitCommandError as e:
+            logger.warning(f"Could not check branches in repo '{self._repo_name()}': {e}")
             return False
 
 
