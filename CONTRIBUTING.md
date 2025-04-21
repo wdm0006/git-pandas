@@ -49,8 +49,6 @@ Easy Issues / Getting Started
 There are a number of issues on the near term horizon that would be great to have help with.
 
  1. Diff: it would be really nice to be able to call a function with 2 revs and return the diff as a dataframe. So columns for line number, filename, path, change, author, timestamp, etc. 
- 2. Docs: We have a lot of examples, but they are largely not present in the documentation.  Adding some plotting to the examples using pyplot and putting them into the docs would help out new users a lot.
- 3. Docs Deployment: currently we host the docs on Github pages, which has a kind of awkward deployment process. Anyone with experience automating this (or scripting even) would be very useful.
  4. File-level tracking: it would be really cool to be able to get a dataframe of one file's history in great detail. It likely would be a subset of the existing file change history function.
  5. Cross-Branch Analytics: finding differences between different branches of a single repository. Or aggregating the  results of other functions across multiple branches.
  6. Verbose Mode: add logging in more functions when verbose is set to True.

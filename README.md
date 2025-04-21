@@ -44,8 +44,6 @@ The `ProjectDirectory` class enables analysis across multiple repositories:
 ### Project Insights
 - **Bus Factor**: Calculate project sustainability metrics
 - **Development Time**: Estimate hours spent per project or author
-- **Contributor Analysis**: Track individual and team contributions
-- **Project Health**: Generate comprehensive project information tables
 
 ### GitHub Integration
 - **Profile Analysis**: Analyze GitHub.com profiles via `GitHubProfile` object
@@ -73,30 +71,66 @@ from gitpandas import Repository
 
 # Analyze a single repository
 repo = Repository('/path/to/repo')
-commits_df = repo.commit_history()
-blame_df = repo.blame()
+
+# Get commit history with filtering
+commits_df = repo.commit_history(
+    branch='main',
+    ignore_globs=['*.pyc'],
+    include_globs=['*.py']
+)
+
+# Analyze blame information
+blame_df = repo.blame(by='repository')
+
+# Calculate bus factor
+bus_factor_df = repo.bus_factor()
 
 # Analyze multiple repositories
 from gitpandas import ProjectDirectory
 project = ProjectDirectory('/path/to/project')
-project_info = project.general_information()
 ```
 
-## Documentation
+## Available Methods
 
-Comprehensive documentation is available at [http://wdm0006.github.io/git-pandas/](http://wdm0006.github.io/git-pandas/)
+### Repository Class
+```python
+# Core Analysis
+repo.commit_history(branch=None, limit=None, days=None, ignore_globs=None, include_globs=None)
+repo.file_change_history(branch=None, limit=None, days=None, ignore_globs=None, include_globs=None)
+repo.blame(rev="HEAD", committer=True, by="repository", ignore_globs=None, include_globs=None)
+repo.bus_factor(by="repository", ignore_globs=None, include_globs=None)
+repo.punchcard(branch=None, limit=None, days=None, by=None, normalize=None, ignore_globs=None, include_globs=None)
 
-## Performance Optimization
+# Repository Information
+repo.list_files(rev="HEAD")
+repo.has_branch(branch)
+repo.is_bare()
+repo.has_coverage()
+repo.coverage()
+repo.get_commit_content(rev, ignore_globs=None, include_globs=None)
+```
 
-For memory-intensive operations, Git-Pandas supports:
-- Memory-based caching
-- Redis-based caching
-- Configurable cache durations
+### ProjectDirectory Class
+```python
+# Initialize with multiple repositories
+project = ProjectDirectory(
+    working_dir='/path/to/project',
+    ignore_repos=None,
+    verbose=True,
+    cache_backend=None,
+    default_branch='main'
+)
+```
 
-## Projects Using Git-Pandas
+## Common Parameters
 
-- [GitNOC](https://github.com/wdm0006/gitnoc): Network of Code analysis tool
-- [Commit Opener](https://github.com/lbillingham/commit_opener): Commit analysis and visualization tool
+Most analysis methods support these filtering parameters:
+- `branch`: Branch to analyze (defaults to repository's default branch)
+- `limit`: Maximum number of commits to analyze
+- `days`: Limit analysis to last N days
+- `ignore_globs`: List of glob patterns for files to ignore
+- `include_globs`: List of glob patterns for files to include
+- `by`: How to group results (usually 'repository' or 'file')
 
 ## Contributing
 

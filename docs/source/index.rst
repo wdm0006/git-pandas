@@ -6,7 +6,7 @@
 Welcome to Git-Pandas Documentation
 ===================================
 
-Git-Pandas is a powerful Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze and visualize your codebase's history, contributors, and development patterns.
+Git-Pandas is a Python library that transforms Git repository data into pandas DataFrames, making it easy to analyze your codebase's history and development patterns. Built on top of GitPython, it provides a simple interface for extracting insights from your Git repositories.
 
 .. image:: https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png
    :alt: Cumulative Blame Visualization
@@ -29,9 +29,22 @@ Analyze a single repository:
 .. code-block:: python
 
     from gitpandas import Repository
+    
+    # Create a repository instance
     repo = Repository('/path/to/repo')
-    commits_df = repo.commit_history()
-    blame_df = repo.blame()
+    
+    # Get commit history with filtering
+    commits_df = repo.commit_history(
+        branch='main',
+        ignore_globs=['*.pyc'],
+        include_globs=['*.py']
+    )
+    
+    # Analyze blame information
+    blame_df = repo.blame(by='repository')
+    
+    # Calculate bus factor
+    bus_factor_df = repo.bus_factor()
 
 Analyze multiple repositories:
 
@@ -39,33 +52,54 @@ Analyze multiple repositories:
 
     from gitpandas import ProjectDirectory
     project = ProjectDirectory('/path/to/project')
-    project_info = project.general_information()
 
 Key Features
 ------------
 
 * **Repository Analysis**: Extract commit history, file changes, and blame information
-* **Project Insights**: Calculate bus factor, development time, and contributor metrics
-* **GitHub Integration**: Analyze GitHub profiles and repository metrics
-* **Visualization Tools**: Built-in plotting utilities for common Git analytics
-* **Performance Optimization**: Optional caching support for memory-intensive operations
+* **Project Insights**: Calculate bus factor and analyze repository metrics
+* **Multi-Repository Support**: Analyze multiple repositories together
+* **Performance Optimization**: Basic caching support and glob-based filtering
 
 Core Components
 ---------------
 
 The library is built around two main components:
 
-* **Repository**: A wrapper around a single Git repository
-* **ProjectDirectory**: A collection of Git repositories for aggregate analysis
+Repository
+~~~~~~~~~~
+A wrapper around a single Git repository that provides:
 
-For detailed information about these components, see the :doc:`repository` and :doc:`project` documentation.
+* Commit history analysis with filtering options
+* File change tracking and blame information
+* Branch existence checking and repository status
+* Bus factor calculation and repository metrics
+* Punchcard statistics generation
+
+ProjectDirectory
+~~~~~~~~~~~~~~~
+A collection of Git repositories that enables:
+
+* Analysis across multiple repositories
+* Aggregated metrics and statistics
+* Project-level insights
+
+Common Parameters
+----------------
+
+Most analysis methods support these filtering parameters:
+
+* **branch**: Branch to analyze (defaults to repository's default branch)
+* **limit**: Maximum number of commits to analyze
+* **days**: Limit analysis to last N days
+* **ignore_globs**: List of glob patterns for files to ignore
+* **include_globs**: List of glob patterns for files to include
+* **by**: How to group results (usually 'repository' or 'file')
 
 Documentation
 -------------
 
-Currently, the two main sources of documentation are the repository and project pages, which have the Sphinx docs from
-those two classes, as well as instructions on how to create the objects. For detailed examples, check out the use-cases
-page.
+For detailed information about the components and their usage, see:
 
 .. toctree::
    :maxdepth: 1

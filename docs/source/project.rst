@@ -7,11 +7,12 @@ Overview
 --------
 
 The ProjectDirectory class provides:
-* Aggregation of metrics across multiple repositories
-* Project-level insights and statistics
-* Cross-repository analysis capabilities
-* Development time estimation
-* Bus factor calculation
+
+* Analysis across multiple repositories
+* Aggregated metrics and statistics
+* Project-level insights
+* Multi-repository bus factor analysis
+* Consolidated commit history and blame information
 
 Creating a ProjectDirectory
 ---------------------------
@@ -34,12 +35,6 @@ Create a ProjectDirectory from a directory containing multiple repositories:
     )
 
 The `ignore_repos` parameter can be a list of repository names to exclude. This method uses `os.walk` to search for `.git` directories recursively.
-
-To check which repositories are included:
-
-.. code-block:: python
-
-    print(project.repo_name())
 
 Explicit Local Repositories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,30 +66,59 @@ Create a ProjectDirectory from a list of remote repositories:
         default_branch='main'  # Optional, will auto-detect if not specified
     )
 
-Common Operations
------------------
+Available Methods
+----------------
 
-Here are some common operations you can perform with a ProjectDirectory object:
+Core Analysis
+~~~~~~~~~~~~
 
 .. code-block:: python
 
-    # Get commit history across all repositories
-    commits_df = project.commit_history()
-    
-    # Get blame information across all repositories
-    blame_df = project.blame()
-    
-    # Get branch information across all repositories
-    branches_df = project.branches()
-    
-    # Get tag information across all repositories
-    tags_df = project.tags()
-    
-    # Get file change history across all repositories
-    changes_df = project.file_change_history()
-    
-    # Get detailed repository information
-    repo_info = project.repo_information()
+    # Commit history across repositories
+    project.commit_history(
+        branch=None,          # Branch to analyze
+        limit=None,           # Maximum number of commits
+        days=None,           # Limit to last N days
+        ignore_globs=None,   # Files to ignore
+        include_globs=None   # Files to include
+    )
+
+    # File change history across repositories
+    project.file_change_history(
+        branch=None,
+        limit=None,
+        days=None,
+        ignore_globs=None,
+        include_globs=None
+    )
+
+    # Blame analysis across repositories
+    project.blame(
+        rev="HEAD",          # Revision to analyze
+        committer=True,      # Group by committer (False for author)
+        by="repository",     # Group by 'repository' or 'file'
+        ignore_globs=None,
+        include_globs=None
+    )
+
+    # Bus factor analysis across repositories
+    project.bus_factor(
+        by="repository",     # How to group results
+        ignore_globs=None,
+        include_globs=None
+    )
+
+Common Parameters
+----------------
+
+Most analysis methods support these filtering parameters:
+
+* **branch**: Branch to analyze (defaults to repository's default branch)
+* **limit**: Maximum number of commits to analyze
+* **days**: Limit analysis to last N days
+* **ignore_globs**: List of glob patterns for files to ignore
+* **include_globs**: List of glob patterns for files to include
+* **by**: How to group results (usually 'repository' or 'file')
 
 API Reference
 -------------

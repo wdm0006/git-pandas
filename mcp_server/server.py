@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "mcp[cli]",
-#   "git-pandas",
+#   "git-pandas>=2.3.0",
 #   "uvicorn",
 # ]
 # ///
