@@ -1,3 +1,9 @@
+v2.3.0
+======
+
+ * Updated coverage file parsing to use coverage.py API instead of direct file parsing
+ * Added coverage>=5.0.0 as a core dependency
+
 v2.2.1
 ======
 

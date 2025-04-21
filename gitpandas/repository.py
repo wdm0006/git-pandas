@@ -19,7 +19,7 @@ import time
 
 import numpy as np
 import pandas as pd
-from git import GitCommandError, Repo
+from git import BadName, BadObject, GitCommandError, Repo
 from pandas import DataFrame, to_datetime
 
 from gitpandas.cache import multicache
@@ -207,24 +207,13 @@ class Repository:
             bool: True if a valid .coverage file exists, False otherwise
         """
 
-        if os.path.exists(self.git_dir + os.sep + ".coverage"):
-            try:
-                with open(self.git_dir + os.sep + ".coverage") as f:
-                    blob = f.read()
-                    blob = blob.split("!")[2]
-                    json.loads(blob)
-                return True
-            except Exception as e:
-                logger.warning(f"Could not parse .coverage file: {e}", exc_info=True)
-                return False
-        else:
-            return False
+        return os.path.exists(self.git_dir + os.sep + ".coverage")
 
     def coverage(self):
         """Analyzes test coverage information from the repository.
 
-        Attempts to parse the .coverage file if it exists and returns coverage
-        statistics for each file.
+        Attempts to read and parse the .coverage file in the repository root
+        using the coverage.py API. Returns coverage statistics for each file.
 
         Returns:
             pandas.DataFrame: A DataFrame with columns:
@@ -236,41 +225,41 @@ class Repository:
                 Additional columns for any labels specified in labels_to_add
 
         Note:
-            Returns an empty DataFrame with the correct columns if no coverage
-            file exists or it can't be parsed.
+            Returns an empty DataFrame if no coverage data exists or can't be read.
         """
-
         if not self.has_coverage():
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
-        with open(self.git_dir + os.sep + ".coverage") as f:
-            blob = f.read()
-            blob = blob.split("!")[2]
-            cov = json.loads(blob)
+        try:
+            import coverage
 
-        ds = []
-        for filename in cov["lines"]:
-            _idx = 0
-            try:
-                with open(filename) as f:
-                    for _idx, _ in enumerate(f):
-                        pass
-            except FileNotFoundError:
-                logger.warning(f"Could not find file {filename} for coverage analysis.")
+            cov = coverage.Coverage(data_file=os.path.join(self.git_dir, ".coverage"))
+            cov.load()
+            data = cov.get_data()
 
-            num_lines = _idx + 1
+            ds = []
+            for filename in data.measured_files():
+                try:
+                    with open(os.path.join(self.git_dir, filename)) as f:
+                        total_lines = sum(1 for _ in f)
+                    lines_covered = len(data.lines(filename) or [])
+                    short_filename = filename.replace(self.git_dir + os.sep, "")
+                    ds.append([short_filename, lines_covered, total_lines])
+                except OSError as e:
+                    logger.warning(f"Could not process coverage for file {filename}: {e}")
 
-            try:
-                short_filename = filename.split(self.git_dir + os.sep)[1]
-                ds.append([short_filename, len(cov["lines"][filename]), num_lines])
-            except IndexError:
-                logger.warning(f"Could not determine relative path for file {filename} during coverage analysis.")
+            if not ds:
+                return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
-        df = DataFrame(ds, columns=["filename", "lines_covered", "total_lines"])
-        df["coverage"] = df["lines_covered"] / df["total_lines"]
-        df = self._add_labels_to_df(df)
+            df = DataFrame(ds, columns=["filename", "lines_covered", "total_lines"])
+            df["coverage"] = df["lines_covered"] / df["total_lines"]
+            df = self._add_labels_to_df(df)
 
-        return df
+            return df
+
+        except Exception as e:
+            logger.error(f"Failed to analyze coverage data: {e}", exc_info=True)
+            return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
     def hours_estimate(
         self,
@@ -1496,6 +1485,220 @@ class Repository:
             str: String in format 'git repository: {name} at: {path}'
         """
         return f"git repository: {self._repo_name()} at: {self.git_dir}"
+
+    def get_commit_content(self, rev, ignore_globs=None, include_globs=None):
+        """Gets detailed content changes for a specific commit.
+
+        For each file changed in the commit, returns the actual content changes
+        including added and removed lines.
+
+        Args:
+            rev (str): Revision (commit hash) to analyze
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - file (str): Path of the changed file
+                - change_type (str): Type of change (A=added, M=modified, D=deleted)
+                - old_line_num (int): Line number in the old version (None for added lines)
+                - new_line_num (int): Line number in the new version (None for deleted lines)
+                - content (str): The actual line content
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            For binary files, only the change_type is recorded, with no line-by-line changes.
+            If both ignore_globs and include_globs are provided, files must match an include
+            pattern and not match any ignore patterns to be included.
+        """
+        logger.info(f"Getting detailed content changes for revision '{rev}'")
+
+        try:
+            commit = self.repo.commit(rev)
+
+            # Get the parent commit. For merge commits, use first parent
+            parent = commit.parents[0] if commit.parents else None
+            parent_sha = parent.hexsha if parent else "4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # empty tree
+
+            # Get the diff between this commit and its parent
+            diff = self.repo.git.diff(
+                parent_sha,
+                commit.hexsha,
+                "--unified=0",  # No context lines
+                "--no-prefix",  # Don't prefix with a/ and b/
+                "--no-renames",  # Don't try to detect renames
+            )
+
+            changes = []
+            current_file = None
+            current_type = None
+
+            for line in diff.split("\n"):
+                if line.startswith("diff --git"):
+                    # New file being processed
+                    file_path = line.split(" ")[-1]
+
+                    # Check if this file should be included based on globs
+                    if not self.__check_extension({file_path: None}, ignore_globs, include_globs):
+                        current_file = None
+                        continue
+
+                    current_file = file_path
+
+                elif line.startswith("new file"):
+                    current_type = "A"
+                elif line.startswith("deleted"):
+                    current_type = "D"
+                elif line.startswith("index"):
+                    current_type = "M"
+                elif line.startswith("@@") and current_file:
+                    # Parse the @@ line to get line numbers
+                    # Format: @@ -old_start,old_count +new_start,new_count @@
+                    nums = line.split("@@")[1].strip().split(" ")
+                    old_range = nums[0].split(",")
+                    new_range = nums[1].split(",")
+
+                    old_start = int(old_range[0].lstrip("-"))
+                    new_start = int(new_range[0].lstrip("+"))
+
+                elif line.startswith("+") and current_file and not line.startswith("+++"):
+                    # Added line
+                    changes.append(
+                        [
+                            current_file,
+                            current_type,
+                            None,  # old line number
+                            new_start,
+                            line[1:],  # Remove the + prefix
+                        ]
+                    )
+                    new_start += 1
+
+                elif line.startswith("-") and current_file and not line.startswith("---"):
+                    # Removed line
+                    changes.append(
+                        [
+                            current_file,
+                            current_type,
+                            old_start,
+                            None,  # new line number
+                            line[1:],  # Remove the - prefix
+                        ]
+                    )
+                    old_start += 1
+
+            if not changes:
+                logger.info(f"No changes found in revision '{rev}' matching the filters")
+                return DataFrame(columns=["file", "change_type", "old_line_num", "new_line_num", "content"])
+
+            df = DataFrame(changes, columns=["file", "change_type", "old_line_num", "new_line_num", "content"])
+            df = self._add_labels_to_df(df)
+
+            logger.info(f"Found {len(df)} line changes in revision '{rev}'")
+            return df
+
+        except (GitCommandError, IndexError, BadObject, BadName) as e:
+            logger.error(f"Failed to get content changes for revision '{rev}': {e}")
+            return DataFrame(columns=["file", "change_type", "old_line_num", "new_line_num", "content"])
+
+    def get_file_content(self, path, rev="HEAD"):
+        """Gets the content of a file from the repository at a specific revision.
+
+        Safely retrieves file content by first verifying the file exists in git's
+        tree (respecting .gitignore) before attempting to read it.
+
+        Args:
+            path (str): Path to the file relative to repository root
+            rev (str, optional): Revision to get file from. Defaults to 'HEAD'.
+
+        Returns:
+            Optional[str]: Content of the file if it exists and is tracked by git,
+                None if file doesn't exist or isn't tracked.
+
+        Note:
+            This only works for files that are tracked by git. Untracked files and
+            files matched by .gitignore patterns cannot be read.
+        """
+        logger.info(f"Getting content of file '{path}' at revision '{rev}'")
+
+        try:
+            # First verify the file exists in git's tree
+            try:
+                # ls-tree -r for recursive, --full-name for full paths
+                # -l for long format (includes size)
+                self.repo.git.ls_tree("-r", "-l", "--full-name", rev, path)
+            except GitCommandError:
+                logger.warning(f"File '{path}' not found in git tree at revision '{rev}'")
+                return None
+
+            # If we get here, the file exists in git's tree
+            # Use git show to get the file content
+            content = self.repo.git.show(f"{rev}:{path}")
+            return content
+
+        except GitCommandError as e:
+            logger.error(f"Failed to get content of file '{path}' at revision '{rev}': {e}")
+            return None
+
+    def list_files(self, rev="HEAD"):
+        """Lists all files in the repository at a specific revision, respecting .gitignore.
+
+        Uses git ls-tree to get a list of all tracked files in the repository,
+        which automatically respects .gitignore rules since untracked and ignored
+        files are not in git's tree.
+
+        Args:
+            rev (str, optional): Revision to list files from. Defaults to 'HEAD'.
+
+        Returns:
+            pandas.DataFrame: A DataFrame with columns:
+                - file (str): Full path to the file relative to repository root
+                - mode (str): File mode (100644 for regular file, 100755 for executable, etc)
+                - type (str): Object type (blob for file, tree for directory)
+                - sha (str): SHA-1 hash of the file content
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            This only includes files that are tracked by git. Untracked files and
+            files matched by .gitignore patterns are not included.
+        """
+        logger.info(f"Listing files at revision '{rev}'")
+
+        try:
+            # Get the full file list with details using ls-tree
+            # -r for recursive
+            # -l for long format (includes file size)
+            # --full-tree to start from root
+            # --full-name for full paths
+            output = self.repo.git.ls_tree("-r", "-l", "--full-tree", "--full-name", rev)
+
+            if not output.strip():
+                logger.info("No files found in repository")
+                return DataFrame(columns=["file", "mode", "type", "sha"])
+
+            # Parse the ls-tree output
+            # Format: <mode> <type> <sha> <size>\t<file>
+            files = []
+            for line in output.split("\n"):
+                if not line.strip():
+                    continue
+
+                # Split on tab first to separate path from rest
+                details, path = line.split("\t")
+                mode, obj_type, sha, _ = details.split()
+                files.append([path, mode, obj_type, sha])
+
+            df = DataFrame(files, columns=["file", "mode", "type", "sha"])
+            df = self._add_labels_to_df(df)
+
+            logger.info(f"Found {len(df)} files at revision '{rev}'")
+            return df
+
+        except GitCommandError as e:
+            logger.error(f"Failed to list files at revision '{rev}': {e}")
+            return DataFrame(columns=["file", "mode", "type", "sha"])
 
     def __repr__(self):
         """Returns a unique string representation of the repository.

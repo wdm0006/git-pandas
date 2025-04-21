@@ -25,6 +25,7 @@ dependencies = [
     "pandas>=2.0.0",
     "requests",
     "redis",
+    "coverage>=5.0.0",
 ]
 
 [project.urls]
