@@ -64,7 +64,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#remote-repository">Remote Repository</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-analysis">Core Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repository-information">Repository Information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-parameters">Common Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -76,7 +81,11 @@
 <li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#core-analysis">Core Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-parameters">Common Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -165,15 +174,17 @@
              
   <section id="repository">
 <h1>Repository<a class="headerlink" href="#repository" title="Permalink to this heading"></a></h1>
-<p>The Repository class provides a powerful interface for analyzing a single Git repository. It can be created from either a local or remote repository.</p>
+<p>The Repository class provides an interface for analyzing a single Git repository. It can be created from either a local or remote repository.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
-<p>The Repository class offers methods for:
-* Extracting commit history and file changes
-* Analyzing blame information
-* Tracking branches and tags
-* Generating cumulative blame statistics
-* Calculating file ownership and contribution patterns</p>
+<p>The Repository class offers methods for:</p>
+<ul class="simple">
+<li><p>Commit history analysis with filtering options</p></li>
+<li><p>File change tracking and blame information</p></li>
+<li><p>Branch existence checking and repository status</p></li>
+<li><p>Bus factor calculation and repository metrics</p></li>
+<li><p>Punchcard statistics generation</p></li>
+</ul>
 </section>
 <section id="creating-a-repository">
 <h2>Creating a Repository<a class="headerlink" href="#creating-a-repository" title="Permalink to this heading"></a></h2>
@@ -205,28 +216,93 @@
 <p>The repository will be cloned locally into a temporary directory. This can be slow for large repositories.</p>
 </section>
 </section>
-<section id="common-operations">
-<h2>Common Operations<a class="headerlink" href="#common-operations" title="Permalink to this heading"></a></h2>
-<p>Here are some common operations you can perform with a Repository object:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history</span>
-<span class="n">commits_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
+<section id="available-methods">
+<h2>Available Methods<a class="headerlink" href="#available-methods" title="Permalink to this heading"></a></h2>
+<section id="core-analysis">
+<h3>Core Analysis<a class="headerlink" href="#core-analysis" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Commit history analysis</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
+    <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>          <span class="c1"># Branch to analyze</span>
+    <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Maximum number of commits</span>
+    <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Limit to last N days</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>   <span class="c1"># Files to ignore</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>   <span class="c1"># Files to include</span>
+<span class="p">)</span>
 
-<span class="c1"># Get blame information</span>
-<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>
+<span class="c1"># File change history</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span>
+    <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 
-<span class="c1"># Get branch information</span>
-<span class="n">branches_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">branches</span><span class="p">()</span>
+<span class="c1"># Blame analysis</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
+    <span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">,</span>          <span class="c1"># Revision to analyze</span>
+    <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># Group by committer (False for author)</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># Group by &#39;repository&#39; or &#39;file&#39;</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 
-<span class="c1"># Get tag information</span>
-<span class="n">tags_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">tags</span><span class="p">()</span>
+<span class="c1"># Bus factor analysis</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># How to group results</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 
-<span class="c1"># Get file change history</span>
-<span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
-
-<span class="c1"># Get repository name</span>
-<span class="n">repo_name</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">repo_name</span>
+<span class="c1"># Commit pattern analysis</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">punchcard</span><span class="p">(</span>
+    <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">by</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>            <span class="c1"># Additional grouping</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>     <span class="c1"># Normalize values</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="repository-information">
+<h3>Repository Information<a class="headerlink" href="#repository-information" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># List files in repository</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">list_files</span><span class="p">(</span><span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check branch existence</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">has_branch</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
+
+<span class="c1"># Check if repository is bare</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">is_bare</span><span class="p">()</span>
+
+<span class="c1"># Check for coverage information</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">has_coverage</span><span class="p">()</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">coverage</span><span class="p">()</span>
+
+<span class="c1"># Get specific commit content</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">get_commit_content</span><span class="p">(</span>
+    <span class="n">rev</span><span class="p">,</span>                <span class="c1"># Revision to analyze</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="common-parameters">
+<h2>Common Parameters<a class="headerlink" href="#common-parameters" title="Permalink to this heading"></a></h2>
+<p>Most analysis methods support these filtering parameters:</p>
+<ul class="simple">
+<li><p><strong>branch</strong>: Branch to analyze (defaults to repository’s default branch)</p></li>
+<li><p><strong>limit</strong>: Maximum number of commits to analyze</p></li>
+<li><p><strong>days</strong>: Limit analysis to last N days</p></li>
+<li><p><strong>ignore_globs</strong>: List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong>: List of glob patterns for files to include</p></li>
+<li><p><strong>by</strong>: How to group results (usually ‘repository’ or ‘file’)</p></li>
+</ul>
 </section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h2>

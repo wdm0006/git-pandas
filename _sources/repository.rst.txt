@@ -1,17 +1,18 @@
 Repository
 ==========
 
-The Repository class provides a powerful interface for analyzing a single Git repository. It can be created from either a local or remote repository.
+The Repository class provides an interface for analyzing a single Git repository. It can be created from either a local or remote repository.
 
 Overview
 --------
 
 The Repository class offers methods for:
-* Extracting commit history and file changes
-* Analyzing blame information
-* Tracking branches and tags
-* Generating cumulative blame statistics
-* Calculating file ownership and contribution patterns
+
+* Commit history analysis with filtering options
+* File change tracking and blame information
+* Branch existence checking and repository status
+* Bus factor calculation and repository metrics
+* Punchcard statistics generation
 
 Creating a Repository
 ---------------------
@@ -50,30 +51,95 @@ Create a Repository from a remote Git repository:
 
 The repository will be cloned locally into a temporary directory. This can be slow for large repositories.
 
-Common Operations
------------------
+Available Methods
+----------------
 
-Here are some common operations you can perform with a Repository object:
+Core Analysis
+~~~~~~~~~~~~
 
 .. code-block:: python
 
-    # Get commit history
-    commits_df = repo.commit_history()
-    
-    # Get blame information
-    blame_df = repo.blame()
-    
-    # Get branch information
-    branches_df = repo.branches()
-    
-    # Get tag information
-    tags_df = repo.tags()
-    
-    # Get file change history
-    changes_df = repo.file_change_history()
-    
-    # Get repository name
-    repo_name = repo.repo_name
+    # Commit history analysis
+    repo.commit_history(
+        branch=None,          # Branch to analyze
+        limit=None,           # Maximum number of commits
+        days=None,           # Limit to last N days
+        ignore_globs=None,   # Files to ignore
+        include_globs=None   # Files to include
+    )
+
+    # File change history
+    repo.file_change_history(
+        branch=None,
+        limit=None,
+        days=None,
+        ignore_globs=None,
+        include_globs=None
+    )
+
+    # Blame analysis
+    repo.blame(
+        rev="HEAD",          # Revision to analyze
+        committer=True,      # Group by committer (False for author)
+        by="repository",     # Group by 'repository' or 'file'
+        ignore_globs=None,
+        include_globs=None
+    )
+
+    # Bus factor analysis
+    repo.bus_factor(
+        by="repository",     # How to group results
+        ignore_globs=None,
+        include_globs=None
+    )
+
+    # Commit pattern analysis
+    repo.punchcard(
+        branch=None,
+        limit=None,
+        days=None,
+        by=None,            # Additional grouping
+        normalize=None,     # Normalize values
+        ignore_globs=None,
+        include_globs=None
+    )
+
+Repository Information
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # List files in repository
+    repo.list_files(rev="HEAD")
+
+    # Check branch existence
+    repo.has_branch(branch)
+
+    # Check if repository is bare
+    repo.is_bare()
+
+    # Check for coverage information
+    repo.has_coverage()
+    repo.coverage()
+
+    # Get specific commit content
+    repo.get_commit_content(
+        rev,                # Revision to analyze
+        ignore_globs=None,
+        include_globs=None
+    )
+
+Common Parameters
+----------------
+
+Most analysis methods support these filtering parameters:
+
+* **branch**: Branch to analyze (defaults to repository's default branch)
+* **limit**: Maximum number of commits to analyze
+* **days**: Limit analysis to last N days
+* **ignore_globs**: List of glob patterns for files to ignore
+* **include_globs**: List of glob patterns for files to include
+* **by**: How to group results (usually 'repository' or 'file')
 
 API Reference
 -------------
@@ -86,10 +152,6 @@ API Reference
    :show-inheritance:
    :inherited-members:
    :special-members: __init__, __str__, __repr__
-
-   
-   .. rubric:: Properties
-
 
 .. autoclass:: GitFlowRepository
    :members:

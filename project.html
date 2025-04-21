@@ -64,7 +64,12 @@
 <li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#core-analysis">Core Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#repository-information">Repository Information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-parameters">Common Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -76,7 +81,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#explicit-remote-repositories">Explicit Remote Repositories</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#common-operations">Common Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-analysis">Core Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-parameters">Common Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
@@ -168,12 +177,14 @@
 <p>The ProjectDirectory class enables analysis across multiple Git repositories. It can aggregate metrics and insights from multiple repositories into a single output.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
-<p>The ProjectDirectory class provides:
-* Aggregation of metrics across multiple repositories
-* Project-level insights and statistics
-* Cross-repository analysis capabilities
-* Development time estimation
-* Bus factor calculation</p>
+<p>The ProjectDirectory class provides:</p>
+<ul class="simple">
+<li><p>Analysis across multiple repositories</p></li>
+<li><p>Aggregated metrics and statistics</p></li>
+<li><p>Project-level insights</p></li>
+<li><p>Multi-repository bus factor analysis</p></li>
+<li><p>Consolidated commit history and blame information</p></li>
+</ul>
 </section>
 <section id="creating-a-projectdirectory">
 <h2>Creating a ProjectDirectory<a class="headerlink" href="#creating-a-projectdirectory" title="Permalink to this heading"></a></h2>
@@ -191,10 +202,6 @@
 </pre></div>
 </div>
 <p>The <cite>ignore_repos</cite> parameter can be a list of repository names to exclude. This method uses <cite>os.walk</cite> to search for <cite>.git</cite> directories recursively.</p>
-<p>To check which repositories are included:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">repo_name</span><span class="p">())</span>
-</pre></div>
-</div>
 </section>
 <section id="explicit-local-repositories">
 <h3>Explicit Local Repositories<a class="headerlink" href="#explicit-local-repositories" title="Permalink to this heading"></a></h3>
@@ -223,28 +230,58 @@
 </div>
 </section>
 </section>
-<section id="common-operations">
-<h2>Common Operations<a class="headerlink" href="#common-operations" title="Permalink to this heading"></a></h2>
-<p>Here are some common operations you can perform with a ProjectDirectory object:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history across all repositories</span>
-<span class="n">commits_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
+<section id="available-methods">
+<h2>Available Methods<a class="headerlink" href="#available-methods" title="Permalink to this heading"></a></h2>
+<section id="core-analysis">
+<h3>Core Analysis<a class="headerlink" href="#core-analysis" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Commit history across repositories</span>
+<span class="n">project</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
+    <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>          <span class="c1"># Branch to analyze</span>
+    <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Maximum number of commits</span>
+    <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Limit to last N days</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>   <span class="c1"># Files to ignore</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>   <span class="c1"># Files to include</span>
+<span class="p">)</span>
 
-<span class="c1"># Get blame information across all repositories</span>
-<span class="n">blame_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>
+<span class="c1"># File change history across repositories</span>
+<span class="n">project</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span>
+    <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 
-<span class="c1"># Get branch information across all repositories</span>
-<span class="n">branches_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">branches</span><span class="p">()</span>
+<span class="c1"># Blame analysis across repositories</span>
+<span class="n">project</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
+    <span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">,</span>          <span class="c1"># Revision to analyze</span>
+    <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># Group by committer (False for author)</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># Group by &#39;repository&#39; or &#39;file&#39;</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 
-<span class="c1"># Get tag information across all repositories</span>
-<span class="n">tags_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">tags</span><span class="p">()</span>
-
-<span class="c1"># Get file change history across all repositories</span>
-<span class="n">changes_df</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
-
-<span class="c1"># Get detailed repository information</span>
-<span class="n">repo_info</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">repo_information</span><span class="p">()</span>
+<span class="c1"># Bus factor analysis across repositories</span>
+<span class="n">project</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># How to group results</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="common-parameters">
+<h2>Common Parameters<a class="headerlink" href="#common-parameters" title="Permalink to this heading"></a></h2>
+<p>Most analysis methods support these filtering parameters:</p>
+<ul class="simple">
+<li><p><strong>branch</strong>: Branch to analyze (defaults to repository’s default branch)</p></li>
+<li><p><strong>limit</strong>: Maximum number of commits to analyze</p></li>
+<li><p><strong>days</strong>: Limit analysis to last N days</p></li>
+<li><p><strong>ignore_globs</strong>: List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong>: List of glob patterns for files to include</p></li>
+<li><p><strong>by</strong>: How to group results (usually ‘repository’ or ‘file’)</p></li>
+</ul>
 </section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h2>
