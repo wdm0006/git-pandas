@@ -3,6 +3,9 @@ v2.3.0
 
  * Updated coverage file parsing to use coverage.py API instead of direct file parsing
  * Added coverage>=5.0.0 as a core dependency
+ * Added a basic MCP server
+ * Added methods to `Repository` for getting files in repo, getting content of a file, and getting diffs of a revision
+
 
 v2.2.1
 ======
