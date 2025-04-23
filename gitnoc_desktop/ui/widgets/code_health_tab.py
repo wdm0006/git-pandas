@@ -9,8 +9,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QTableWidget,
-    QTableWidgetItem,
     QHeaderView,
     QSplitter,
     QTreeWidget,
@@ -18,9 +16,14 @@ from PySide6.QtWidgets import (
     QTextBrowser,
     QPushButton,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+
+from .dataframe_table import DataFrameTable
 
 class CodeHealthTab(QWidget):
+    # Signal to request data refresh
+    refresh_requested = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.repo = None
@@ -58,8 +61,8 @@ class CodeHealthTab(QWidget):
         self._show_placeholder()
 
     def _request_refresh(self):
-        if self.parent() and hasattr(self.parent(), 'refresh_code_health_data'):
-            self.parent().refresh_code_health_data()
+        # Emit the signal for MainWindow to catch
+        self.refresh_requested.emit()
 
     def _show_placeholder(self):
         while self.content_layout.count():
@@ -129,41 +132,52 @@ class CodeHealthTab(QWidget):
             self.content_layout.addWidget(QLabel("<i>No detailed file health data available.</i>"))
             return
 
-        table = QTableWidget()
-        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        table.setSortingEnabled(True)
+        # Format coverage as percentage and round numeric columns
+        df = df.copy()
 
-        df_display = df.reset_index()
-        df_display['coverage'] = df_display['coverage'].apply(lambda x: f"{x:.1%}" if pd.notna(x) else "N/A")
-        df_display['change_rate'] = df_display['change_rate'].round(2)
-        df_display['complexity'] = df_display['complexity'].astype(int)
-        df_display['loc'] = df_display['loc'].astype(int)
-        df_display['token_count'] = df_display['token_count'].astype(int)
+        # Ensure 'file' is a column, not just the index
+        if 'file' not in df.columns:
+            df.reset_index(inplace=True)
+            # Rename index column if it wasn't named 'file' originally
+            if 'index' in df.columns and 'file' not in df.columns:
+                 df.rename(columns={'index': 'file'}, inplace=True)
+            elif 'level_0' in df.columns and 'file' not in df.columns: # Handle potential multi-index reset
+                df.rename(columns={'level_0': 'file'}, inplace=True)
 
-        columns = ['file', 'loc', 'complexity', 'token_count', 'change_rate', 'coverage']
-        header_labels = ["File Path", "LoC", "Complexity", "Tokens", "Changes/Day (7d)", "Coverage"]
+        # Now 'file' should exist as a column
+        df['coverage'] = df['coverage'].apply(lambda x: f"{x:.1%}" if pd.notna(x) else "N/A")
+        # df['change_rate'] = df['change_rate'].round(2) # This column doesn't exist, use edit_rate later
+        # df['complexity'] = df['complexity'].astype(int) # This column doesn't exist
+        df['loc'] = df['loc'].astype(int)
+        # df['token_count'] = df['token_count'].astype(int) # This column doesn't exist
 
-        table.setColumnCount(len(columns))
-        table.setHorizontalHeaderLabels(header_labels)
-        table.setRowCount(len(df_display))
+        # Calculate change rate if columns exist
+        if 'abs_rate_of_change' in df.columns and 'net_rate_of_change' in df.columns:
+            df['edit_rate'] = df['abs_rate_of_change'] - df['net_rate_of_change']
+        else:
+            df['edit_rate'] = 0.0 # Default if rates aren't available
 
-        for i, row in enumerate(df_display[columns].itertuples(index=False)):
-            for j, value in enumerate(row):
-                if isinstance(value, (int, float)) and columns[j] != 'coverage':
-                    item = QTableWidgetItem()
-                    item.setData(Qt.ItemDataRole.DisplayRole, value)
-                    item.setData(Qt.ItemDataRole.EditRole, value)
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-                else:
-                    item = QTableWidgetItem(str(value))
+        # Add columns if they don't exist (e.g., from older cache)
+        if 'coverage' not in df.columns:
+            df['coverage'] = pd.NA
+        if 'edit_rate' not in df.columns:
+            df['edit_rate'] = 0.0
 
-                table.setItem(i, j, item)
+        # Round for display
+        if pd.api.types.is_numeric_dtype(df['edit_rate']):
+            df['edit_rate'] = df['edit_rate'].round(2)
+        if pd.api.types.is_numeric_dtype(df['coverage']):
+            df['coverage'] = (df['coverage'] * 100).round(1) # Display as percentage
 
-        table.resizeColumnsToContents()
-        header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for j in range(1, len(columns)):
-             header.setSectionResizeMode(j, QHeaderView.ResizeMode.ResizeToContents)
+        # Select and rename columns for display
+        # display_df = df[['file', 'loc', 'complexity', 'token_count', 'edit_rate', 'coverage']].copy()
+        display_df = df[['file', 'loc', 'edit_rate', 'coverage']].copy()
 
+        # Define columns and their display names
+        # columns = ['file', 'loc', 'complexity', 'token_count', 'edit_rate', 'coverage']
+        columns = ['file', 'loc', 'edit_rate', 'coverage']
+
+        # Create and configure table
+        table = DataFrameTable()
+        table.set_dataframe(display_df, columns=columns, show_index=False)
         self.content_layout.addWidget(table, 1) 

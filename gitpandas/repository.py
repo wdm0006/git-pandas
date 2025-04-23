@@ -21,6 +21,10 @@ import numpy as np
 import pandas as pd
 from git import BadName, BadObject, GitCommandError, Repo
 from pandas import DataFrame, to_datetime
+from datetime import datetime, timezone
+import pytz
+import warnings
+from typing import Optional, List, Dict, Any, Union
 
 from gitpandas.cache import multicache
 from gitpandas.logging import logger
@@ -1849,7 +1853,7 @@ class Repository:
                     columns=[cm, "loc"],
                 )
                 .groupby(cm)
-                .agg({"loc": np.sum})
+                .agg({"loc": "sum"})
             )
             if blame.shape[0] > 0:
                 owner = blame["loc"].idxmax()
@@ -1861,33 +1865,26 @@ class Repository:
             logger.warning(f"Could not determine file owner for {filename} at rev {rev}: {e}")
             return None
 
-    def _file_last_edit(self, filename):
-        """Gets the timestamp of the last modification to a file.
-
+    def _get_last_edit_date(self, file_path, rev='HEAD'):
+        """Get the last edit date for a file at a given revision.
+        
         Args:
-            filename (str): Path to the file relative to repository root
-
+            file_path (str): Path to the file
+            rev (str): Revision to check
+            
         Returns:
-            Optional[str]: Date string from git log, or None if file doesn't exist
-                or has no history
-
-        Note:
-            This is an internal helper method used by file_detail() to get file
-            modification times.
+            datetime: Last edit date for the file
         """
-        logger.debug(f"Getting last edit date for file: {filename}")
         try:
-            tmp = self.repo.git.log("-n", "1", "--", filename).split("\n")
-            date_string = [x for x in tmp if x.startswith("Date:")]
-
-            if len(date_string) > 0:
-                return date_string[0].replace("Date:", "").strip()
-            else:
-                logger.debug(f"No 'Date:' string found in log for {filename}.")
-                return None
-        except GitCommandError as e:
-            logger.warning(f"Could not get last edit date for {filename}: {e}")
-            return None
+            cmd = ['git', 'log', '-1', '--format=%aI', rev, '--', file_path]
+            date_str = self.repo.git.execute(cmd)
+            if date_str:
+                # Parse ISO 8601 format which includes timezone
+                return pd.to_datetime(date_str.strip(), utc=True)
+            return pd.NaT
+        except Exception as e:
+            logger.warning(f"Error getting last edit date for {file_path}: {e}")
+            return pd.NaT
 
     @multicache(
         key_prefix="punchcard",
@@ -2045,7 +2042,7 @@ class Repository:
         # reduce it to files and total LOC
         logger.debug("Reducing to files and total LOC...")
         df = blame.reindex(columns=["file", "loc"])
-        df = df.groupby("file").agg({"loc": np.sum})
+        df = df.groupby("file").agg({"loc": "sum"})
         df = df.reset_index(level=-1)
 
         # map in file owners
@@ -2059,15 +2056,7 @@ class Repository:
 
         # add in last edit date for the file
         logger.debug("Mapping last edit dates...")
-        df["last_edit_date"] = df["file"].map(self._file_last_edit)
-
-        # Convert to datetime, coercing errors to NaT
-        df["last_edit_date"] = pd.to_datetime(df["last_edit_date"])
-        # Convert to UTC if not already (assuming timestamps from git are potentially naive)
-        if df["last_edit_date"] is not None and df["last_edit_date"].dt.tz is None:
-            df["last_edit_date"] = df["last_edit_date"].dt.tz_localize("UTC")
-        else:
-            df["last_edit_date"] = df["last_edit_date"].dt.tz_convert("UTC")
+        df["last_edit_date"] = df["file"].map(lambda x: self._get_last_edit_date(x, rev=rev))
 
         df = df.set_index("file")
         df = self._add_labels_to_df(df)

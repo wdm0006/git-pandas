@@ -34,12 +34,16 @@ from core.data_fetcher import (
     fetch_code_health_data,
     fetch_contributor_data,
     fetch_tags_data,
+    DataFetcher,
+    fetch_cumulative_blame_data,
 )
 from ui.widgets.overview_tab import OverviewTab
 from ui.widgets.code_health_tab import CodeHealthTab
 from ui.widgets.contributors_tab import ContributorPatternsTab
 from ui.widgets.tags_tab import TagsTab
+from ui.widgets.cumulative_blame_tab import CumulativeBlameTab
 from ui.styles import STYLESHEET
+from core.utils import get_language_from_extension # Moved this import here
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +123,30 @@ class MainWindow(QMainWindow):
         self.code_health_tab = CodeHealthTab(self)
         self.contributors_tab = ContributorPatternsTab(self)
         self.tags_tab = TagsTab(self)
+        self.cumulative_blame_tab = CumulativeBlameTab(self) # Instantiate the new tab
 
         self.tab_widget.addTab(self.overview_tab, "Overview")
         self.tab_widget.addTab(self.code_health_tab, "Code Health")
         self.tab_widget.addTab(self.contributors_tab, "Contributors")
         self.tab_widget.addTab(self.tags_tab, "Tags")
+        self.tab_widget.addTab(self.cumulative_blame_tab, "Cumulative Blame") # Add the new tab
+
+        # --- Data Fetcher ---
+        self.data_fetcher = DataFetcher()
+
+        self.data_fetcher.code_health_data_fetched.connect(self.code_health_tab.populate_ui)
+        self.data_fetcher.contributors_data_fetched.connect(self.contributors_tab.populate_ui)
+        self.data_fetcher.tags_data_fetched.connect(self.tags_tab.populate_ui)
+        self.data_fetcher.cumulative_blame_data_fetched.connect(self.cumulative_blame_tab.populate_ui) # Connect signal
+        self.data_fetcher.global_loading_changed.connect(self._update_global_loading)
+        self.data_fetcher.repo_instantiation_failed.connect(self._handle_repo_instantiation_failure)
+
+        # Connect refresh signals from tabs
+        self.overview_tab.refresh_requested.connect(self.refresh_overview_data)
+        self.code_health_tab.refresh_requested.connect(self.refresh_code_health_data)
+        self.contributors_tab.refresh_requested.connect(self.refresh_contributor_data)
+        self.tags_tab.refresh_requested.connect(self.refresh_tags_data)
+        self.cumulative_blame_tab.refresh_requested.connect(self.refresh_cumulative_blame_data) # Connect refresh
 
         # --- Initial State --- #
         self.populate_repo_list()
@@ -132,6 +155,12 @@ class MainWindow(QMainWindow):
 
         # Make window fullscreen by default
         self.showFullScreen()
+
+    def _update_global_loading(self, is_loading):
+        """Slot to handle the global loading state change."""
+        logger.debug(f"Global loading state changed: {is_loading}")
+        self._set_loading_state(is_loading)
+        # TODO: Add a more prominent global loading indicator?
 
     def _set_loading_state(self, loading):
         """Enable/disable UI elements based on loading state."""
@@ -147,6 +176,7 @@ class MainWindow(QMainWindow):
             self.code_health_tab._show_placeholder()
             self.contributors_tab._show_placeholder()
             self.tags_tab._show_placeholder()
+            self.cumulative_blame_tab._show_placeholder()
         else:
             self.setWindowTitle("GitNOC Desktop")
 
@@ -259,6 +289,7 @@ class MainWindow(QMainWindow):
                 self.code_health_tab._show_placeholder()
                 self.contributors_tab._show_placeholder()
                 self.tags_tab._show_placeholder()
+                self.cumulative_blame_tab._show_placeholder()
                 self._set_loading_state(False)
             else:
                 logger.warning(f"Attempted to remove non-existent repository entry: {repo_name}")
@@ -287,6 +318,7 @@ class MainWindow(QMainWindow):
             self.code_health_tab._show_placeholder()
             self.contributors_tab._show_placeholder()
             self.tags_tab._show_placeholder()
+            self.cumulative_blame_tab._show_placeholder()
             return
 
         selected_item = selected_items[0]
@@ -308,6 +340,7 @@ class MainWindow(QMainWindow):
              self.code_health_tab._show_placeholder()
              self.contributors_tab._show_placeholder()
              self.tags_tab._show_placeholder()
+             self.cumulative_blame_tab._show_placeholder()
              self.current_repo_instance = None
              return
 
@@ -330,6 +363,7 @@ class MainWindow(QMainWindow):
         self.code_health_tab._show_placeholder()
         self.contributors_tab._show_placeholder()
         self.tags_tab._show_placeholder()
+        self.cumulative_blame_tab._show_placeholder()
 
     def _on_repository_loaded(self, repo_instance):
         # Check if the worker returned a valid Repository instance
@@ -356,6 +390,7 @@ class MainWindow(QMainWindow):
              self.code_health_tab._show_placeholder()
              self.contributors_tab._show_placeholder()
              self.tags_tab._show_placeholder()
+             self.cumulative_blame_tab._show_placeholder()
              return
 
         # --- Proceed if repo_instance is valid --- #
@@ -494,7 +529,30 @@ class MainWindow(QMainWindow):
     def refresh_tags_data(self):
         self._start_refresh_worker(fetch_tags_data, self.tags_tab)
 
+    def refresh_cumulative_blame_data(self):
+        self._start_refresh_worker(fetch_cumulative_blame_data, self.cumulative_blame_tab)
+
     # --- End Refresh Handlers --- #
+
+    def _handle_repo_instantiation_failure(self, repo_path):
+        """Handles the signal emitted when Repository instantiation fails."""
+        logger.error(f"Received repo_instantiation_failed signal for path: {repo_path}")
+        repo_name = "Unknown repo" # Fallback
+        for name, info in self.repositories.items():
+            if info['path'] == repo_path:
+                repo_name = name
+                break
+        
+        QMessageBox.critical(
+            self, 
+            "Repository Load Error", 
+            f"Failed to load repository: {repo_name}\n\n"
+            f"Path: {repo_path}\n\n"
+            f"This usually means the repository path is invalid or the default branch ('main' or 'master') could not be found.\n"
+            f"Please remove and re-add the repository, specifying the default branch if prompted."
+        )
+        self._set_loading_state(False) # Ensure UI is unlocked
+        self._reset_tabs() # Clear tabs
 
     def closeEvent(self, event):
         # Ensure proper indentation and add a pass statement

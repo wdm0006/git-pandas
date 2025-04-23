@@ -10,15 +10,20 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QTableWidget,
-    QTableWidgetItem,
     QHeaderView,
     QSplitter,
     QPushButton,
+    QGridLayout,
+    QSizePolicy
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+
+from .dataframe_table import DataFrameTable
 
 class OverviewTab(QWidget):
+    # Signal to request data refresh
+    refresh_requested = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.repo = None # To store current repo instance
@@ -51,7 +56,7 @@ class OverviewTab(QWidget):
         self.main_layout.addLayout(self.header_layout)
 
         # Placeholder for content area (will hold splitter or placeholder label)
-        self.content_widget = QWidget() # Use a container widget
+        self.content_widget = QWidget()
         self.content_layout = QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(0,0,0,0)
         self.main_layout.addWidget(self.content_widget, 1) # Allow content to stretch
@@ -59,10 +64,8 @@ class OverviewTab(QWidget):
         self._show_placeholder() # Show initial placeholder in content area
 
     def _request_refresh(self):
-        # Called when refresh button is clicked
-        # It signals the main window (parent) to start the refresh
-        if self.parent() and hasattr(self.parent(), 'refresh_overview_data'):
-            self.parent().refresh_overview_data()
+        # Emit the signal for MainWindow to catch
+        self.refresh_requested.emit()
 
     def _show_placeholder(self):
         # Clear previous content (splitter or label)
@@ -136,8 +139,6 @@ class OverviewTab(QWidget):
         right_layout = QVBoxLayout(right_widget)
         right_layout.setSpacing(10)
         h_splitter.addWidget(right_widget)
-        # Consider setting initial sizes if needed
-        # h_splitter.setSizes([self.width() // 2, self.width() // 2])
 
         # --- Populate Left Column --- #
         self._add_section_label(f"Repository: {self.repo.repo_name}", left_layout)
@@ -148,15 +149,19 @@ class OverviewTab(QWidget):
 
         self._add_section_label("Lines of Code by Author (Top 10)", left_layout)
         if blame_df_list: # Check if the list is not empty
-             blame_df_for_table = pd.DataFrame(blame_df_list)
-             self._add_table(blame_df_for_table, ["author", "loc"], left_layout)
+             blame_df = pd.DataFrame(blame_df_list)
+             table = DataFrameTable()
+             table.set_dataframe(blame_df, columns=["author", "loc"], show_index=False)
+             left_layout.addWidget(table)
         else:
              left_layout.addWidget(QLabel("<font color='orange'>Blame data not available or failed to load.</font>"))
         left_layout.addSpacing(10)
 
         self._add_section_label("File Counts by Language", left_layout)
         if lang_counts is not None and not lang_counts.empty:
-            self._add_table(lang_counts.set_index('Language'), ['Count'], left_layout, stretch_last=False)
+            table = DataFrameTable()
+            table.set_dataframe(lang_counts, columns=['Language', 'Count'], show_index=False, stretch_last=False)
+            left_layout.addWidget(table)
         else:
             left_layout.addWidget(QLabel("<font color='orange'>Language data not available.</font>"))
         left_layout.addStretch()
@@ -164,7 +169,9 @@ class OverviewTab(QWidget):
         # --- Populate Right Column --- #
         self._add_section_label(f"Recent Commits (Branch: {self.repo.default_branch})", right_layout)
         if commits_df is not None and not commits_df.empty:
-            self._add_table(commits_df, ['commit_date', 'author', 'message'], right_layout)
+            table = DataFrameTable()
+            table.set_dataframe(commits_df, columns=['commit_date', 'author', 'message'], show_index=False)
+            right_layout.addWidget(table)
         else:
              right_layout.addWidget(QLabel("<font color='orange'>Commit history not available.</font>"))
         right_layout.addSpacing(10)
@@ -180,7 +187,9 @@ class OverviewTab(QWidget):
 
         self._add_section_label("Recently Active Branches (Last 7 Days)", right_layout)
         if active_branches_df is not None and not active_branches_df.empty:
-            self._add_table(active_branches_df.set_index('branch'), ['last_commit_date', 'author'], right_layout)
+            table = DataFrameTable()
+            table.set_dataframe(active_branches_df, columns=['branch', 'last_commit_date', 'author'], show_index=False)
+            right_layout.addWidget(table)
         elif active_branches_df is not None: # Empty DataFrame means no active branches
             right_layout.addWidget(QLabel("<i>No branches found with commits in the last 7 days.</i>"))
         else: # None means an error occurred during fetch
@@ -193,47 +202,4 @@ class OverviewTab(QWidget):
     def _add_section_label(self, text, layout):
         label = QLabel(text)
         label.setStyleSheet("font-weight: bold; margin-top: 5px;")
-        layout.addWidget(label)
-
-    def _add_table(self, df, columns, layout, stretch_last=True):
-        table = QTableWidget()
-        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-
-        if isinstance(df.index, pd.MultiIndex):
-            # Handle MultiIndex if necessary (e.g., concatenate levels)
-            # For now, just convert to string
-            df_display = df.reset_index()
-            display_columns = [str(col) for col in df_display.columns if col in columns or col in df.index.names]
-        elif df.index.name and df.index.name in columns:
-            df_display = df.reset_index()
-            display_columns = columns
-        else:
-            df_display = df
-            display_columns = [col for col in columns if col in df_display.columns]
-
-        table.setColumnCount(len(display_columns))
-        table.setHorizontalHeaderLabels([col.replace('_', ' ').title() for col in display_columns])
-        table.setRowCount(len(df_display))
-
-        for i, row in enumerate(df_display[display_columns].itertuples(index=False)):
-            for j, value in enumerate(row):
-                item = QTableWidgetItem(str(value))
-                table.setItem(i, j, item)
-
-        table.resizeColumnsToContents()
-        header = table.horizontalHeader()
-        for j in range(len(display_columns)):
-            if stretch_last and j == len(display_columns) - 1:
-                header.setSectionResizeMode(j, QHeaderView.ResizeMode.Stretch)
-            else:
-                header.setSectionResizeMode(j, QHeaderView.ResizeMode.ResizeToContents)
-        # Limit height based on row count + header
-        row_height = table.rowHeight(0) if table.rowCount() > 0 else 25
-        header_height = table.horizontalHeader().height()
-        max_visible_rows = 10
-        table_height = min((table.rowCount() + 1) * row_height + header_height, max_visible_rows * row_height + header_height)
-        table.setFixedHeight(table_height)
-
-        layout.addWidget(table)
-        return table 
+        layout.addWidget(label) 

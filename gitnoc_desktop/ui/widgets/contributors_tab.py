@@ -6,17 +6,20 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
     QPushButton,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+
+from .dataframe_table import DataFrameTable
 
 class ContributorPatternsTab(QWidget):
+    # Signal to request data refresh
+    refresh_requested = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.repo = None
+        self.contributor_data = {}
         self.last_refreshed = None # Store last refresh time
 
         # Main layout
@@ -54,8 +57,8 @@ class ContributorPatternsTab(QWidget):
         self._show_placeholder()
 
     def _request_refresh(self):
-        if self.parent() and hasattr(self.parent(), 'refresh_contributor_data'):
-            self.parent().refresh_contributor_data()
+        # Emit the signal for MainWindow to catch
+        self.refresh_requested.emit()
 
     def _show_placeholder(self):
         while self.content_layout.count():
@@ -115,7 +118,9 @@ class ContributorPatternsTab(QWidget):
 
         self._add_section_label("Estimated Hours by Contributor", self.content_layout)
         if hours_df is not None and not hours_df.empty:
-            self._add_table(hours_df, ['hours'], self.content_layout, stretch_last=False)
+            table = DataFrameTable()
+            table.set_dataframe(hours_df, columns=['hours'], show_index=True, stretch_last=False)
+            self.content_layout.addWidget(table)
         else:
             self.content_layout.addWidget(QLabel("<i>Hours estimate data not available or failed to load.</i>"))
 
@@ -132,55 +137,4 @@ class ContributorPatternsTab(QWidget):
     def _add_section_label(self, text, layout):
         label = QLabel(text)
         label.setStyleSheet("font-weight: bold; margin-top: 5px;")
-        layout.addWidget(label)
-
-    def _add_table(self, df, columns, layout, stretch_last=True):
-        table = QTableWidget()
-        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        table.setSortingEnabled(True)
-
-        if isinstance(df.index, pd.MultiIndex):
-            df_display = df.reset_index()
-            display_columns = [str(col) for col in df_display.columns if col in columns or col in df.index.names]
-            header_labels = [col.replace('_', ' ').title() for col in display_columns]
-        elif df.index.name:
-            df_display = df.reset_index()
-            display_columns = [df.index.name] + columns
-            header_labels = [col.replace('_', ' ').title() for col in display_columns]
-        else:
-            df_display = df
-            display_columns = columns
-            header_labels = [col.replace('_', ' ').title() for col in display_columns]
-
-        table.setColumnCount(len(display_columns))
-        table.setHorizontalHeaderLabels(header_labels)
-        table.setRowCount(len(df_display))
-
-        for i, row in enumerate(df_display[display_columns].itertuples(index=False)):
-            for j, value in enumerate(row):
-                 if isinstance(value, (int, float)):
-                     item = QTableWidgetItem()
-                     item.setData(Qt.ItemDataRole.DisplayRole, round(value, 1))
-                     item.setData(Qt.ItemDataRole.EditRole, value)
-                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-                 else:
-                     item = QTableWidgetItem(str(value))
-                 table.setItem(i, j, item)
-
-        table.resizeColumnsToContents()
-        header = table.horizontalHeader()
-        for j in range(len(display_columns)):
-            if stretch_last and j == len(display_columns) - 1:
-                header.setSectionResizeMode(j, QHeaderView.ResizeMode.Stretch)
-            else:
-                header.setSectionResizeMode(j, QHeaderView.ResizeMode.ResizeToContents)
-
-        # Limit height
-        row_height = table.rowHeight(0) if table.rowCount() > 0 else 25
-        header_height = table.horizontalHeader().height()
-        max_visible_rows = 15
-        table_height = min((table.rowCount() + 1) * row_height + header_height, max_visible_rows * row_height + header_height)
-        table.setFixedHeight(table_height)
-
-        layout.addWidget(table) 
+        layout.addWidget(label) 

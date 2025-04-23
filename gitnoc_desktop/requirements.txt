@@ -3,3 +3,4 @@ git-pandas
 GitPython # Required by git-pandas
 qt-material
 pandas 
+matplotlib
