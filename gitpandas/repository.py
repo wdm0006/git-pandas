@@ -185,6 +185,7 @@ class Repository:
         if self.__delete_hook and os.path.exists(self.git_dir):
             shutil.rmtree(self.git_dir)
 
+    @multicache(key_prefix="is_bare", key_list=[])
     def is_bare(self):
         """Checks if this is a bare repository.
 
@@ -197,6 +198,7 @@ class Repository:
 
         return self.repo.bare
 
+    @multicache(key_prefix="has_coverage", key_list=[])
     def has_coverage(self):
         """Checks if a parseable .coverage file exists in the repository.
 
@@ -209,6 +211,7 @@ class Repository:
 
         return os.path.exists(self.git_dir + os.sep + ".coverage")
 
+    @multicache(key_prefix="coverage", key_list=[])
     def coverage(self):
         """Analyzes test coverage information from the repository.
 
@@ -261,6 +264,11 @@ class Repository:
             logger.error(f"Failed to analyze coverage data: {e}", exc_info=True)
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
+    @multicache(
+        key_prefix="hours_estimate",
+        key_list=["branch", "grouping_window", "single_commit_hours", "limit", "days", "committer", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"), # Avoid complex HEAD check logic if default is HEAD
+    )
     def hours_estimate(
         self,
         branch=None,
@@ -337,6 +345,11 @@ class Repository:
         logger.info(f"Finished hours estimation for branch '{branch}'. Found data for {len(df)} contributors.")
         return df
 
+    @multicache(
+        key_prefix="commit_history",
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def commit_history(
         self,
         branch=None,
@@ -491,6 +504,11 @@ class Repository:
         logger.info(f"Finished fetching commit history for branch '{branch}'. Found {len(df)} relevant commits.")
         return df
 
+    @multicache(
+        key_prefix="file_change_history",
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def file_change_history(
         self,
         branch=None,
@@ -642,6 +660,11 @@ class Repository:
         logger.info(f"Finished fetching file change history for '{branch}'. Found {len(df)} file changes.")
         return df
 
+    @multicache(
+        key_prefix="file_change_rates",
+        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def file_change_rates(
         self,
         branch=None,
@@ -919,6 +942,11 @@ class Repository:
         logger.info(f"Finished calculating blame for rev '{rev}'. Found {len(blames_df)} blame entries.")
         return blames_df
 
+    @multicache(
+        key_prefix="revs",
+        key_list=["branch", "limit", "skip", "num_datapoints"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
@@ -974,6 +1002,11 @@ class Repository:
         logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} revisions.")
         return df
 
+    @multicache(
+        key_prefix="cumulative_blame",
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def cumulative_blame(
         self,
         branch=None,
@@ -1084,6 +1117,11 @@ class Repository:
         logger.info(f"Finished cumulative blame calculation for '{branch}'. Result shape: {revs.shape}")
         return revs
 
+    @multicache(
+        key_prefix="parallel_cumulative_blame",
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+    )
     def parallel_cumulative_blame(
         self,
         branch=None,
@@ -1175,6 +1213,7 @@ class Repository:
         logger.info(f"Finished parallel cumulative blame for '{branch}'. Result shape: {revs.shape}")
         return revs
 
+    @multicache(key_prefix="branches", key_list=[])
     def branches(self):
         """Returns information about all branches in the repository.
 
@@ -1216,6 +1255,7 @@ class Repository:
         logger.info(f"Finished fetching branches. Found {len(df)} total branches.")
         return df
 
+    @multicache(key_prefix="get_branches_by_commit", key_list=["commit"])
     def get_branches_by_commit(self, commit):
         """Finds all branches containing a specific commit.
 
@@ -1238,6 +1278,7 @@ class Repository:
         logger.info(f"Found {len(df)} branches containing commit {commit}.")
         return df
 
+    @multicache(key_prefix="commits_in_tags", key_list=["start", "end"])
     def commits_in_tags(self, start=None, end=None):
         """Analyzes commits associated with each tag.
 
@@ -1366,6 +1407,7 @@ class Repository:
             "commit_date": commit_date,
         }
 
+    @multicache(key_prefix="tags", key_list=[])
     def tags(self):
         """Returns information about all tags in the repository.
 
@@ -1486,6 +1528,11 @@ class Repository:
         """
         return f"git repository: {self._repo_name()} at: {self.git_dir}"
 
+    @multicache(
+        key_prefix="get_commit_content",
+        key_list=["rev", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+    )
     def get_commit_content(self, rev, ignore_globs=None, include_globs=None):
         """Gets detailed content changes for a specific commit.
 
@@ -1602,6 +1649,11 @@ class Repository:
             logger.error(f"Failed to get content changes for revision '{rev}': {e}")
             return DataFrame(columns=["file", "change_type", "old_line_num", "new_line_num", "content"])
 
+    @multicache(
+        key_prefix="get_file_content",
+        key_list=["path", "rev"],
+        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+    )
     def get_file_content(self, path, rev="HEAD"):
         """Gets the content of a file from the repository at a specific revision.
 
@@ -1641,6 +1693,11 @@ class Repository:
             logger.error(f"Failed to get content of file '{path}' at revision '{rev}': {e}")
             return None
 
+    @multicache(
+        key_prefix="list_files",
+        key_list=["rev"],
+        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+    )
     def list_files(self, rev="HEAD"):
         """Lists all files in the repository at a specific revision, respecting .gitignore.
 
@@ -1708,6 +1765,7 @@ class Repository:
         """
         return str(self.git_dir)
 
+    @multicache(key_prefix="bus_factor", key_list=["by", "ignore_globs", "include_globs"])
     def bus_factor(self, by="repository", ignore_globs=None, include_globs=None):
         """Calculates the "bus factor" for the repository.
 
@@ -1755,6 +1813,11 @@ class Repository:
         logger.info(f"Bus factor calculated: {tc}")
         return DataFrame([[self._repo_name(), tc]], columns=["repository", "bus factor"])
 
+    @multicache(
+        key_prefix="file_owner",
+        key_list=["rev", "filename", "committer"],
+        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+    )
     def file_owner(self, rev, filename, committer=True):
         """Determines the primary owner of a file at a specific revision.
 
@@ -1827,80 +1890,10 @@ class Repository:
             return None
 
     @multicache(
-        key_prefix="file_detail",
-        key_list=["include_globs", "ignore_globs", "rev", "committer"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+        key_prefix="punchcard",
+        key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"],
+        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
     )
-    def file_detail(self, include_globs=None, ignore_globs=None, rev="HEAD", committer=True):
-        """Provides detailed information about all files in the repository.
-
-        Analyzes each file at the specified revision, gathering information about
-        size, ownership, and last modification.
-
-        Args:
-            include_globs (Optional[List[str]]): List of glob patterns for files to include
-            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
-            rev (str, optional): Revision to analyze. Defaults to 'HEAD'.
-            committer (bool, optional): If True, use committer info. If False, use author.
-                Defaults to True.
-
-        Returns:
-            pandas.DataFrame: A DataFrame indexed by file path with columns:
-                - file_owner (str): Name of primary committer/author
-                - last_edit_date (datetime): When file was last modified
-                - loc (int): Lines of code in file
-                - ext (str): File extension
-                - repository (str): Repository name
-                Additional columns for any labels specified in labels_to_add
-
-        Note:
-            The primary file owner is the person responsible for the most lines
-            in the current version of the file.
-
-            This method is cached if a cache_backend was provided and rev is not HEAD.
-        """
-        logger.info(
-            f"Fetching file details for rev '{rev}'. "
-            f"Ignore: {ignore_globs}, Include: {include_globs}, Committer: {committer}"
-        )
-
-        # first get the blame
-        logger.debug("Calculating blame for file details...")
-        blame = self.blame(
-            include_globs=include_globs,
-            ignore_globs=ignore_globs,
-            rev=rev,
-            committer=committer,
-            by="file",
-        )
-        blame = blame.reset_index(level=-1)
-        blame = blame.reset_index(level=-1)
-
-        # reduce it to files and total LOC
-        logger.debug("Reducing to files and total LOC...")
-        df = blame.reindex(columns=["file", "loc"])
-        df = df.groupby("file").agg({"loc": np.sum})
-        df = df.reset_index(level=-1)
-
-        # map in file owners
-        logger.debug("Mapping file owners...")
-        df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer))
-
-        # add extension (something like the language)
-        logger.debug("Extracting file extensions...")
-        df["ext"] = df["file"].map(lambda x: x.split(".")[-1])
-
-        # add in last edit date for the file
-        logger.debug("Mapping last edit dates...")
-        df["last_edit_date"] = df["file"].map(self._file_last_edit)
-        df["last_edit_date"] = to_datetime(df["last_edit_date"])
-
-        df = df.set_index("file")
-        df = self._add_labels_to_df(df)
-
-        logger.info(f"Finished fetching file details for rev '{rev}'. Found details for {len(df)} files.")
-        return df
-
     def punchcard(
         self,
         branch=None,
@@ -1975,6 +1968,7 @@ class Repository:
         logger.info(f"Finished generating punchcard data for '{branch}'. Result shape: {punch_card.shape}")
         return punch_card
 
+    @multicache(key_prefix="has_branch", key_list=["branch"])
     def has_branch(self, branch):
         """Checks if a branch exists in the repository.
 
@@ -1997,6 +1991,89 @@ class Repository:
         except GitCommandError as e:
             logger.warning(f"Could not check branches in repo '{self._repo_name()}': {e}")
             return False
+
+    @multicache(
+        key_prefix="file_detail",
+        key_list=["include_globs", "ignore_globs", "rev", "committer"],
+        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+    )
+    def file_detail(self, include_globs=None, ignore_globs=None, rev="HEAD", committer=True):
+        """Provides detailed information about all files in the repository.
+
+        Analyzes each file at the specified revision, gathering information about
+        size, ownership, and last modification.
+
+        Args:
+            include_globs (Optional[List[str]]): List of glob patterns for files to include
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
+            rev (str, optional): Revision to analyze. Defaults to 'HEAD'.
+            committer (bool, optional): If True, use committer info. If False, use author.
+                Defaults to True.
+
+        Returns:
+            pandas.DataFrame: A DataFrame indexed by file path with columns:
+                - file_owner (str): Name of primary committer/author
+                - last_edit_date (datetime): When file was last modified
+                - loc (int): Lines of code in file
+                - ext (str): File extension
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
+
+        Note:
+            The primary file owner is the person responsible for the most lines
+            in the current version of the file.
+
+            This method is cached if a cache_backend was provided and rev is not HEAD.
+        """
+        logger.info(
+            f"Fetching file details for rev '{rev}'. "
+            f"Ignore: {ignore_globs}, Include: {include_globs}, Committer: {committer}"
+        )
+
+        # first get the blame
+        logger.debug("Calculating blame for file details...")
+        blame = self.blame(
+            include_globs=include_globs,
+            ignore_globs=ignore_globs,
+            rev=rev,
+            committer=committer,
+            by="file",
+        )
+        blame = blame.reset_index(level=-1)
+        blame = blame.reset_index(level=-1)
+
+        # reduce it to files and total LOC
+        logger.debug("Reducing to files and total LOC...")
+        df = blame.reindex(columns=["file", "loc"])
+        df = df.groupby("file").agg({"loc": np.sum})
+        df = df.reset_index(level=-1)
+
+        # map in file owners
+        logger.debug("Mapping file owners...")
+        # Use .get('name', None) to safely access potential None from file_owner
+        df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer).get("name", None) if (fo := self.file_owner(rev, x, committer=committer)) else None)
+
+        # add extension (something like the language)
+        logger.debug("Extracting file extensions...")
+        df["ext"] = df["file"].map(lambda x: x.split(".")[-1] if "." in x else "")  # Handle files without extensions
+
+        # add in last edit date for the file
+        logger.debug("Mapping last edit dates...")
+        df["last_edit_date"] = df["file"].map(self._file_last_edit)
+
+        # Convert to datetime, coercing errors to NaT
+        df["last_edit_date"] = pd.to_datetime(df["last_edit_date"])
+        # Convert to UTC if not already (assuming timestamps from git are potentially naive)
+        if df["last_edit_date"] is not None and df["last_edit_date"].dt.tz is None:
+            df["last_edit_date"] = df["last_edit_date"].dt.tz_localize("UTC")
+        else:
+            df["last_edit_date"] = df["last_edit_date"].dt.tz_convert("UTC")
+
+        df = df.set_index("file")
+        df = self._add_labels_to_df(df)
+
+        logger.info(f"Finished fetching file details for rev '{rev}'. Found details for {len(df)} files.")
+        return df
 
 
 class GitFlowRepository(Repository):
