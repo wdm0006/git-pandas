@@ -1,4 +1,4 @@
-.PHONY: setup run clean
+.PHONY: setup run clean test
 
 # Default target
 all: run
@@ -30,4 +30,12 @@ clean:
 	@echo "Cleaning up..."
 	@rm -rf $(VENV_DIR)
 	@find . -type d -name "__pycache__" -exec rm -r {} +
-	@echo "Cleanup complete." 
+	@echo "Cleanup complete."
+
+# Test: Run tests using pytest through uv
+# Accepts PYTEST_ARGS for passing extra arguments to pytest
+# Example: make test PYTEST_ARGS="-k my_test_name"
+test: setup
+	@echo "Running tests..."
+	@echo "Using Python: $(PYTHON)"
+	@$(PYTHON) -m pytest $(PYTEST_ARGS) 

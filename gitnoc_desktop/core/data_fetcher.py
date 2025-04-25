@@ -207,7 +207,7 @@ def fetch_contributor_data(repo: Repository, force_refresh=False):
     logger.info(f"Fetching contributor data for {repo_name} (force_refresh={force_refresh})")
     data = {}
     try:
-        hours_df = repo.hours_estimate(branch=repo.default_branch)
+        hours_df = repo.hours_estimate(branch=repo.default_branch, committer=False)
         data['hours'] = hours_df # Pass DataFrame
         logger.debug(f"Fetched hours estimate for {repo_name}")
     except Exception as e:
@@ -242,13 +242,13 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
     data = {}
     try:
         # Use a fixed number of datapoints for performance
-        kwargs = {'num_datapoints': 50}
+        kwargs = {'num_datapoints': 10, "committer": False}
         blame_df = repo.cumulative_blame(**kwargs)
         data['blame'] = blame_df # Pass DataFrame
         logger.debug(f"Fetched cumulative blame data for {repo_name}")
     except Exception as e:
-        logger.warning(f"Error fetching cumulative blame for {repo_name}: {e}")
-        data['blame'] = None
+        logger.exception(f"Error fetching cumulative blame for {repo_name}: {e}")
+        data['blame'] = None # Set to None on error
 
     logger.info(f"Finished fetching cumulative blame data for {repo_name}")
     # Return dict with data and timestamp
@@ -266,14 +266,38 @@ def _load_repo_detail(self, repo_path, force_refresh=False):
     tag_info = self._fetch_with_cache(repo, 'tags', force_refresh)
     return commit_history, branch_info, tag_info
 
-def _fetch_cumulative_blame_data(self, repo: Repository, force_refresh=False):
+def _fetch_cumulative_blame_data(self, repo_path, force_refresh=False):
     """Fetches cumulative blame data, using cache unless forced."""
+    logger.info(f"Starting cumulative blame data fetch for repo: {repo_path} (force_refresh={force_refresh})")
+    
+    repo = self._get_repo_instance(repo_path, force_refresh)
     if repo is None:
-        return None
-    # Use a fixed number of datapoints for performance
-    kwargs = {'num_datapoints': 50}
-    blame_data = self._fetch_with_cache(repo, 'cumulative_blame', force_refresh, **kwargs)
-    return blame_data
+        logger.error(f"Failed to get Repository instance for {repo_path}")
+        return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
+    
+    logger.info(f"Successfully got Repository instance for {repo_path}, default branch: {repo.default_branch}")
+    
+    # Use a fixed number of datapoints for performance and set committer=False
+    kwargs = {'num_datapoints': 50, 'committer': False}
+    logger.info(f"Attempting to fetch cumulative blame with kwargs: {kwargs}")
+    
+    try:
+        start_time = time.time()
+        blame_data = self._fetch_with_cache(repo, 'cumulative_blame', force_refresh, **kwargs)
+        end_time = time.time()
+        
+        if blame_data is None:
+            logger.error(f"Cumulative blame data fetch returned None for {repo_path}")
+            return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
+            
+        logger.info(f"Successfully fetched cumulative blame data in {end_time - start_time:.2f} seconds")
+        logger.debug(f"Blame data shape: {blame_data.shape if hasattr(blame_data, 'shape') else 'N/A'}")
+        logger.debug(f"Blame data columns: {list(blame_data.columns) if hasattr(blame_data, 'columns') else 'N/A'}")
+        
+        return {'data': {'blame': blame_data}, 'refreshed_at': datetime.now()}
+    except Exception as e:
+        logger.exception(f"Exception while fetching cumulative blame data for {repo_path}: {str(e)}")
+        return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
 
 # --- Public Fetch Methods ---
 def fetch_repo_detail_async(self, repo_path, force_refresh=False):
@@ -308,13 +332,18 @@ def fetch_code_health_async(self, repo_path, force_refresh=False):
 
 def fetch_cumulative_blame_async(self, repo_path, force_refresh=False):
     """Fetches cumulative blame data asynchronously."""
+    logger.info(f"Starting async cumulative blame fetch for repo: {repo_path}")
+    
     worker = CumulativeBlameWorker(self._fetch_cumulative_blame_data, repo_path, force_refresh)
-    worker.signals.result.connect(self.cumulative_blame_data_fetched)
+    worker.signals.result.connect(lambda path, data, ts: self._handle_cumulative_blame_result(path, data, ts))
     worker.signals.finished.connect(self._worker_complete)
     worker.signals.error.connect(self._worker_error)
+    
+    logger.debug(f"Created CumulativeBlameWorker for {repo_path}")
     self.threadpool.start(worker)
     self.active_workers += 1
     self.check_global_loading_state()
+    logger.info(f"Started cumulative blame worker for {repo_path}, active workers: {self.active_workers}")
 
 # --- Signals for UI updates (to be connected in MainWindow) ---
 repo_detail_fetched = Signal(str, object, object, object, datetime) # repo_path, history, branches, tags, timestamp
@@ -481,13 +510,36 @@ class DataFetcher(QObject):
 
     def _fetch_cumulative_blame_data(self, repo_path, force_refresh=False):
         """Fetches cumulative blame data, using cache unless forced."""
+        logger.info(f"Starting cumulative blame data fetch for repo: {repo_path} (force_refresh={force_refresh})")
+        
         repo = self._get_repo_instance(repo_path, force_refresh)
         if repo is None:
-            return None
-        # Use a fixed number of datapoints for performance
-        kwargs = {'num_datapoints': 50}
-        blame_data = self._fetch_with_cache(repo, 'cumulative_blame', force_refresh, **kwargs)
-        return blame_data
+            logger.error(f"Failed to get Repository instance for {repo_path}")
+            return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
+        
+        logger.info(f"Successfully got Repository instance for {repo_path}, default branch: {repo.default_branch}")
+        
+        # Use a fixed number of datapoints for performance and set committer=False
+        kwargs = {'num_datapoints': 50, 'committer': False}
+        logger.info(f"Attempting to fetch cumulative blame with kwargs: {kwargs}")
+        
+        try:
+            start_time = time.time()
+            blame_data = self._fetch_with_cache(repo, 'cumulative_blame', force_refresh, **kwargs)
+            end_time = time.time()
+            
+            if blame_data is None:
+                logger.error(f"Cumulative blame data fetch returned None for {repo_path}")
+                return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
+            
+            logger.info(f"Successfully fetched cumulative blame data in {end_time - start_time:.2f} seconds")
+            logger.debug(f"Blame data shape: {blame_data.shape if hasattr(blame_data, 'shape') else 'N/A'}")
+            logger.debug(f"Blame data columns: {list(blame_data.columns) if hasattr(blame_data, 'columns') else 'N/A'}")
+            
+            return {'data': {'blame': blame_data}, 'refreshed_at': datetime.now()}
+        except Exception as e:
+            logger.exception(f"Exception while fetching cumulative blame data for {repo_path}: {str(e)}")
+            return {'data': {'blame': None}, 'refreshed_at': datetime.now()}
 
     # --- Public Fetch Methods ---
     def fetch_repo_detail_async(self, repo_path, force_refresh=False):
@@ -523,13 +575,18 @@ class DataFetcher(QObject):
 
     def fetch_cumulative_blame_async(self, repo_path, force_refresh=False):
         """Fetches cumulative blame data asynchronously."""
+        logger.info(f"Starting async cumulative blame fetch for repo: {repo_path}")
+        
         worker = CumulativeBlameWorker(self._fetch_cumulative_blame_data, repo_path, force_refresh)
-        worker.signals.result.connect(self.cumulative_blame_data_fetched)
+        worker.signals.result.connect(lambda path, data, ts: self._handle_cumulative_blame_result(path, data, ts))
         worker.signals.finished.connect(self._worker_complete)
         worker.signals.error.connect(self._worker_error)
+        
+        logger.debug(f"Created CumulativeBlameWorker for {repo_path}")
         self.threadpool.start(worker)
         self.active_workers += 1
         self.check_global_loading_state()
+        logger.info(f"Started cumulative blame worker for {repo_path}, active workers: {self.active_workers}")
 
     # --- Worker Completion and State Management ---
     @Slot(str)
@@ -546,3 +603,14 @@ class DataFetcher(QObject):
     def check_global_loading_state(self):
         is_loading = self.active_workers > 0
         self.global_loading_changed.emit(is_loading)
+
+    def _handle_cumulative_blame_result(self, repo_path, blame_data, timestamp):
+        """Handle the result of cumulative blame data fetch."""
+        if blame_data is None:
+            logger.warning(f"Received None blame data for {repo_path}")
+        else:
+            logger.info(f"Received valid blame data for {repo_path} at {timestamp}")
+            logger.debug(f"Blame data summary: Shape={blame_data.shape if hasattr(blame_data, 'shape') else 'N/A'}")
+        
+        self.cumulative_blame_data_fetched.emit(repo_path, blame_data, timestamp)
+        logger.info(f"Emitted cumulative_blame_data_fetched signal for {repo_path}")

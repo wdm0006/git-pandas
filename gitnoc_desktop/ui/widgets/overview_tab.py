@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
 import traceback
+import logging
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -20,6 +21,14 @@ from PySide6.QtCore import Qt, Signal
 
 from .dataframe_table import DataFrameTable
 
+# --- Cache File Path ---
+# Consistent with main.py
+CACHE_DIR = Path.home() / ".gitnoc_desktop"
+CACHE_FILE = CACHE_DIR / "cache.json.gz"
+# -----------------------
+
+logger = logging.getLogger(__name__)
+
 class OverviewTab(QWidget):
     # Signal to request data refresh
     refresh_requested = Signal()
@@ -27,7 +36,6 @@ class OverviewTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.repo = None # To store current repo instance
-        self.last_refreshed = None # Store last refresh time
 
         # Main layout
         self.main_layout = QVBoxLayout(self)
@@ -81,7 +89,6 @@ class OverviewTab(QWidget):
         self.refresh_button.setEnabled(False) # Disable refresh if no repo selected/shown
         self.refresh_time_label.setText("Last refreshed: N/A") # Reset time label
         self.repo = None # Clear repo reference
-        self.last_refreshed = None # Reset time
 
     def _show_loading(self):
         self.refresh_button.setEnabled(False)
@@ -92,18 +99,28 @@ class OverviewTab(QWidget):
         self.refresh_button.setEnabled(self.repo is not None) # Enable only if repo is loaded
         self.refresh_button.setText("Refresh")
 
-    def populate_ui(self, repo, overview_data, refreshed_at):
-        """Populates the UI with fetched data and refresh time."""
+    def populate_ui(self, repo, overview_data):
+        """Populates the UI with fetched data and cache modification time."""
+        logger.debug(f"Populating OverviewTab UI. Received overview_data: {overview_data}")
         self._show_placeholder() # Clear previous content/placeholder
         self.repo = repo # Store repo reference
-        self.last_refreshed = refreshed_at # Store time
 
-        # Update refresh time label
-        if refreshed_at:
-            timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
-            self.refresh_time_label.setText(f"Last refreshed: {timestamp_str}")
-        else:
-             self.refresh_time_label.setText("Last refreshed: Error") # Or N/A?
+        # --- Update refresh time label based on cache file modification --- #
+        cache_timestamp_str = "N/A"
+        try:
+            if CACHE_FILE.exists():
+                mtime = os.path.getmtime(CACHE_FILE)
+                cache_dt = datetime.fromtimestamp(mtime)
+                cache_timestamp_str = cache_dt.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                 cache_timestamp_str = "Cache file not found"
+        except Exception as e:
+            # Log the error appropriately if needed
+            # print(f"Error getting cache file time: {e}") # Example for debugging
+            cache_timestamp_str = "Error reading cache time"
+
+        self.refresh_time_label.setText(f"Cache updated: {cache_timestamp_str}") # <-- Restore changed label text
+        # -------------------------------------------------------------------- #
 
         if overview_data is None:
             error_label = QLabel("<font color='orange'>Failed to load overview data in background.</font>")

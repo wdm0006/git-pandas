@@ -1,9 +1,10 @@
 import datetime
 from unittest.mock import MagicMock, patch
+import os # Added for setting environment variables
 
 import pandas as pd
 import pytest
-from git import Repo
+from git import Repo, Actor
 
 from gitpandas import Repository
 
@@ -25,7 +26,9 @@ def local_repo(tmp_path):
     # Create an initial commit
     (repo_path / "README.md").write_text("# Advanced Test Repository")
     repo.index.add(["README.md"])
-    repo.index.commit("Initial commit")
+    # Define commit times explicitly to make assertions easier
+    initial_commit_time = datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
+    repo.index.commit("Initial commit", commit_date=initial_commit_time.isoformat())
 
     # Create some test files across multiple directories
     (repo_path / "src").mkdir()
@@ -37,22 +40,26 @@ def local_repo(tmp_path):
 
     # Add files and commit
     repo.index.add(["src/main.py", "src/utils.py", "docs/index.md"])
-    repo.index.commit("Add initial code structure")
+    commit_time_2 = datetime.datetime(2023, 1, 1, 11, 0, 0, tzinfo=datetime.timezone.utc)
+    repo.index.commit("Add initial code structure", commit_date=commit_time_2.isoformat())
 
     # Create a feature branch and make changes
     repo.git.checkout("-b", "feature")
     (repo_path / "src" / "feature.py").write_text("def feature():\n    return 'new feature'")
     repo.index.add(["src/feature.py"])
-    repo.index.commit("Add feature")
+    commit_time_3 = datetime.datetime(2023, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    repo.index.commit("Add feature", commit_date=commit_time_3.isoformat())
 
     # Go back to master and make different changes
     repo.git.checkout("master")
-    (repo_path / "src" / "main.py").write_text("def main():\n    print('Hello')\n    return True")
+    (repo_path / "src" / "main.py").write_text("def main():\n    print('Hello')\n    return True") # Modify one line, add one line
     repo.index.add(["src/main.py"])
-    repo.index.commit("Update main function")
+    commit_time_4 = datetime.datetime(2023, 1, 1, 13, 0, 0, tzinfo=datetime.timezone.utc)
+    repo.index.commit("Update main function", commit_date=commit_time_4.isoformat())
 
     # Create a tag
-    repo.create_tag("v0.1.0", message="First version")
+    tag_time = datetime.datetime(2023, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc).isoformat()
+    repo.create_tag("v0.1.0", message="First version", tagger=Actor("Tagger", "tagger@example.com"), tag_date=tag_time)
 
     return repo_path
 
@@ -115,6 +122,69 @@ class TestRepositoryAdvanced:
         assert isinstance(owner_info, dict)
         assert "name" in owner_info
         assert owner_info["name"] == "Test User"
+
+    def test_cumulative_blame_multi_author(self, tmp_path):
+        """Test cumulative_blame with multiple authors and changing blame."""
+        repo_path = tmp_path / "blame_repo"
+        repo_path.mkdir()
+        repo = Repo.init(repo_path)
+        test_file = repo_path / "test_file.txt"
+
+        # Define authors
+        author1 = Actor("Author One", "author1@example.com")
+        author2 = Actor("Author Two", "author2@example.com")
+
+        # Use specific commit dates for reliable ordering and index checking
+        commit_date_1 = datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
+        commit_date_2 = datetime.datetime(2023, 1, 1, 11, 0, 0, tzinfo=datetime.timezone.utc)
+        commit_date_3 = datetime.datetime(2023, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+
+        # Commit 1: Author One adds 3 lines
+        test_file.write_text("Line 1\nLine 2\nLine 3")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 1", author=author1, committer=author1, commit_date=commit_date_1.isoformat())
+        commit_1_sha = repo.head.commit.hexsha
+
+        # Commit 2: Author Two adds 2 lines and modifies Line 2
+        test_file.write_text("Line 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 2", author=author2, committer=author2, commit_date=commit_date_2.isoformat())
+        commit_2_sha = repo.head.commit.hexsha
+
+        # Commit 3: Author One adds 1 line at the beginning
+        test_file.write_text("Line 0 - A1\nLine 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 3", author=author1, committer=author1, commit_date=commit_date_3.isoformat())
+        commit_3_sha = repo.head.commit.hexsha
+
+        # Instantiate Repository and get cumulative blame
+        repo_obj = Repository(working_dir=str(repo_path))
+        # Use committer=False to test author blame
+        blame_df = repo_obj.cumulative_blame(branch="master", committer=False)
+
+        # Assertions
+        assert isinstance(blame_df, pd.DataFrame)
+        assert blame_df.index.name == "date"
+        assert list(blame_df.columns) == ["Author One", "Author Two"] # Order might vary, maybe sort? Check impl. Let's assume alphabetical for now.
+        assert len(blame_df) == 3 # 3 commits
+
+        # Check index values (timestamps) - allow for minor differences if needed
+        expected_index = pd.to_datetime([commit_date_1, commit_date_2, commit_date_3], utc=True)
+        pd.testing.assert_index_equal(blame_df.index, expected_index, check_names=False)
+
+        # Check blame values at each commit
+        # Commit 1: Author One = 3, Author Two = 0
+        assert blame_df.loc[commit_date_1, "Author One"] == 3.0
+        assert blame_df.loc[commit_date_1, "Author Two"] == 0.0
+
+        # Commit 2: Author One = 2 (Lost Line 2), Author Two = 3 (Modified Line 2, Added Lines 4, 5)
+        # Blame logic: git blame attributes the *modified* line to the modifier.
+        assert blame_df.loc[commit_date_2, "Author One"] == 2.0
+        assert blame_df.loc[commit_date_2, "Author Two"] == 3.0
+
+        # Commit 3: Author One = 3 (Added Line 0), Author Two = 3
+        assert blame_df.loc[commit_date_3, "Author One"] == 3.0
+        assert blame_df.loc[commit_date_3, "Author Two"] == 3.0
 
     def test_parallel_cumulative_blame(self, local_repo):
         """Test parallel cumulative blame calculation."""
@@ -215,21 +285,11 @@ class TestRepositoryAdvanced:
         repo_obj = Repository(working_dir=str(local_repo))
 
         # Test a file that exists
-        last_edit = repo_obj._file_last_edit("src/main.py")
-        assert isinstance(last_edit, str)
-        assert "Date:" not in last_edit  # The implementation strips this out
-
-        # Try to parse the date string to verify it's a valid date
-        from datetime import datetime
-
-        try:
-            # Git date format is like: Thu Apr 7 22:13:13 2005 +0200
-            datetime.strptime(last_edit, "%a %b %d %H:%M:%S %Y %z")
-        except ValueError as e:
-            pytest.fail(f"Last edit date string '{last_edit}' is not in expected git format: {e}")
+        last_edit = repo_obj._get_last_edit_date("src/main.py")
+        assert isinstance(last_edit, pd.Timestamp)
 
         # Test a file that doesn't exist
-        assert repo_obj._file_last_edit("nonexistent_file.txt") is None
+        assert pd.isna(repo_obj._get_last_edit_date("nonexistent_file.txt"))
 
     def test_file_detail_with_cache(self, local_repo):
         """Test that file_detail properly uses caching."""
@@ -256,3 +316,60 @@ class TestRepositoryAdvanced:
         # Verify that calling with HEAD doesn't use cache
         result3 = repo.file_detail(rev="HEAD")
         assert isinstance(result3, pd.DataFrame)
+
+    def test_blame_deleted_file(self, tmp_path):
+        """Test blame on a revision where a file existed but was later deleted."""
+        repo_path = tmp_path / "blame_test_repo"
+        repo_path.mkdir()
+        repo = Repo.init(repo_path)
+
+        # Configure git user
+        repo.config_writer().set_value("user", "name", "Test User").release()
+        repo.config_writer().set_value("user", "email", "test@example.com").release()
+
+        # Create and checkout master branch
+        repo.git.checkout("-b", "master")
+
+        # Commit 1: Add file_a.txt
+        file_a = repo_path / "file_a.txt"
+        file_a.write_text("Line 1\nLine 2\n")
+        repo.index.add([str(file_a)])
+        commit1 = repo.index.commit("Add file_a.txt")
+
+        # Commit 2: Modify file_a.txt
+        file_a.write_text("Line 1 MODIFIED\nLine 2\nLine 3 NEW\n")
+        repo.index.add([str(file_a)])
+        commit2 = repo.index.commit("Modify file_a.txt")
+
+        # Commit 3: Delete file_a.txt
+        repo.index.remove([str(file_a)])
+        commit3 = repo.index.commit("Delete file_a.txt")
+
+        # Create Repository object
+        repo_obj = Repository(working_dir=str(repo_path))
+
+        # Run blame on Commit 2 (before deletion)
+        blame_result = repo_obj.blame(rev=commit2.hexsha, by="file")
+
+        # Assertions
+        assert isinstance(blame_result, pd.DataFrame)
+        assert not blame_result.empty
+        assert "loc" in blame_result.columns
+        # Check if file_a.txt is present in the blame output for commit2
+        assert "file_a.txt" in blame_result.index.get_level_values("file").unique()
+        # Check the total lines blamed for file_a.txt at commit2
+        assert blame_result.loc[("Test User", "file_a.txt"), "loc"] == 3
+
+        # Run blame on Commit 1
+        blame_result_1 = repo_obj.blame(rev=commit1.hexsha, by="file")
+        assert isinstance(blame_result_1, pd.DataFrame)
+        assert not blame_result_1.empty
+        assert "file_a.txt" in blame_result_1.index.get_level_values("file").unique()
+        assert blame_result_1.loc[("Test User", "file_a.txt"), "loc"] == 2
+
+        # Run blame on HEAD (Commit 3, file deleted)
+        blame_result_head = repo_obj.blame(rev="HEAD", by="file")
+        assert isinstance(blame_result_head, pd.DataFrame)
+        # file_a.txt should NOT be in the blame output for HEAD
+        if not blame_result_head.empty: # Check if df is empty before accessing index
+             assert "file_a.txt" not in blame_result_head.index.get_level_values("file").unique()

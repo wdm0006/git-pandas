@@ -118,8 +118,9 @@ class ContributorPatternsTab(QWidget):
 
         self._add_section_label("Estimated Hours by Contributor", self.content_layout)
         if hours_df is not None and not hours_df.empty:
+            # Reset index to make it a column before displaying
             table = DataFrameTable()
-            table.set_dataframe(hours_df, columns=['hours'], show_index=True, stretch_last=False)
+            table.set_dataframe(hours_df, columns=['author', 'hours'], show_index=False, stretch_last=False)
             self.content_layout.addWidget(table)
         else:
             self.content_layout.addWidget(QLabel("<i>Hours estimate data not available or failed to load.</i>"))

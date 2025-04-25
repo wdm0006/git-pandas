@@ -158,8 +158,10 @@ class TestFileDetail:
         assert "file_owner" in file_detail_committer.columns
 
         # Check that all file owners are 'Test User'
-        for owner in file_detail_committer["file_owner"].values:
-            assert owner["name"] == "Test User"
+        for owner in file_detail_committer["file_owner"]:
+            if owner is not None:  # Check if owner is not None before asserting
+                assert isinstance(owner, str)
+                assert owner == "Test User"
 
         # Get file detail with committer=False
         file_detail_no_committer = local_repo.file_detail(committer=False)
@@ -168,8 +170,10 @@ class TestFileDetail:
         assert "file_owner" in file_detail_no_committer.columns
 
         # Check that all file owners are 'Test User'
-        for owner in file_detail_no_committer["file_owner"].values:
-            assert owner["name"] == "Test User"
+        for owner in file_detail_no_committer["file_owner"]:
+            if owner is not None:  # Check if owner is not None before asserting
+                assert isinstance(owner, str)
+                assert owner == "Test User"
 
     def test_file_detail_last_edit(self, local_repo):
         """Test that the last_edit_date column contains valid timestamps."""

@@ -403,6 +403,7 @@ class MainWindow(QMainWindow):
         self._start_data_fetch_worker(fetch_code_health_data, self._handle_code_health_result)
         self._start_data_fetch_worker(fetch_contributor_data, self._handle_contributor_result)
         self._start_data_fetch_worker(fetch_tags_data, self._handle_tags_result)
+        self._start_data_fetch_worker(fetch_cumulative_blame_data, self._handle_cumulative_blame_result)
 
         # Check if any workers were actually started, if not, reset loading state
         if self.pending_workers == 0:
@@ -438,12 +439,18 @@ class MainWindow(QMainWindow):
 
     # --- Result Handlers for Initial Load --- #
     def _handle_overview_result(self, result_dict):
-        logger.debug("Received initial overview data result.")
+        """Handles the result from the overview data worker."""
+        # result_dict likely contains { 'data': data, 'refreshed_at': dt }
+        # We assume this result is for self.current_repo_instance
+        data = result_dict.get('data')
+
+        # Check if we still have a current repo instance (user might have cleared selection)
         if self.current_repo_instance:
-            # Pass data and timestamp to populate_ui
-            self.overview_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+            logger.debug(f"Populating overview tab for {self.current_repo_instance.repo_name}")
+            self.overview_tab.populate_ui(self.current_repo_instance, data)
         else:
-            logger.warning("Received overview data but no current repo instance.")
+            logger.debug("Received overview data but no repository is currently selected. Ignoring.")
+        # self._on_worker_finished() # <--- Let finished signal handle this now
 
     def _handle_code_health_result(self, result_dict):
         logger.debug("Received initial code health data result.")
@@ -468,6 +475,14 @@ class MainWindow(QMainWindow):
             self.tags_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
         else:
              logger.warning("Received tags data but no current repo instance.")
+
+    def _handle_cumulative_blame_result(self, result_dict):
+        logger.debug("Received initial cumulative blame data result.")
+        if self.current_repo_instance:
+            # Pass data (DataFrame or None) and timestamp to populate_ui
+            self.cumulative_blame_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+        else:
+            logger.warning("Received cumulative blame data but no current repo instance.")
 
     def _handle_generic_data_error(self, error_tuple):
         """Handles errors from INITIAL data fetch workers."""

@@ -3,6 +3,7 @@ import os
 import logging
 import json
 import gzip
+import io
 import pandas as pd
 
 try:
@@ -188,7 +189,7 @@ class DiskCache(EphemeralCache):
                 try:
                     if isinstance(value, dict) and '__dataframe__' in value:
                         # Attempt to decode DataFrame from JSON string
-                        self._cache[key] = pd.read_json(value['__dataframe__'], orient='split')
+                        self._cache[key] = pd.read_json(io.StringIO(value['__dataframe__']), orient='split')
                     else:
                         # Store other JSON-native types directly
                         self._cache[key] = value

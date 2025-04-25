@@ -270,9 +270,7 @@ class Repository:
 
     @multicache(
         key_prefix="hours_estimate",
-        key_list=["branch", "grouping_window", "single_commit_hours", "limit", "days", "committer", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"), # Avoid complex HEAD check logic if default is HEAD
-    )
+        key_list=["branch", "grouping_window", "single_commit_hours", "limit", "days", "committer", "ignore_globs", "include_globs"])
     def hours_estimate(
         self,
         branch=None,
@@ -351,9 +349,7 @@ class Repository:
 
     @multicache(
         key_prefix="commit_history",
-        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
-    )
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
     def commit_history(
         self,
         branch=None,
@@ -510,9 +506,7 @@ class Repository:
 
     @multicache(
         key_prefix="file_change_history",
-        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
-    )
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
     def file_change_history(
         self,
         branch=None,
@@ -666,9 +660,7 @@ class Repository:
 
     @multicache(
         key_prefix="file_change_rates",
-        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
-    )
+        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"])
     def file_change_rates(
         self,
         branch=None,
@@ -833,9 +825,7 @@ class Repository:
 
     @multicache(
         key_prefix="blame",
-        key_list=["rev", "committer", "by", "ignore_blobs", "include_globs"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
-    )
+        key_list=["rev", "committer", "by", "ignore_blobs", "include_globs"])
     def blame(
         self,
         rev="HEAD",
@@ -879,11 +869,15 @@ class Repository:
         logger.debug(f"Blame Ignore: {ignore_globs}, Include: {include_globs}")
 
         blames = []
-        file_names = [
-            x
-            for x in self.repo.git.log(pretty="format:", name_only=True, diff_filter="A").split("\n")
-            if x.strip() != ""
-        ]
+        try:
+            # List files at the specified revision
+            file_output = self.repo.git.ls_tree("-r", "--name-only", rev)
+            # Correct split character to standard newline
+            file_names = [f for f in file_output.split("\n") if f.strip()]
+        except GitCommandError as e:
+            logger.error(f"Could not list files for rev '{rev}': {e}")
+            return DataFrame()  # Return empty DataFrame if we can't list files
+
         for file in self.__check_extension(
             {x: x for x in file_names},
             ignore_globs=ignore_globs,
@@ -891,9 +885,11 @@ class Repository:
         ):
             try:
                 logger.debug(f"Getting blame for file: {file} at rev: {rev}")
-                blame_output = self.repo.blame(rev, str(file).replace(self.git_dir + "/", ""))
+                # Use the relative path directly from ls-tree
+                blame_output = self.repo.blame(rev, file)
                 for commit, lines in blame_output:
-                    blames.append((commit, lines, str(file).replace(self.git_dir + "/", "")))
+                    # Store the relative path directly
+                    blames.append((commit, lines, file))
             except GitCommandError as e:
                 logger.warning(f"Failed to get blame for file: {file} at rev: {rev}. Error: {e}")
                 pass
@@ -948,9 +944,7 @@ class Repository:
 
     @multicache(
         key_prefix="revs",
-        key_list=["branch", "limit", "skip", "num_datapoints"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
-    )
+        key_list=["branch", "limit", "skip", "num_datapoints"])
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
@@ -1008,8 +1002,7 @@ class Repository:
 
     @multicache(
         key_prefix="cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"]
     )
     def cumulative_blame(
         self,
@@ -1123,8 +1116,7 @@ class Repository:
 
     @multicache(
         key_prefix="parallel_cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"]
     )
     def parallel_cumulative_blame(
         self,
@@ -1534,8 +1526,7 @@ class Repository:
 
     @multicache(
         key_prefix="get_commit_content",
-        key_list=["rev", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+        key_list=["rev", "ignore_globs", "include_globs"]
     )
     def get_commit_content(self, rev, ignore_globs=None, include_globs=None):
         """Gets detailed content changes for a specific commit.
@@ -1655,8 +1646,7 @@ class Repository:
 
     @multicache(
         key_prefix="get_file_content",
-        key_list=["path", "rev"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
+        key_list=["path", "rev"]
     )
     def get_file_content(self, path, rev="HEAD"):
         """Gets the content of a file from the repository at a specific revision.
@@ -1699,9 +1689,7 @@ class Repository:
 
     @multicache(
         key_prefix="list_files",
-        key_list=["rev"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
-    )
+        key_list=["rev"])
     def list_files(self, rev="HEAD"):
         """Lists all files in the repository at a specific revision, respecting .gitignore.
 
@@ -1819,9 +1807,7 @@ class Repository:
 
     @multicache(
         key_prefix="file_owner",
-        key_list=["rev", "filename", "committer"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
-    )
+        key_list=["rev", "filename", "committer"])
     def file_owner(self, rev, filename, committer=True):
         """Determines the primary owner of a file at a specific revision.
 
@@ -1888,9 +1874,7 @@ class Repository:
 
     @multicache(
         key_prefix="punchcard",
-        key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"],
-        skip_if=lambda x: bool(x.get("branch") == (self.default_branch if x.get("branch") is None else x.get("branch")) and x.get("branch") == "HEAD"),
-    )
+        key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"])
     def punchcard(
         self,
         branch=None,
@@ -1991,9 +1975,7 @@ class Repository:
 
     @multicache(
         key_prefix="file_detail",
-        key_list=["include_globs", "ignore_globs", "rev", "committer"],
-        skip_if=lambda x: bool(x.get("rev") is None or x.get("rev") == "HEAD"),
-    )
+        key_list=["include_globs", "ignore_globs", "rev", "committer"])
     def file_detail(self, include_globs=None, ignore_globs=None, rev="HEAD", committer=True):
         """Provides detailed information about all files in the repository.
 
@@ -2048,7 +2030,13 @@ class Repository:
         # map in file owners
         logger.debug("Mapping file owners...")
         # Use .get('name', None) to safely access potential None from file_owner
-        df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer).get("name", None) if (fo := self.file_owner(rev, x, committer=committer)) else None)
+        # df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer).get("name", None) if (fo := self.file_owner(rev, x, committer=committer)) else None)
+        def _get_owner_name_safe(file_path):
+            owner_info = self.file_owner(rev, file_path, committer=committer)
+            return owner_info.get("name") if owner_info else None
+
+        df["file_owner"] = df["file"].map(_get_owner_name_safe)
+
 
         # add extension (something like the language)
         logger.debug("Extracting file extensions...")
