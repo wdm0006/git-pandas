@@ -440,14 +440,15 @@ class MainWindow(QMainWindow):
     # --- Result Handlers for Initial Load --- #
     def _handle_overview_result(self, result_dict):
         """Handles the result from the overview data worker."""
-        # result_dict likely contains { 'data': data, 'refreshed_at': dt }
-        # We assume this result is for self.current_repo_instance
+        # result_dict contains { 'data': data, 'refreshed_at': datetime }
         data = result_dict.get('data')
+        refreshed_at = result_dict.get('refreshed_at')
 
         # Check if we still have a current repo instance (user might have cleared selection)
         if self.current_repo_instance:
-            logger.debug(f"Populating overview tab for {self.current_repo_instance.repo_name}")
-            self.overview_tab.populate_ui(self.current_repo_instance, data)
+            logger.debug(f"Populating overview tab for {self.current_repo_instance.repo_name} at {refreshed_at}")
+            # Pass refreshed_at to update the UI timestamp
+            self.overview_tab.populate_ui(self.current_repo_instance, data, refreshed_at)
         else:
             logger.debug("Received overview data but no repository is currently selected. Ignoring.")
         # self._on_worker_finished() # <--- Let finished signal handle this now
@@ -506,12 +507,18 @@ class MainWindow(QMainWindow):
 
         worker = Worker(fetch_func, self.current_repo_instance, force_refresh=True)
 
-        # Connect result: unpack dict, check instance, call populate_ui with timestamp
-        worker.signals.result.connect(
-            lambda res_dict: target_tab.populate_ui(
-                self.current_repo_instance, res_dict['data'], res_dict['refreshed_at']
-            ) if self.current_repo_instance else None
-        )
+        # Connect result: unpack dict, check instance, call populate_ui
+        # Handle OverviewTab refresh by using its result handler
+        if target_tab is self.overview_tab:
+            # Reuse the existing overview result handler to call populate_ui correctly
+            worker.signals.result.connect(self._handle_overview_result)
+        else:
+            # For other tabs, call populate_ui with timestamp via lambda
+            worker.signals.result.connect(
+                lambda res_dict: target_tab.populate_ui(
+                    self.current_repo_instance, res_dict['data'], res_dict['refreshed_at']
+                ) if self.current_repo_instance else None
+            )
 
         # Connect error to a specific handler that knows which tab to update
         worker.signals.error.connect(lambda error_tuple: self._handle_refresh_error(error_tuple, target_tab))
@@ -531,6 +538,12 @@ class MainWindow(QMainWindow):
         # For now, just log it. populate_ui should handle None data if result wasn't emitted.
         # Ensure loading state is reset via the finished signal connection
         # target_tab._hide_loading() # Now handled by finished signal connection
+
+        # Call the tab's specific error handler
+        if hasattr(target_tab, '_show_error'):
+            target_tab._show_error(f"Error refreshing data: {value}")
+        # Note: _hide_loading is called by the finished signal, 
+        # and _show_error also calls _hide_loading now to ensure button state is correct.
 
     def refresh_overview_data(self):
         self._start_refresh_worker(fetch_overview_data, self.overview_tab)

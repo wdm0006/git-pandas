@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
-    QPushButton
+    QPushButton,
+    QSizePolicy
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -29,10 +30,6 @@ class CumulativeBlameTab(QWidget):
         self.header_layout = QHBoxLayout()
         self.header_layout.setContentsMargins(0, 0, 0, 5)
 
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0,0,0,0)
-
         # --- Header Widgets ---
         self.header_label = QLabel("Cumulative Blame")
         self.header_label.setStyleSheet("font-weight: bold;")
@@ -50,19 +47,45 @@ class CumulativeBlameTab(QWidget):
         self.refresh_button.clicked.connect(self._request_refresh)
         self.header_layout.addWidget(self.refresh_button)
 
-        # --- Chart Area ---
-        # Use Matplotlib canvas
+        # --- Chart and Content Area ---
+        self.content_widget = QWidget()
+        self.content_layout = QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(0,0,0,0)
+        self.content_layout.setSpacing(5)
+
+        # Placeholder Label
+        self.placeholder_label = QLabel("<i>Select a repository to view cumulative blame data.</i>")
+        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.placeholder_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.content_layout.addWidget(self.placeholder_label)
+
+        # Status Label (Loading/Error)
+        self.status_label = QLabel("")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.status_label.setVisible(False)
+        self.content_layout.addWidget(self.status_label)
+
+        # Data Container for the chart
+        self.data_container_widget = QWidget()
+        self.data_container_layout = QVBoxLayout(self.data_container_widget)
+        self.data_container_layout.setContentsMargins(0,0,0,0)
+        self.data_container_layout.setSpacing(5)
+        self.data_container_widget.setVisible(False)
+        self.content_layout.addWidget(self.data_container_widget)
+
+        # Use Matplotlib canvas inside data container
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
-        # Initially hide the canvas until data is loaded
         self.canvas.setVisible(False)
-        self.content_layout.addWidget(self.canvas)
+        self.data_container_layout.addWidget(self.canvas)
 
         # --- Assembly ---
         self.main_layout.addLayout(self.header_layout)
         self.main_layout.addWidget(self.content_widget, 1)
 
-        self._show_placeholder() # Show placeholder initially
+        # Initial state
+        self._show_placeholder()
 
     def _request_refresh(self):
         # Emit the signal instead of calling parent directly
@@ -70,34 +93,31 @@ class CumulativeBlameTab(QWidget):
         # if self.parent() and hasattr(self.parent(), 'refresh_cumulative_blame_data'):
         #     self.parent().refresh_cumulative_blame_data()
 
-    def _show_placeholder(self, message="<i>Select a repository to view cumulative blame data.</i>"):
-        # Remove previous content before adding placeholder
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater() # Properly delete widgets
-
-        # Add placeholder label
-        placeholder = QLabel(message)
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(placeholder)
-
-        # Don't reset other state here, keep it focused on showing the placeholder message
-        # self.refresh_button.setEnabled(False)
-        # self.refresh_time_label.setText("Last refreshed: N/A")
-        # self.repo = None
-        # self.blame_data = pd.DataFrame()
-        # self.last_refreshed = None
-
-        # Return the label in case the caller wants to manipulate it
-        return placeholder
+    def _show_placeholder(self, message=None):
+        # Show placeholder message
+        text = message or "<i>Select a repository to view cumulative blame data.</i>"
+        self.placeholder_label.setText(text)
+        self.placeholder_label.setVisible(True)
+        self.status_label.setVisible(False)
+        self.data_container_widget.setVisible(False)
+        self.refresh_button.setEnabled(False)
+        self.refresh_time_label.setText("Last refreshed: N/A")
+        self.repo = None
+        self.blame_data = pd.DataFrame()
+        self.last_refreshed = None
 
     def _show_loading(self):
+        # Show loading state
         self.refresh_button.setEnabled(False)
         self.refresh_button.setText("Loading...")
+        self.placeholder_label.setVisible(False)
+        self.data_container_widget.setVisible(False)
+        self.status_label.setText("<i>Loading cumulative blame data...</i>")
+        self.status_label.setStyleSheet("color: grey;")
+        self.status_label.setVisible(True)
 
     def _hide_loading(self):
+        # Restore button state
         self.refresh_button.setEnabled(self.repo is not None)
         self.refresh_button.setText("Refresh")
 
@@ -114,18 +134,17 @@ class CumulativeBlameTab(QWidget):
                 self.refresh_time_label.setText("Last refreshed: Error")
 
             # Extract DataFrame from dict structure if needed
-            if isinstance(blame_data, dict) and 'data' in blame_data and 'blame' in blame_data['data']:
-                blame_data = blame_data['data']['blame']
+            if isinstance(blame_data, dict) and 'data' in blame_data:
+                blame_data = blame_data['data']
 
             # Check for invalid data (None or not a DataFrame or empty DataFrame)
             if not isinstance(blame_data, pd.DataFrame) or blame_data.empty:
-                error_message = "Failed to load cumulative blame data."
-                # Add more specific message if it's an empty DataFrame vs None/other type
+                # Show error placeholder
                 if isinstance(blame_data, pd.DataFrame) and blame_data.empty:
-                    error_message = "No cumulative blame data found for this repository/branch."
-                elif blame_data is not None:
-                     error_message = f"Received invalid data type for blame: {type(blame_data).__name__}"
-                self._show_placeholder(f"<font color='orange'>{error_message}</font>")
+                    msg = "No cumulative blame data found for this repository/branch."
+                else:
+                    msg = "Failed to load cumulative blame data."
+                self._show_placeholder(f"<font color='orange'>{msg}</font>")
                 self._hide_loading()
                 self.refresh_button.setEnabled(self.repo is not None)
                 return # Stop processing here
@@ -135,11 +154,14 @@ class CumulativeBlameTab(QWidget):
 
             # Safely clear previous content
             try:
-                while self.content_layout.count():
-                    item = self.content_layout.takeAt(0)
+                # Clear content layout, preserve placeholder/status widgets if needed
+                while self.data_container_layout.count():
+                    item = self.data_container_layout.takeAt(0)
                     widget = item.widget()
-                    if widget and widget != self.canvas:  # Don't delete the canvas
+                    if widget:
                         widget.deleteLater()
+                # Re-add canvas
+                self.data_container_layout.addWidget(self.canvas)
             except RuntimeError:
                 # If we hit Qt C++ object deletion issues, recreate the canvas
                 self.figure, self.ax = plt.subplots()
@@ -174,12 +196,8 @@ class CumulativeBlameTab(QWidget):
                 self.figure.tight_layout() # Adjust layout
 
                 # Only add the canvas if it's not already in the layout
-                if self.canvas.parent() != self.content_widget:
-                    self.content_layout.addWidget(self.canvas)
-                
-                self.canvas.draw()
                 self.canvas.setVisible(True)
-
+                
             except Exception as e:
                 import traceback
                 print(f"Error plotting cumulative blame: {e}")
@@ -187,6 +205,8 @@ class CumulativeBlameTab(QWidget):
                 self._show_placeholder(f"<font color='red'>Error generating chart: {e}</font>")
 
             # --- Final Touches --- #
+            # Show data container
+            self.data_container_widget.setVisible(True)
             self._hide_loading()
             self.refresh_button.setEnabled(self.repo is not None)
             

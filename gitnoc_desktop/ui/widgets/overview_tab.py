@@ -91,43 +91,71 @@ class OverviewTab(QWidget):
         self.repo = None # Clear repo reference
 
     def _show_loading(self):
+        # Disable refresh button and update label
         self.refresh_button.setEnabled(False)
         self.refresh_button.setText("Loading...")
-        # Optionally, could dim or overlay the content_widget here
+        # Clear current content and show loading message
+        while self.content_layout.count():
+            item = self.content_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+        loading_label = QLabel("<i>Loading overview data...</i>")
+        loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.content_layout.addWidget(loading_label)
 
     def _hide_loading(self):
         self.refresh_button.setEnabled(self.repo is not None) # Enable only if repo is loaded
         self.refresh_button.setText("Refresh")
+        # Note: content will be updated by populate_ui
 
-    def populate_ui(self, repo, overview_data):
-        """Populates the UI with fetched data and cache modification time."""
+    def _show_error(self, message=None):
+        """Display an error message in the content area."""
+        # Clear content
+        while self.content_layout.count():
+            item = self.content_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+        # Show error message
+        err_msg = message if message else "Failed to load overview data."
+        error_label = QLabel(f"<font color='orange'>{err_msg}</font>")
+        error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.content_layout.addWidget(error_label)
+        # Restore button
+        self._hide_loading()
+
+    def populate_ui(self, repo, overview_data, refreshed_at=None):
+        """Populates the UI with fetched data and the time it was refreshed."""
         logger.debug(f"Populating OverviewTab UI. Received overview_data: {overview_data}")
         self._show_placeholder() # Clear previous content/placeholder
         self.repo = repo # Store repo reference
 
-        # --- Update refresh time label based on cache file modification --- #
-        cache_timestamp_str = "N/A"
-        try:
-            if CACHE_FILE.exists():
-                mtime = os.path.getmtime(CACHE_FILE)
-                cache_dt = datetime.fromtimestamp(mtime)
-                cache_timestamp_str = cache_dt.strftime('%Y-%m-%d %H:%M:%S')
-            else:
-                 cache_timestamp_str = "Cache file not found"
-        except Exception as e:
-            # Log the error appropriately if needed
-            # print(f"Error getting cache file time: {e}") # Example for debugging
-            cache_timestamp_str = "Error reading cache time"
-
-        self.refresh_time_label.setText(f"Cache updated: {cache_timestamp_str}") # <-- Restore changed label text
+        # --- Update refresh time label based on refreshed_at or cache file modification --- #
+        if refreshed_at:
+            try:
+                timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
+            except Exception:
+                timestamp_str = "N/A"
+            self.refresh_time_label.setText(f"Last refreshed: {timestamp_str}")
+        else:
+            # Fallback to cache file modification time
+            cache_timestamp_str = "N/A"
+            try:
+                if CACHE_FILE.exists():
+                    mtime = os.path.getmtime(CACHE_FILE)
+                    cache_dt = datetime.fromtimestamp(mtime)
+                    cache_timestamp_str = cache_dt.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    cache_timestamp_str = "Cache file not found"
+            except Exception:
+                cache_timestamp_str = "Error reading cache time"
+            self.refresh_time_label.setText(f"Cache updated: {cache_timestamp_str}")
         # -------------------------------------------------------------------- #
 
         if overview_data is None:
-            error_label = QLabel("<font color='orange'>Failed to load overview data in background.</font>")
-            error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.content_layout.addWidget(error_label)
-            self._hide_loading() # Ensure button is re-enabled even on error
-            self.refresh_button.setEnabled(self.repo is not None)
+            # Use _show_error for consistency
+            self._show_error("Failed to load overview data in background.")
             return
 
         # --- Data Extraction --- #

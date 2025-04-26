@@ -37,14 +37,17 @@ def multicache(key_prefix, key_list, skip_if=None):
                 logging.debug(f"Cache skipped entirely for {key_prefix} due to skip_if condition.")
                 return func(self, *args, **kwargs)
 
-            # Check for force_refresh argument to bypass cache read but still write
-            force_refresh = kwargs.get('force_refresh', False)
+            # Check for force_refresh argument to bypass cache read but still write, and remove it from kwargs
+            force_refresh = kwargs.pop('force_refresh', False)
 
             # Generate the cache key (ensure force_refresh itself is not part of the key)
             # Assumes 'force_refresh' is not included in key_list by the caller
             key_parts = [str(kwargs.get(k)) for k in key_list]
             key = key_prefix + self.repo_name + "_".join(key_parts)
             logging.debug(f"Cache key generated for {key_prefix}: {key}")
+            # Explicitly log force refresh bypass of cache read
+            if force_refresh:
+                logging.info(f"Force refresh requested, bypassing cache read for key: {key}")
 
             cache_hit = False
             # Try retrieving from cache if not forcing refresh

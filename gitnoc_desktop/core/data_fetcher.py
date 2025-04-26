@@ -59,9 +59,13 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
     """Worker function to fetch all data needed for the Overview tab."""
     repo_name = repo.repo_name
     logger.info(f"Fetching overview data for {repo_name} (force_refresh={force_refresh})")
+    # Artificial delay on refresh to make loading indicator visible
+    if force_refresh:
+        time.sleep(0.5)
     data = {}
     try:
-        blame = repo.blame(committer=False)
+        # Bypass cache if force_refresh is True
+        blame = repo.blame(committer=False, force_refresh=force_refresh)
         blame.index.name = "author"
         data['blame'] = blame.reset_index().to_dict(orient='records')
         logger.debug(f"Fetched blame data for {repo_name}")
@@ -70,7 +74,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         data['blame'] = None
 
     try:
-        files = repo.list_files()
+        files = repo.list_files(force_refresh=force_refresh)
         lang_counts = {}
         for f in files['file']:
             ext = Path(f).suffix
@@ -85,7 +89,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         data['lang_counts'] = None
 
     try:
-        commits = repo.commit_history(limit=5, branch=repo.default_branch)
+        commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=force_refresh)
         if not commits.empty:
              commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
         data['commits'] = commits # Pass DataFrame
@@ -95,7 +99,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         data['commits'] = None
 
     try:
-        data['bus_factor'] = repo.bus_factor() # Pass DataFrame
+        data['bus_factor'] = repo.bus_factor(force_refresh=force_refresh) # Pass DataFrame
         logger.debug(f"Fetched bus factor for {repo_name}")
     except Exception as e:
         logger.warning(f"Error fetching bus factor for {repo_name}: {e}")
@@ -103,14 +107,14 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
 
     try:
         active_branches_list = []
-        base_commits = repo.commit_history(limit=1, branch=repo.default_branch)
+        base_commits = repo.commit_history(limit=1, branch=repo.default_branch, force_refresh=force_refresh)
         if not base_commits.empty:
             cutoff_date = datetime.now(tz=base_commits.index.tz) - timedelta(days=7)
-            all_branches = repo.branches()
+            all_branches = repo.branches(force_refresh=force_refresh)
             logger.debug(f"Checking {len(all_branches)} branches for recent activity in {repo_name}")
             for branch_name in all_branches['branch']:
                 try:
-                    branch_commits = repo.commit_history(branch=branch_name, limit=1)
+                    branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=force_refresh)
                     if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
                         logger.debug(f"Branch '{branch_name}' is active in {repo_name}.")
                         active_branches_list.append({

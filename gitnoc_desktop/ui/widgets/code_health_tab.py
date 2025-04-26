@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QTextBrowser,
     QPushButton,
+    QSizePolicy,
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -56,7 +57,29 @@ class CodeHealthTab(QWidget):
         self.content_widget = QWidget()
         self.content_layout = QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(0,0,0,0)
+        self.content_layout.setSpacing(5)
         self.main_layout.addWidget(self.content_widget, 1)
+
+        # Placeholder Label
+        self.placeholder_label = QLabel("<i>Select a repository to view code health data.</i>")
+        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.placeholder_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.content_layout.addWidget(self.placeholder_label)
+
+        # Status Label (Loading/Error)
+        self.status_label = QLabel("")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.status_label.setVisible(False)
+        self.content_layout.addWidget(self.status_label)
+
+        # Data Container
+        self.data_container_widget = QWidget()
+        self.data_container_layout = QVBoxLayout(self.data_container_widget)
+        self.data_container_layout.setContentsMargins(0,0,0,0)
+        self.data_container_layout.setSpacing(5)
+        self.data_container_widget.setVisible(False)
+        self.content_layout.addWidget(self.data_container_widget)
 
         self._show_placeholder()
 
@@ -65,14 +88,10 @@ class CodeHealthTab(QWidget):
         self.refresh_requested.emit()
 
     def _show_placeholder(self):
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        placeholder = QLabel("<i>Select a repository to view code health data.</i>")
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(placeholder)
+        # Show placeholder, hide other views
+        self.placeholder_label.setVisible(True)
+        self.status_label.setVisible(False)
+        self.data_container_widget.setVisible(False)
         self.refresh_button.setEnabled(False)
         self.refresh_time_label.setText("Last refreshed: N/A")
         self.repo = None
@@ -82,29 +101,45 @@ class CodeHealthTab(QWidget):
     def _show_loading(self):
         self.refresh_button.setEnabled(False)
         self.refresh_button.setText("Loading...")
+        # Clear views and show loading indicator
+        self.placeholder_label.setVisible(False)
+        self.data_container_widget.setVisible(False)
+        self.status_label.setText("<i>Loading code health data...</i>")
+        self.status_label.setStyleSheet("color: grey;")
+        self.status_label.setVisible(True)
 
     def _hide_loading(self):
         self.refresh_button.setEnabled(self.repo is not None)
         self.refresh_button.setText("Refresh")
 
+    def _show_error(self, message="Failed to load code health data."):
+        # Clear views and show error message
+        self.placeholder_label.setVisible(False)
+        self.data_container_widget.setVisible(False)
+        self.status_label.setText(f"<font color='orange'>{message}</font>")
+        self.status_label.setVisible(True)
+        self._hide_loading()
+
     def populate_ui(self, repo, health_data, refreshed_at):
-        """Populates the UI with fetched health data and refresh time."""
-        self._show_placeholder()
         self.repo = repo
         self.last_refreshed = refreshed_at
-
         if refreshed_at:
-            timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
-            self.refresh_time_label.setText(f"Last refreshed: {timestamp_str}")
+            ts = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
+            self.refresh_time_label.setText(f"Last refreshed: {ts}")
         else:
             self.refresh_time_label.setText("Last refreshed: Error")
+        # Hide placeholder and status for actual data
+        self.placeholder_label.setVisible(False)
+        self.status_label.setVisible(False)
+        # Clear previous data
+        while self.data_container_layout.count():
+            item = self.data_container_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
         if health_data is None or health_data.get('merged_data') is None:
-            error_label = QLabel("<font color='orange'>Failed to load code health data in background.</font>")
-            error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.content_layout.addWidget(error_label)
-            self._hide_loading()
-            self.refresh_button.setEnabled(self.repo is not None)
+            self._show_error("Failed to load code health data in background.")
             return
 
         self.merged_data = health_data.get('merged_data', pd.DataFrame()).fillna({
@@ -112,18 +147,17 @@ class CodeHealthTab(QWidget):
         })
         overall_coverage = health_data.get('overall_coverage', "N/A")
 
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget: widget.deleteLater()
-
+        # Populate data container
         stats_layout = QHBoxLayout()
         stats_layout.addWidget(QLabel(f"Repository: <b>{self.repo.repo_name}</b>"))
         stats_layout.addStretch()
         stats_layout.addWidget(QLabel(f"Overall Coverage: <b>{overall_coverage}</b>"))
-        self.content_layout.addLayout(stats_layout)
+        self.data_container_layout.addLayout(stats_layout)
 
         self._add_health_table(self.merged_data)
+
+        # Show data
+        self.data_container_widget.setVisible(True)
 
         self._hide_loading()
 
