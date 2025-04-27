@@ -1,5 +1,14 @@
 # --- Helper function for language mapping (basic) --- #
 def get_language_from_extension(extension):
+    """
+    Map file extension to programming language name.
+    
+    Args:
+        extension: File extension including the dot (e.g., '.py')
+        
+    Returns:
+        String representing the programming language name
+    """
     mapping = {
         ".py": "Python",
         ".js": "JavaScript",

@@ -4,28 +4,34 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Constants for configuration file path
+# Configuration paths
 CONFIG_DIR = Path.home() / ".gitnoc_desktop"
 CONFIG_FILE = CONFIG_DIR / "repos.json"
 
 def load_repositories():
-    """Load saved repositories from config file."""
+    """
+    Load saved repositories from config file.
+    
+    Returns:
+        dict: Repository data in format {name: {'path': str, 'default_branch': str|None}}
+    """
     logger.debug(f"Attempting to load repositories from {CONFIG_FILE}")
     repositories = {}
+    
     if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE, "r") as f:
                 loaded_data = json.load(f)
             
-            # Convert old format (dict[name, path]) to new format (dict[name, dict[path, default_branch]])
+            # Handle conversion from old format if needed
             for name, value in loaded_data.items():
-                if isinstance(value, str): # Old format detected
+                if isinstance(value, str):  # Old format: {name: path}
                     repositories[name] = {'path': value, 'default_branch': None}
                     logger.info(f"Converted old format repo entry: {name}")
-                elif isinstance(value, dict) and 'path' in value: # New format
+                elif isinstance(value, dict) and 'path' in value:  # New format
                     repositories[name] = {
                         'path': value['path'],
-                        'default_branch': value.get('default_branch') # None if missing
+                        'default_branch': value.get('default_branch')
                     }
                 else:
                     logger.warning(f"Skipping invalid repository entry in config: {name} = {value}")
@@ -43,11 +49,17 @@ def load_repositories():
         return {}
 
 def save_repositories(repositories):
-    """Save repositories to config file."""
+    """
+    Save repositories to config file.
+    
+    Args:
+        repositories (dict): Repository data to save
+    """
     logger.debug(f"Saving {len(repositories)} repositories to {CONFIG_FILE}")
     try:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        # Ensure data saved is in the new format {name: {path: ..., default_branch: ...}}
+        
+        # Ensure data is in the correct format before saving
         data_to_save = {}
         for name, info in repositories.items():
             if isinstance(info, dict) and 'path' in info:
@@ -56,7 +68,7 @@ def save_repositories(repositories):
                     'default_branch': info.get('default_branch')
                 }
             else:
-                 logger.warning(f"Skipping save for malformed repo info: {name} = {info}")
+                logger.warning(f"Skipping save for malformed repo info: {name} = {info}")
 
         with open(CONFIG_FILE, "w") as f:
             json.dump(data_to_save, f, indent=4)

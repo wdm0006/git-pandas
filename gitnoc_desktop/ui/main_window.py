@@ -1,5 +1,5 @@
 import sys
-import logging # Add logging import
+import logging
 from pathlib import Path
 import traceback
 
@@ -20,10 +20,9 @@ from PySide6.QtWidgets import (
     QInputDialog,
 )
 from PySide6.QtCore import QThreadPool, Qt, Signal
-import git # For exception handling
+import git
 
-from gitpandas import Repository # Keep Repository import
-# Remove EphemeralCache import if DiskCache is now exclusively used
+from gitpandas import Repository
 
 # Project specific imports
 from config.loader import load_repositories, save_repositories
@@ -43,27 +42,28 @@ from ui.widgets.contributors_tab import ContributorsTab
 from ui.widgets.tags_tab import TagsTab
 from ui.widgets.cumulative_blame_tab import CumulativeBlameTab
 from ui.styles import STYLESHEET
-from core.utils import get_language_from_extension # Moved this import here
+from core.utils import get_language_from_extension
 
 logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
+    """
+    Main application window for GitNOC Desktop.
+    
+    Manages repository selection, data loading and display in tabbed interface.
+    """
     def __init__(self, cache_backend):
         super().__init__()
         logger.info("Initializing MainWindow...")
 
-        # Apply the stylesheet
         self.setStyleSheet(STYLESHEET)
-
         self.setWindowTitle("GitNOC Desktop")
-        # Remove fixed size since we're going fullscreen
-        # self.setGeometry(100, 100, 1200, 800)
-
-        self.repositories = load_repositories()  # Dictionary: {name: path}
-        self.current_repo_instance = None # Store the active Repository object
-        self.pending_workers = 0 # Count of active data loading workers
-
-        # --- Initialize Cache --- #
+        
+        self.repositories = load_repositories()
+        self.current_repo_instance = None
+        self.pending_workers = 0
+        
+        # Cache configuration
         self.cache_backend = cache_backend
         if self.cache_backend:
             cache_type = type(self.cache_backend).__name__
@@ -71,11 +71,11 @@ class MainWindow(QMainWindow):
         else:
             logger.warning("No cache backend provided to MainWindow.")
 
-        # --- Initialize Thread Pool --- #
+        # Thread pool setup
         self.threadpool = QThreadPool.globalInstance()
         logger.info(f"Using thread pool with max {self.threadpool.maxThreadCount()} threads.")
 
-        # --- Setup Main UI --- #
+        # Setup UI layout
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
         self.setCentralWidget(main_splitter)
 
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         self.left_layout.addWidget(repo_list_label)
         self.repo_list_widget = QListWidget()
         self.repo_list_widget.itemSelectionChanged.connect(self.handle_repo_selection)
-        self.left_layout.addWidget(self.repo_list_widget, 1) # Give list stretch factor
+        self.left_layout.addWidget(self.repo_list_widget, 1)
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Add")
         self.add_button.setToolTip("Add a new repository")
@@ -109,67 +109,70 @@ class MainWindow(QMainWindow):
         right_layout.addWidget(self.tab_widget)
         main_splitter.addWidget(right_panel_widget)
 
-        # Set the initial sizes for the splitter (left panel will be ~1/6 of the window)
-        main_splitter.setStretchFactor(0, 1)  # Left panel stretch factor
-        main_splitter.setStretchFactor(1, 5)  # Right panel stretch factor (increased from 3 to 5)
+        # Set splitter proportions
+        main_splitter.setStretchFactor(0, 1)
+        main_splitter.setStretchFactor(1, 5)
         
-        # Set a maximum width for the left panel
-        left_panel_widget.setMaximumWidth(300)  # Limit maximum width
-        left_panel_widget.setMinimumWidth(200)  # Ensure it doesn't get too small
+        # Set panel size constraints
+        left_panel_widget.setMaximumWidth(300)
+        left_panel_widget.setMinimumWidth(200)
 
-        # --- Create Tab Instances --- #
-        # Create tabs once, update them later
-        self.overview_tab = OverviewTab(self) # Pass parent
+        # Initialize tab widgets
+        self.overview_tab = OverviewTab(self)
         self.code_health_tab = CodeHealthTab(self)
         self.contributors_tab = ContributorsTab(self)
         self.tags_tab = TagsTab(self)
-        self.cumulative_blame_tab = CumulativeBlameTab(self) # Instantiate the new tab
+        self.cumulative_blame_tab = CumulativeBlameTab(self)
 
         self.tab_widget.addTab(self.overview_tab, "Overview")
         self.tab_widget.addTab(self.code_health_tab, "Code Health")
         self.tab_widget.addTab(self.contributors_tab, "Contributors")
         self.tab_widget.addTab(self.tags_tab, "Tags")
-        self.tab_widget.addTab(self.cumulative_blame_tab, "Cumulative Blame") # Add the new tab
+        self.tab_widget.addTab(self.cumulative_blame_tab, "Cumulative Blame")
 
-        # --- Data Fetcher ---
+        # Setup data fetcher
         self.data_fetcher = DataFetcher()
 
         self.data_fetcher.code_health_data_fetched.connect(self.code_health_tab.populate_ui)
         self.data_fetcher.contributors_data_fetched.connect(self.contributors_tab.populate_ui)
         self.data_fetcher.tags_data_fetched.connect(self.tags_tab.populate_ui)
-        self.data_fetcher.cumulative_blame_data_fetched.connect(self.cumulative_blame_tab.populate_ui) # Connect signal
+        self.data_fetcher.cumulative_blame_data_fetched.connect(self.cumulative_blame_tab.populate_ui)
         self.data_fetcher.global_loading_changed.connect(self._update_global_loading)
         self.data_fetcher.repo_instantiation_failed.connect(self._handle_repo_instantiation_failure)
 
-        # Connect refresh signals from tabs
+        # Connect refresh signals
         self.overview_tab.refresh_requested.connect(self.refresh_overview_data)
         self.code_health_tab.refresh_requested.connect(self.refresh_code_health_data)
         self.contributors_tab.refresh_requested.connect(self.refresh_contributor_data)
         self.tags_tab.refresh_requested.connect(self.refresh_tags_data)
-        self.cumulative_blame_tab.refresh_requested.connect(self.refresh_cumulative_blame_data) # Connect refresh
+        self.cumulative_blame_tab.refresh_requested.connect(self.refresh_cumulative_blame_data)
 
-        # --- Initial State --- #
+        # Initialize UI state
         self.populate_repo_list()
-        self._set_loading_state(False) # Initially not loading
+        self._set_loading_state(False)
         logger.info("MainWindow initialization complete.")
 
-        # Make window fullscreen by default
+        # Show window in fullscreen
         self.showFullScreen()
 
     def _update_global_loading(self, is_loading):
-        """Slot to handle the global loading state change."""
+        """Handle global loading state change."""
         logger.debug(f"Global loading state changed: {is_loading}")
         self._set_loading_state(is_loading)
-        # TODO: Add a more prominent global loading indicator?
 
     def _set_loading_state(self, loading):
-        """Enable/disable UI elements based on loading state."""
+        """
+        Enable/disable UI elements based on loading state.
+        
+        Args:
+            loading (bool): True if application is loading data
+        """
         logger.debug(f"Setting loading state: {loading}")
         self.repo_list_widget.setEnabled(not loading)
         self.add_button.setEnabled(not loading)
         self.remove_button.setEnabled(not loading)
         self.tab_widget.setEnabled(not loading)
-        # TODO: Add a visual indicator like a spinner (QMovie) later
+        
         if loading:
             self.setWindowTitle("GitNOC Desktop - Loading...")
             self.overview_tab._show_placeholder()
@@ -181,6 +184,7 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("GitNOC Desktop")
 
     def add_repository(self):
+        """Add a new Git repository to the application."""
         start_dir = str(Path.home())
         selected_items = self.repo_list_widget.selectedItems()
         if selected_items:

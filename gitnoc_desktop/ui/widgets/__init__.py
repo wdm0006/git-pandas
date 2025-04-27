@@ -1,6 +1,4 @@
-"""
-GitNOC Desktop UI widgets.
-"""
+"""UI widgets for GitNOC Desktop."""
 
 from .overview_tab import OverviewTab
 from .code_health_tab import CodeHealthTab
@@ -15,4 +13,5 @@ __all__ = [
     'CodeHealthTab',
     'ContributorsTab',
     'TagsTab',
+    'CumulativeBlameTab',
 ]

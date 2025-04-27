@@ -3,37 +3,30 @@ from PySide6.QtCore import Qt
 import pandas as pd
 
 class DataFrameTable(QTableWidget):
-    """A QTableWidget subclass specifically designed for displaying pandas DataFrames.
+    """
+    QTableWidget for displaying pandas DataFrames with automatic formatting.
     
-    Features:
-    - Automatic sorting
-    - Proper handling of different data types
-    - Index display
-    - Consistent formatting
-    - Automatic column sizing
+    Features: automatic sorting, data type handling, index display,
+    consistent formatting, and column sizing.
     """
     
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        # Enable sorting
         self.setSortingEnabled(True)
-        
-        # Set alternating row colors for better readability
         self.setAlternatingRowColors(True)
-        
-        # Disable editing
         self.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         
     def set_dataframe(self, df, columns=None, show_index=True, stretch_last=True, max_visible_rows=20):
-        """Set the DataFrame to display.
+        """
+        Set and display a DataFrame in the table.
         
         Args:
-            df (pd.DataFrame): DataFrame to display
-            columns (list, optional): List of column names to show. If None, shows all columns.
-            show_index (bool): Whether to show the DataFrame's index as a column
-            stretch_last (bool): Whether to stretch the last column
-            max_visible_rows (int): Maximum number of rows to show without scrolling
+            df: DataFrame to display
+            columns: Column names to show (all columns if None)
+            show_index: Whether to display DataFrame index as a column
+            stretch_last: Whether to stretch the last column to fill space
+            max_visible_rows: Maximum rows to show without scrolling
         """
         if not isinstance(df, pd.DataFrame):
             raise TypeError("Data must be a pandas DataFrame")
@@ -41,7 +34,7 @@ class DataFrameTable(QTableWidget):
         # Make a copy to avoid modifying the original
         df = df.copy()
         
-        # Reset index if showing it
+        # Handle index display
         if show_index:
             if isinstance(df.index, pd.MultiIndex):
                 # For MultiIndex, concatenate the levels
@@ -53,39 +46,36 @@ class DataFrameTable(QTableWidget):
                 df = df.reset_index(drop=False)
                 df = df.rename(columns={df.index.name or 'index': 'Index'})
         
-        # Determine columns to show
+        # Determine columns to display
         if columns is None:
             columns = list(df.columns)
         else:
-            # Ensure all requested columns exist
+            # Verify requested columns exist
             missing = [col for col in columns if col not in df.columns]
             if missing:
                 raise ValueError(f"Columns not found in DataFrame: {missing}")
         
-        # Set up the table
+        # Configure table dimensions
         self.setRowCount(len(df))
         self.setColumnCount(len(columns))
         
-        # Set headers
-        headers = []
-        for col in columns:
-            header = col.replace('_', ' ').title()
-            headers.append(header)
+        # Set column headers
+        headers = [col.replace('_', ' ').title() for col in columns]
         self.setHorizontalHeaderLabels(headers)
         
-        # Populate data
+        # Populate data cells
         for i in range(len(df)):
             for j, col in enumerate(columns):
                 value = df.iloc[i][col]
                 
-                # Handle different data types
+                # Format based on data type
                 if pd.isna(value):
                     display_value = ''
                 elif isinstance(value, bool):
                     display_value = '✓' if value else '✗'
                 elif isinstance(value, (int, float)):
                     if isinstance(value, float):
-                        display_value = f"{value:.2f}"  # Format floats to 2 decimal places
+                        display_value = f"{value:.2f}"
                     else:
                         display_value = str(value)
                 elif isinstance(value, pd.Timestamp):
@@ -95,7 +85,7 @@ class DataFrameTable(QTableWidget):
                 
                 item = QTableWidgetItem(display_value)
                 
-                # Set sort value
+                # Set sort value for numeric data
                 if isinstance(value, (int, float)) and pd.notna(value):
                     item.setData(Qt.ItemDataRole.EditRole, float(value))
                 
@@ -105,23 +95,23 @@ class DataFrameTable(QTableWidget):
                 
                 self.setItem(i, j, item)
         
-        # Adjust column widths
+        # Size columns appropriately
         self.resizeColumnsToContents()
         
-        # Set reasonable minimum width for the table
+        # Set reasonable minimum width
         total_width = sum(self.columnWidth(i) for i in range(self.columnCount()))
-        self.setMinimumWidth(min(total_width + 50, 1200))  # Add padding, cap at 1200px
+        self.setMinimumWidth(min(total_width + 50, 1200))
         
-        # Set reasonable height
+        # Set reasonable height based on visible rows
         header_height = self.horizontalHeader().height()
         row_height = self.rowHeight(0) if self.rowCount() > 0 else 30
         visible_rows = min(max_visible_rows, self.rowCount())
-        table_height = header_height + (row_height * visible_rows) + 2  # +2 for borders
+        table_height = header_height + (row_height * visible_rows) + 2
         self.setMinimumHeight(table_height)
         
-        # Configure column resizing
+        # Configure column resize behavior
         header = self.horizontalHeader()
-        if stretch_last:
+        if stretch_last and len(columns) > 0:
             for j in range(len(columns) - 1):
                 header.setSectionResizeMode(j, QHeaderView.ResizeMode.Interactive)
             header.setSectionResizeMode(len(columns) - 1, QHeaderView.ResizeMode.Stretch)

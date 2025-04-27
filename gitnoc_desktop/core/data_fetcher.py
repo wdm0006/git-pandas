@@ -18,14 +18,15 @@ logger = logging.getLogger(__name__)
 
 # --- Data Fetching Functions (for Worker threads) --- #
 def load_repository_instance(repo_info, cache_backend):
-    """Worker function to instantiate Repository.
+    """
+    Instantiate a Repository object for the given repository info.
     
     Args:
-        repo_info (dict): Dictionary containing {'path': str, 'default_branch': str|None}.
-        cache_backend: The cache backend instance (e.g., DiskCache).
-
+        repo_info (dict): Repository information with {'path': str, 'default_branch': str|None}
+        cache_backend: Cache backend instance for the Repository
+        
     Returns:
-        Repository instance or None if instantiation fails (e.g., default branch issue).
+        Repository: Instantiated Repository object or None if instantiation fails
     """
     repo_path = repo_info['path']
     explicit_branch = repo_info.get('default_branch')
@@ -34,10 +35,8 @@ def load_repository_instance(repo_info, cache_backend):
 
     try:
         if explicit_branch:
-            # Use the explicitly defined branch from config
             repo = Repository(working_dir=repo_path, default_branch=explicit_branch, cache_backend=cache_backend)
         else:
-            # No explicit branch saved, let Repository try auto-detection (main/master)
             repo = Repository(working_dir=repo_path, cache_backend=cache_backend)
         
         logger.info(f"Successfully instantiated Repository for {repo_path} using branch: {repo.default_branch}")
@@ -45,33 +44,41 @@ def load_repository_instance(repo_info, cache_backend):
     except ValueError as e:
         if "Could not detect default branch" in str(e):
             logger.error(f"Failed to instantiate Repository for {repo_path}: {e}. Returning None.")
-            return None # Signal failure to MainWindow
+            return None
         else:
-            # Re-raise other ValueErrors
             logger.error(f"Unexpected ValueError instantiating Repository for {repo_path}", exc_info=True)
             raise
     except Exception as e:
-        # Catch any other unexpected errors during instantiation
         logger.error(f"Unexpected error instantiating Repository for {repo_path}", exc_info=True)
-        raise # Propagate other errors to the worker's error handler
+        raise
 
 def fetch_overview_data(repo: Repository, force_refresh=False):
-    """Worker function to fetch all data needed for the Overview tab."""
+    """
+    Fetch data for the Overview tab.
+    
+    Args:
+        repo: Repository instance
+        force_refresh: Whether to bypass cache
+        
+    Returns:
+        dict: Dictionary containing overview data components
+    """
     repo_name = repo.repo_name
     logger.info(f"Fetching overview data for {repo_name} (force_refresh={force_refresh})")
-    # Artificial delay on refresh to make loading indicator visible
+    
     if force_refresh:
-        time.sleep(0.5)
+        time.sleep(0.5)  # Add delay on refresh to make loading indicator visible
+        
     data = {}
+    
+    # Fetch blame data
     try:
-        # Bypass cache if force_refresh is True
         try:
             blame = repo.blame(committer=False, force_refresh=force_refresh)
             blame.index.name = "author"
             data['blame'] = blame.reset_index().to_dict(orient='records')
             logger.debug(f"Fetched blame data for {repo_name}")
         except KeyError as ke:
-            # Specifically handle KeyError which can happen with cache issues
             logger.warning(f"KeyError '{ke}' occurred in blame for {repo_name}. Retrying with force_refresh=True.")
             try:
                 blame = repo.blame(committer=False, force_refresh=True)
@@ -88,6 +95,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         logger.warning(f"Error fetching blame for {repo_name}: {e}")
         data['blame'] = None
 
+    # Fetch language statistics
     try:
         try:
             files = repo.list_files(force_refresh=force_refresh)
@@ -123,12 +131,13 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         logger.warning(f"Error fetching language counts for {repo_name}: {e}")
         data['lang_counts'] = None
 
+    # Fetch recent commits
     try:
         try:
             commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=force_refresh)
             if not commits.empty:
                  commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
-            data['commits'] = commits # Pass DataFrame
+            data['commits'] = commits
             logger.debug(f"Fetched commit history for {repo_name}")
         except KeyError as ke:
             logger.warning(f"KeyError '{ke}' occurred in commit_history for {repo_name}. Retrying with force_refresh=True.")
@@ -136,7 +145,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                 commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=True)
                 if not commits.empty:
                     commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
-                data['commits'] = commits # Pass DataFrame
+                data['commits'] = commits
                 logger.debug(f"Successfully fetched commit history on retry for {repo_name}")
             except Exception as retry_e:
                 logger.warning(f"Retry for commit_history also failed: {retry_e}")
@@ -148,14 +157,15 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         logger.warning(f"Error fetching commit history for {repo_name}: {e}")
         data['commits'] = None
 
+    # Fetch bus factor
     try:
         try:
-            data['bus_factor'] = repo.bus_factor(force_refresh=force_refresh) # Pass DataFrame
+            data['bus_factor'] = repo.bus_factor(force_refresh=force_refresh)
             logger.debug(f"Fetched bus factor for {repo_name}")
         except KeyError as ke:
             logger.warning(f"KeyError '{ke}' occurred in bus_factor for {repo_name}. Retrying with force_refresh=True.")
             try:
-                data['bus_factor'] = repo.bus_factor(force_refresh=True) # Pass DataFrame
+                data['bus_factor'] = repo.bus_factor(force_refresh=True)
                 logger.debug(f"Successfully fetched bus factor on retry for {repo_name}")
             except Exception as retry_e:
                 logger.warning(f"Retry for bus_factor also failed: {retry_e}")
@@ -167,6 +177,7 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
         logger.warning(f"Error fetching bus factor for {repo_name}: {e}")
         data['bus_factor'] = None
 
+    # Fetch active branches (last 7 days)
     try:
         active_branches_list = []
         try:
@@ -178,7 +189,6 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                 for branch_name in all_branches['branch']:
                     try:
                         branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=force_refresh)
-                        # Check for empty dataframe first to avoid index[0] errors
                         if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
                             logger.debug(f"Branch '{branch_name}' is active in {repo_name}.")
                             try:
@@ -189,11 +199,10 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                                     'author': branch_commits.iloc[0]['author']
                                 })
                             except (IndexError, AttributeError, KeyError) as e:
-                                # Log but don't raise, to avoid breaking the entire overview
                                 logger.warning(f"Error processing branch '{branch_name}' data: {e}")
                     except git.exc.GitCommandError as git_err:
                         logger.warning(f"Could not get history for branch '{branch_name}' in {repo_name}: {git_err}")
-                        continue # Ignore branches that fail to load history
+                        continue
                     except Exception as branch_err:
                         logger.warning(f"Unexpected error checking branch '{branch_name}' in {repo_name}: {branch_err}")
                         continue

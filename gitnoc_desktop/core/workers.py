@@ -7,47 +7,44 @@ logger = logging.getLogger(__name__)
 
 # --- Worker Thread Setup --- #
 class WorkerSignals(QObject):
-    '''
-    Defines the signals available from a running worker thread.
-    Supported signals are:
-    finished
-        No data
-    error
-        tuple (exctype, value, traceback.format_exc())
-    result
-        object data returned from processing, anything
-    '''
-    finished = Signal() # Signal emitted when thread finishes
-    error = Signal(tuple) # Signal emitted with error info (type, value, traceback)
-    result = Signal(object) # Signal emitted with the result object
+    """
+    Signals for worker thread communication.
+    
+    Signals:
+        finished: Emitted when worker completes
+        error: Emitted on exception with tuple (exctype, value, traceback)
+        result: Emitted with the result data from the worker
+    """
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
 
 class Worker(QRunnable):
-    '''
-    Worker thread
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-    :param fn: The function callback to run on this worker thread. Supplied args and
-                     kwargs will be passed through to the runner.
-    :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
-    '''
+    """
+    Worker thread for background task execution.
+    
+    Inherits from QRunnable to handle worker thread setup, signals and wrap-up.
+    
+    Args:
+        fn: The function to run in the worker thread
+        *args: Arguments to pass to the function
+        **kwargs: Keyword arguments to pass to the function
+    """
 
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
-        # Store constructor arguments (re-used for processing)
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
-    @Slot() # QtCore.Slot
+    @Slot()
     def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
+        """Execute the target function with provided arguments."""
         logger.debug(f"Worker started for function: {self.fn.__name__} with args: {self.args} kwargs: {self.kwargs}")
-        # Retrieve args/kwargs here; and fire processing using them
+        
         try:
-            result = self.fn(*self.args, **self.kwargs) # Pass args and kwargs
+            result = self.fn(*self.args, **self.kwargs)
         except Exception as e:
             logger.exception(f"Worker error in function {self.fn.__name__}")
             traceback_str = traceback.format_exc()

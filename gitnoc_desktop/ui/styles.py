@@ -1,6 +1,5 @@
 """
-Stylesheet definitions for GitNOC Desktop.
-Inspired by JetBrains Darcula theme.
+Application stylesheet for GitNOC Desktop based on JetBrains Darcula theme.
 """
 
 STYLESHEET = """
@@ -166,7 +165,7 @@ QLineEdit:focus {
     border: 1px solid #365880;
 }
 
-/* Additional IDE-like styling */
+/* Table and Tree Views */
 QTableView {
     background-color: #2B2B2B;
     alternate-background-color: #313335;

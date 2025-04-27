@@ -2,12 +2,12 @@ from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PySide6.QtCore import Qt
 
 class LoadingOverlay(QWidget):
-    """A semi-transparent overlay with a loading message."""
+    """Semi-transparent overlay with loading message."""
     
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        # Make the widget transparent
+        # Configure transparency
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
@@ -29,7 +29,7 @@ class LoadingOverlay(QWidget):
         layout.addWidget(loading_label)
         
     def show(self):
-        """Show the overlay."""
+        """Show and resize overlay to match parent widget."""
         if self.parentWidget():
             self.resize(self.parentWidget().size())
         super().show()
