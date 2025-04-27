@@ -424,6 +424,22 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
             except Exception as retry_e:
                 logger.warning(f"Retry for tags also failed: {retry_e}")
                 data['tags'] = None
+        except ValueError as ve:
+            # Special handling for the "unknown object type" error
+            if "unknown object type" in str(ve):
+                logger.warning(f"Unknown object type error in tags for {repo_name}: {ve}. Retrying with force_refresh=True and skip_broken=True.")
+                try:
+                    # Try again with both force_refresh and additional kwargs to skip problematic tags
+                    tags_df = repo.tags(force_refresh=True, skip_broken=True)
+                    data['tags'] = tags_df
+                    logger.debug(f"Successfully fetched tags data with skip_broken=True for {repo_name}")
+                except Exception as retry_e:
+                    logger.warning(f"Retry for tags with skip_broken also failed: {retry_e}")
+                    # Last resort: try to create a minimal empty dataframe with expected columns
+                    data['tags'] = pd.DataFrame(columns=['tag', 'date', 'message', 'author']) 
+            else:
+                # Re-raise other ValueErrors for the general exception handler
+                raise
         except Exception as e:
             logger.warning(f"Error fetching tags data for {repo_name}: {e}")
             data['tags'] = None
