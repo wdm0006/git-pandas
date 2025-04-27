@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
-import git # For exception handling
+import git  # Import git for exception handling
 import time
 
 from PySide6.QtCore import QObject, Signal, QRunnable, Slot, QThreadPool
@@ -187,6 +187,11 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                 all_branches = repo.branches(force_refresh=force_refresh)
                 logger.debug(f"Checking {len(all_branches)} branches for recent activity in {repo_name}")
                 for branch_name in all_branches['branch']:
+                    # Check if branch exists before attempting to get its history
+                    if not repo.has_branch(branch_name):
+                        logger.info(f"Skipping non-existent branch '{branch_name}' in {repo_name}")
+                        continue
+                        
                     try:
                         branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=force_refresh)
                         if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
@@ -226,6 +231,11 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                     all_branches = repo.branches(force_refresh=True)
                     logger.debug(f"Retry: Checking {len(all_branches)} branches for recent activity in {repo_name}")
                     for branch_name in all_branches['branch']:
+                        # Check if branch exists before attempting to get its history
+                        if not repo.has_branch(branch_name):
+                            logger.info(f"Retry: Skipping non-existent branch '{branch_name}' in {repo_name}")
+                            continue
+                            
                         try:
                             branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=True)
                             if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
@@ -421,24 +431,26 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
     data = {}
     try:
         try:
+            # First attempt without skip_broken to match test expectations
             tags_df = repo.tags(force_refresh=force_refresh)
             data['tags'] = tags_df # Pass DataFrame
             logger.debug(f"Fetched tags data for {repo_name}")
         except KeyError as ke:
             logger.warning(f"KeyError '{ke}' occurred in tags for {repo_name}. Retrying with force_refresh=True.")
             try:
-                tags_df = repo.tags(force_refresh=True)
+                # Retry with skip_broken=True explicitly
+                tags_df = repo.tags(force_refresh=True, skip_broken=True)
                 data['tags'] = tags_df # Pass DataFrame
                 logger.debug(f"Successfully fetched tags data on retry for {repo_name}")
             except Exception as retry_e:
                 logger.warning(f"Retry for tags also failed: {retry_e}")
                 data['tags'] = None
         except ValueError as ve:
-            # Special handling for the "unknown object type" error
-            if "unknown object type" in str(ve):
-                logger.warning(f"Unknown object type error in tags for {repo_name}: {ve}. Retrying with force_refresh=True and skip_broken=True.")
+            # Special handling for file read errors
+            if "read of closed file" in str(ve):
+                logger.warning(f"File handle error in tags for {repo_name}: {ve}. Retrying with force_refresh=True and skip_broken=True.")
                 try:
-                    # Try again with both force_refresh and additional kwargs to skip problematic tags
+                    # Try again with both force_refresh and skip_broken
                     tags_df = repo.tags(force_refresh=True, skip_broken=True)
                     data['tags'] = tags_df
                     logger.debug(f"Successfully fetched tags data with skip_broken=True for {repo_name}")
@@ -448,6 +460,23 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
                     data['tags'] = pd.DataFrame(columns=['tag', 'date', 'message', 'author']) 
             else:
                 # Re-raise other ValueErrors for the general exception handler
+                raise
+        except git.exc.GitCommandError as ge:
+            # Special handling for git command errors
+            error_msg = str(ge)
+            if "unknown object type" in error_msg or "could not be resolved" in error_msg or "bad file" in error_msg:
+                logger.warning(f"Git error handling tags for {repo_name}: {ge}. Retrying with force_refresh=True and skip_broken=True.")
+                try:
+                    # Try again with both force_refresh and skip_broken to handle corrupted tags
+                    tags_df = repo.tags(force_refresh=True, skip_broken=True)
+                    data['tags'] = tags_df
+                    logger.debug(f"Successfully fetched tags data with skip_broken=True for {repo_name}")
+                except Exception as retry_e:
+                    logger.warning(f"Retry for tags with skip_broken also failed: {retry_e}")
+                    # Last resort: try to create a minimal empty dataframe with expected columns
+                    data['tags'] = pd.DataFrame(columns=['tag', 'date', 'message', 'author'])
+            else:
+                # Re-raise other GitCommandErrors for the general exception handler
                 raise
         except Exception as e:
             logger.warning(f"Error fetching tags data for {repo_name}: {e}")
@@ -470,7 +499,8 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
     try:
         kwargs = {
             "committer": False,
-            "limit": commit_limit # Pass the commit limit
+            "limit": commit_limit, # Pass the commit limit
+            "skip_broken": True    # Always use skip_broken=True for robustness
             # Removed force_refresh=True - let gitpandas handle cache via decorator/backend
         }
         logger.debug(f"Calling repo.cumulative_blame for {repo_name} with kwargs: {kwargs}")
@@ -494,6 +524,17 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
             else:
                 # Re-raise other KeyErrors
                 raise
+        except git.exc.GitCommandError as ge:
+            # Handle git command errors
+            logger.warning(f"Git error in cumulative_blame for {repo_name}: {ge}. Using skip_broken=True should handle this.")
+            blame_df = None
+        except ValueError as ve:
+            # Handle value errors
+            logger.warning(f"Value error in cumulative_blame for {repo_name}: {ve}")
+            blame_df = None
+        except Exception as e:
+            logger.exception(f"Unexpected error in cumulative_blame for {repo_name}: {e}")
+            blame_df = None
                 
         end_time = time.time()
         logger.info(f"repo.cumulative_blame call completed in {end_time - start_time:.2f} seconds for {repo_name}")

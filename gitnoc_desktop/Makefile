@@ -18,6 +18,7 @@ setup:
 	fi
 	@echo "Installing dependencies from requirements.txt using uv..."
 	@uv pip install -r requirements.txt --python $(PYTHON)
+	@uv pip install file:///Users/wmcginnis/Documents/GitHub/git-pandas
 	@echo "Setup complete."
 
 # Run: Install dependencies (if needed) and run the application

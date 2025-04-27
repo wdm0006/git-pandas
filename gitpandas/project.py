@@ -279,13 +279,15 @@ class ProjectDirectory:
             branch = self.default_branch
 
         columns = [
-            "repository",
+            "file", 
             "unique_committers",
             "abs_rate_of_change",
             "net_rate_of_change",
             "net_change",
             "abs_change",
             "edit_rate",
+            "lines",
+            "repository"
         ]
         if coverage:
             columns += ["lines_covered", "total_lines", "coverage"]
@@ -518,7 +520,13 @@ class ProjectDirectory:
                 if not ch.empty:
                     ch["repository"] = repo.repo_name
                     # Reset the index to make date a regular column before concatenation
-                    ch = ch.reset_index()
+                    # Use reset_index with a unique name to avoid duplicate column error
+                    if "date" in ch.columns:
+                        # If date column exists, use index_col=False to avoid creating a new date column
+                        ch = ch.reset_index(drop=True)
+                    else:
+                        # Otherwise, reset the index and rename the resulting column
+                        ch = ch.reset_index().rename(columns={"index": "date"})
                     df = ch if df is None else pd.concat([df, ch], sort=True)
             except GitCommandError:
                 # Use logger instead of print
@@ -533,27 +541,31 @@ class ProjectDirectory:
                     "author",
                     "committer",
                     "message",
-                    "rev",
                     "filename",
                     "insertions",
                     "deletions",
                 ]
             )
 
-        # Ensure consistent column order
-        df = df[
-            [
-                "repository",
-                "date",
-                "author",
-                "committer",
-                "message",
-                "rev",
-                "filename",
-                "insertions",
-                "deletions",
-            ]
+        # Ensure we only select columns that exist in the DataFrame
+        # Start with all the columns we want
+        desired_columns = [
+            "repository",
+            "date",
+            "author",
+            "committer",
+            "message", 
+            "filename",
+            "insertions",
+            "deletions",
         ]
+        # Filter to only include columns that exist in the DataFrame
+        available_columns = [col for col in desired_columns if col in df.columns]
+        
+        # Select only available columns
+        if available_columns:
+            df = df[available_columns]
+            
         logger.info(f"Generated file change history with {len(df)} rows.")
         return df
 

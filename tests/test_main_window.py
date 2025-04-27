@@ -1,5 +1,0 @@
-mocker.patch('ui.main_window.OverviewTab', return_value=mock_overview)
-mocker.patch('ui.main_window.CodeHealthTab', return_value=mock_code_health)
-mocker.patch('ui.main_window.ContributorsTab', return_value=mock_contributors)
-mocker.patch('ui.main_window.TagsTab', return_value=mock_tags)
-mocker.patch('ui.main_window.CumulativeBlameTab', return_value=mock_cumulative_blame)
