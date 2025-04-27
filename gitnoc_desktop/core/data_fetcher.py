@@ -230,7 +230,8 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
                 data["active_branches"] = pd.DataFrame(columns=["branch", "last_commit_date", "author"])  # Empty DF
         except KeyError as ke:
             logger.warning(
-                f"KeyError '{ke}' occurred in active branches processing for {repo_name}. Retrying with force_refresh=True."
+                f"KeyError '{ke}' occurred in active branches processing "
+                f"for {repo_name}. Retrying with force_refresh=True."
             )
             try:
                 active_branches_list = []
@@ -392,7 +393,10 @@ def fetch_code_health_data(repo: Repository, force_refresh=False):
                     avg_edit_rate = f"{median_rate:.2f}"
                 data["avg_edit_rate"] = avg_edit_rate
 
-                logger.debug(f"Successfully fetched code health data on retry for {repo_name}")
+                logger.debug(
+                    f"Successfully fetched code health data on retry for {repo_name}. "
+                    f"Shape: {merged_data.shape if hasattr(merged_data, 'shape') else 'N/A'}"
+                )
             except Exception as retry_e:
                 logger.warning(f"Retry for code health data also failed: {retry_e}")
                 data["merged_data"] = None
@@ -473,7 +477,8 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
             # Special handling for file read errors
             if "read of closed file" in str(ve):
                 logger.warning(
-                    f"File handle error in tags for {repo_name}: {ve}. Retrying with force_refresh=True and skip_broken=True."
+                    f"File handle error in tags for {repo_name}: {ve}. "
+                    f"Retrying with force_refresh=True and skip_broken=True."
                 )
                 try:
                     # Try again with both force_refresh and skip_broken
@@ -492,7 +497,8 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
             error_msg = str(ge)
             if "unknown object type" in error_msg or "could not be resolved" in error_msg or "bad file" in error_msg:
                 logger.warning(
-                    f"Git error handling tags for {repo_name}: {ge}. Retrying with force_refresh=True and skip_broken=True."
+                    f"Git error handling tags for {repo_name}: {ge}. "
+                    f"Retrying with force_refresh=True and skip_broken=True."
                 )
                 try:
                     # Try again with both force_refresh and skip_broken to handle corrupted tags
@@ -560,7 +566,8 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
         except git.exc.GitCommandError as ge:
             # Handle git command errors
             logger.warning(
-                f"Git error in cumulative_blame for {repo_name}: {ge}. Using skip_broken=True should handle this."
+                f"Git error in cumulative_blame for {repo_name}: {ge}. "
+                f"Using skip_broken=True should handle this."
             )
             blame_df = None
         except ValueError as ve:
@@ -585,11 +592,9 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
             logger.debug(f"Fetched cumulative blame DataFrame shape: {blame_df.shape} for {repo_name}")
             logger.debug(f"DataFrame columns: {blame_df.columns.tolist()}")
             logger.debug(f"DataFrame index type: {type(blame_df.index)}")
-            # Avoid logging large dataframes, maybe just head?
-            # logger.debug(f"DataFrame head:\n{blame_df.head()}")
 
-        # Store the result (or None if issues occurred)
-        data["cumulative_blame"] = blame_df
+            # Store the result (or None if issues occurred)
+            data["cumulative_blame"] = blame_df
 
     except Exception as e:
         # Log the specific error during the call
@@ -598,7 +603,8 @@ def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
 
     logger.info(f"Finished fetch_cumulative_blame_data function for {repo_name}. Returning data dict.")
     logger.debug(
-        f"Returning data structure: {{ 'data': {{ 'cumulative_blame': type {type(data.get('cumulative_blame'))} }}, 'refreshed_at': ... }}"
+        f"Returning data structure: {{ 'data': {{ 'cumulative_blame': "
+        f"type {type(data.get('cumulative_blame'))} }}, 'refreshed_at': ... }}"
     )
     # Return dict with data and timestamp
     return {"data": data, "refreshed_at": datetime.now()}
@@ -708,6 +714,7 @@ repo_detail_fetched = Signal(str, object, object, object, datetime)  # repo_path
 
 # --- Worker Signals --- #
 class WorkerSignals(QObject):
+    """Worker signals for asynchronous operations."""
     result = Signal(str, object, datetime)  # repo_path, data, timestamp
     finished = Signal(str)  # worker_id
     error = Signal(str, str)  # worker_id, error message
@@ -780,45 +787,43 @@ class DataFetcher(QObject):
     def __init__(self):
         super().__init__()
         self.threadpool = QThreadPool()
-        print(f"Multithreading with maximum {self.threadpool.maxThreadCount()} threads")
+        logger.info(f"Multithreading with maximum {self.threadpool.maxThreadCount()} threads")
         self.repo_cache = {}  # Cache Repository objects
         self.active_workers = 0
 
     def _get_repo_instance(self, repo_path, force_refresh=False):
         if not force_refresh and repo_path in self.repo_cache:
-            print(f"Using cached Repository instance for: {repo_path}")
+            logger.debug(f"Using cached Repository instance for: {repo_path}")
             return self.repo_cache[repo_path]
         try:
-            print(f"Creating new Repository instance for: {repo_path}")
+            logger.debug(f"Creating new Repository instance for: {repo_path}")
             repo = Repository(working_dir=repo_path, verbose=False)  # Add cache_backend later if needed
             self.repo_cache[repo_path] = repo
             return repo
         except Exception as e:
-            print(f"Error creating Repository instance for {repo_path}: {e}")
+            logger.error(f"Error creating Repository instance for {repo_path}: {e}")
             traceback.print_exc()
             return None
 
     def _fetch_with_cache(self, repo: Repository, method_name: str, force_refresh: bool, **kwargs):
         """Generic fetch method using gitpandas caching if enabled and not forced."""
-        # Note: gitpandas built-in caching via @multicache decorator handles the actual caching.
-        # This method just centralizes the calling logic and error handling.
         if repo is None:
             return None
         try:
             method_to_call = getattr(repo, method_name)
-            print(f"Calling {method_name} for {repo.repo_name} (Force Refresh: {force_refresh}, Args: {kwargs})...")
+            logger.debug(
+                f"Calling {method_name} for {repo.repo_name} "
+                f"(Force Refresh: {force_refresh}, Args: {kwargs})..."
+            )
             start = time.time()
-            # The force_refresh logic needs to be handled by clearing the specific cache entry
-            # if gitpandas cache backend is used, or simply re-running the method.
-            # For now, we just call the method. Caching is handled by the decorator.
             data = method_to_call(**kwargs)
             end = time.time()
-            print(f"Finished {method_name} for {repo.repo_name} in {end - start:.2f} seconds.")
+            logger.debug(f"Finished {method_name} for {repo.repo_name} in {end - start:.2f} seconds.")
             return data
         except Exception as e:
-            print(f"Error fetching {method_name} for {repo.repo_name}: {e}")
+            logger.error(f"Error fetching {method_name} for {repo.repo_name}: {e}")
             traceback.print_exc()
-            return None  # Return None or empty structure on error
+            return None
 
     # --- Internal Data Aggregation/Loading Functions --- #
     def _load_repo_detail(self, repo_path, force_refresh=False):

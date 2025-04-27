@@ -593,16 +593,13 @@ class MainWindow(QMainWindow):
             "Repository Load Error",
             f"Failed to load repository: {repo_name}\n\n"
             f"Path: {repo_path}\n\n"
-            f"This usually means the repository path is invalid or the default branch ('main' or 'master') could not be found.\n"
+            f"This usually means the repository path is invalid or the default branch "
+            f"('main' or 'master') could not be found.\n"
             f"Please remove and re-add the repository, specifying the default branch if prompted.",
         )
         self._set_loading_state(False)  # Ensure UI is unlocked
         self._reset_tabs()  # Clear tabs
 
     def closeEvent(self, event):
-        # Ensure proper indentation and add a pass statement
-        pass  # Placeholder to fix indentation error
-
-
-# Application Execution (if __name__ == "__main__")
-# ... (no changes needed here)
+        """Handle window close event."""
+        pass  

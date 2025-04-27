@@ -121,11 +121,11 @@ class CumulativeBlameTab(BaseTabWidget):
             # Extract DataFrame from the nested dict structure returned by the worker
             if isinstance(blame_data_in, dict) and "data" in blame_data_in:
                 inner_data = blame_data_in["data"]
-                # Check if inner_data is a dict before accessing keys
-                if isinstance(inner_data, dict) and "cumulative_blame" in inner_data:
-                    # Check if the value is a DataFrame
-                    if isinstance(inner_data["cumulative_blame"], pd.DataFrame):
-                        blame_df = inner_data["cumulative_blame"]
+                # Check if inner_data is a dict and contains valid DataFrame
+                if (isinstance(inner_data, dict) and 
+                    "cumulative_blame" in inner_data and 
+                    isinstance(inner_data["cumulative_blame"], pd.DataFrame)):
+                    blame_df = inner_data["cumulative_blame"]
             # Allow for direct DataFrame input (though worker doesn't do this currently)
             elif isinstance(blame_data_in, pd.DataFrame):
                 blame_df = blame_data_in

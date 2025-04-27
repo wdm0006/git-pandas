@@ -18,7 +18,7 @@ def blame_tab(qtbot):
     # Patch 'FigureCanvas' where it's looked up in the CumulativeBlameTab module
     with (
         patch("matplotlib.pyplot.subplots") as mock_subplots,
-        patch("ui.widgets.cumulative_blame_tab.FigureCanvas") as MockFigureCanvas,
+        patch("ui.widgets.cumulative_blame_tab.FigureCanvas") as mock_figure_canvas,
     ):  # Patch the class lookup
         # Configure mocks
         mock_figure = MagicMock()
@@ -29,7 +29,7 @@ def blame_tab(qtbot):
         # This satisfies the addWidget type requirement.
         real_widget_for_canvas = QWidget()
         # Make the *mocked class* return our real QWidget when called
-        MockFigureCanvas.return_value = real_widget_for_canvas
+        mock_figure_canvas.return_value = real_widget_for_canvas
 
         # Create a separate MagicMock to potentially track calls on the canvas instance
         # This won't be the object added to the layout, but can stand in for assertions.
@@ -49,7 +49,7 @@ def blame_tab(qtbot):
         # Provide the separate mock for method tracking if needed (though maybe less useful now)
         tab._mock_canvas_instance_methods = mock_canvas_methods
         tab._mock_subplots = mock_subplots
-        tab._mock_canvas_class = MockFigureCanvas  # The patched class
+        tab._mock_canvas_class = mock_figure_canvas  # The patched class
 
         yield tab
 

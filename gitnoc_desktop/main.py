@@ -1,5 +1,6 @@
 import logging
 import logging.handlers
+import os
 import sys
 from pathlib import Path
 
@@ -54,6 +55,12 @@ from qt_material import apply_stylesheet
 from ui.main_window import MainWindow
 
 if __name__ == "__main__":
+    # Add the project root to Python path for imports
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+        print(f"Adjusted sys.path for direct execution: {script_dir}")
+
     # Enable high DPI scaling
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 
