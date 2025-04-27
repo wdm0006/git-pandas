@@ -1,9 +1,7 @@
 import os
-import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
-import traceback
 import logging
 
 from PySide6.QtWidgets import (
@@ -20,6 +18,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 
 from .dataframe_table import DataFrameTable
+from .base_tab import BaseTabWidget
 
 # --- Cache File Path ---
 # Consistent with main.py
@@ -29,163 +28,97 @@ CACHE_FILE = CACHE_DIR / "cache.json.gz"
 
 logger = logging.getLogger(__name__)
 
-class OverviewTab(QWidget):
+class OverviewTab(BaseTabWidget):
     # Signal to request data refresh
     refresh_requested = Signal()
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        # Pass the title to the base class constructor
+        super().__init__(tab_title="Overview", parent=parent)
         self.repo = None # To store current repo instance
 
-        # Main layout
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
-        self.main_layout.setSpacing(5) # Reduced spacing a bit
+        # --- Specific widgets for Overview Tab --- #
+        # We will add these to self.content_layout in populate_ui
+        self.h_splitter = None
+        self.left_widget = None
+        self.right_widget = None
 
-        # Header layout (for label and refresh button)
-        self.header_layout = QHBoxLayout()
-        self.header_layout.setContentsMargins(0, 0, 0, 5) # Add margin below header
-        self.header_label = QLabel("Overview")
-        self.header_label.setStyleSheet("font-weight: bold;")
-        self.header_layout.addWidget(self.header_label)
+        # Set initial state after all widgets specific to this tab are defined
+        self._show_placeholder()
 
-        # Add refresh time label to header
-        self.refresh_time_label = QLabel("Last refreshed: N/A")
-        self.refresh_time_label.setStyleSheet("font-style: italic; color: grey;")
-        self.header_layout.addWidget(self.refresh_time_label)
-        self.header_layout.addStretch()
-        self.header_layout.addSpacing(10) # Add spacing between label and button
+    def _clear_overview_content(self):
+        """Removes the splitter widget added by populate_ui."""
+        if self.h_splitter:
+            # Remove from layout first
+            self.content_layout.removeWidget(self.h_splitter)
+            # Schedule for deletion
+            self.h_splitter.deleteLater()
+            self.h_splitter = None
+            # Also nullify references to internal widgets if needed
+            self.left_widget = None
+            self.right_widget = None
 
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Reload data for this tab, bypassing cache")
-        self.refresh_button.setEnabled(False) # Disabled until repo selected
-        self.refresh_button.clicked.connect(self._request_refresh)
-        self.header_layout.addWidget(self.refresh_button)
-        self.main_layout.addLayout(self.header_layout)
+    # --- State Handling Overrides (Minimal) --- #
 
-        # Placeholder for content area (will hold splitter or placeholder label)
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0,0,0,0)
-        self.main_layout.addWidget(self.content_widget, 1) # Allow content to stretch
+    # Need to override these minimally to clear specific content before calling base
+    def _show_placeholder(self, message=None):
+        self._clear_overview_content() # Clear specific widgets first
+        super()._show_placeholder(message) # Call base to handle placeholder label
 
-        self._show_placeholder() # Show initial placeholder in content area
+    def _show_loading(self, message=None):
+        self._clear_overview_content() # Clear specific widgets first
+        super()._show_loading(message) # Call base to handle placeholder label
 
-    def _request_refresh(self):
-        # Emit the signal for MainWindow to catch
-        self.refresh_requested.emit()
+    # _hide_loading is inherited
+    # _show_error is inherited (base _show_error calls clear_content_layout, which now only hides)
+    # If base clear_content_layout isn't sufficient, we might need to override _show_error too
+    # Let's try without overriding _show_error first.
 
-    def _show_placeholder(self):
-        # Clear previous content (splitter or label)
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-
-        placeholder = QLabel("<i>Select a repository to view the overview.</i>")
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(placeholder)
-        self.refresh_button.setEnabled(False) # Disable refresh if no repo selected/shown
-        self.refresh_time_label.setText("Last refreshed: N/A") # Reset time label
-        self.repo = None # Clear repo reference
-
-    def _show_loading(self):
-        # Disable refresh button and update label
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
-        # Clear current content and show loading message
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        loading_label = QLabel("<i>Loading overview data...</i>")
-        loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(loading_label)
-
-    def _hide_loading(self):
-        self.refresh_button.setEnabled(self.repo is not None) # Enable only if repo is loaded
-        self.refresh_button.setText("Refresh")
-        # Note: content will be updated by populate_ui
-
-    def _show_error(self, message=None):
-        """Display an error message in the content area."""
-        # Clear content
-        while self.content_layout.count():
-            item = self.content_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        # Show error message
-        err_msg = message if message else "Failed to load overview data."
-        error_label = QLabel(f"<font color='orange'>{err_msg}</font>")
-        error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(error_label)
-        # Restore button
-        self._hide_loading()
-
+    # --- Data Population --- #
     def populate_ui(self, repo, overview_data, refreshed_at=None):
-        """Populates the UI with fetched data and the time it was refreshed."""
-        logger.debug(f"Populating OverviewTab UI. Received overview_data: {overview_data}")
-        self._show_placeholder() # Clear previous content/placeholder
-        self.repo = repo # Store repo reference
+        """Populates the Overview tab UI with fetched data."""
+        logger.debug(f"Populating OverviewTab UI for repo: {repo.repo_name if repo else 'None'}")
 
-        # --- Update refresh time label based on refreshed_at or cache file modification --- #
-        if refreshed_at:
-            try:
-                timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
-            except Exception:
-                timestamp_str = "N/A"
-            self.refresh_time_label.setText(f"Last refreshed: {timestamp_str}")
-        else:
-            # Fallback to cache file modification time
-            cache_timestamp_str = "N/A"
-            try:
-                if CACHE_FILE.exists():
-                    mtime = os.path.getmtime(CACHE_FILE)
-                    cache_dt = datetime.fromtimestamp(mtime)
-                    cache_timestamp_str = cache_dt.strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    cache_timestamp_str = "Cache file not found"
-            except Exception:
-                cache_timestamp_str = "Error reading cache time"
-            self.refresh_time_label.setText(f"Cache updated: {cache_timestamp_str}")
-        # -------------------------------------------------------------------- #
+        self.repo = repo
+        self._update_refresh_time_label(refreshed_at)
 
+        # Validate data
         if overview_data is None:
-            # Use _show_error for consistency
-            self._show_error("Failed to load overview data in background.")
+            self._show_error("Failed to load overview data.") # Call base method
+            self._clear_overview_content() # Ensure splitter is removed on error
             return
 
+        # Data is valid - Clear specific content area first
+        self._clear_overview_content()
+
         # --- Data Extraction --- #
-        blame_df_list = overview_data.get('blame') # Note: Fetched as list of dicts
+        blame_df_list = overview_data.get('blame')
         lang_counts = overview_data.get('lang_counts')
         commits_df = overview_data.get('commits')
         bus_factor_df = overview_data.get('bus_factor')
         active_branches_df = overview_data.get('active_branches')
 
-        # --- Clear Placeholder and Setup Splitter --- #
-        while self.content_layout.count(): # Clear placeholder label
-             item = self.content_layout.takeAt(0)
-             widget = item.widget()
-             if widget: widget.deleteLater()
+        # --- Setup UI Elements --- #
+        # Hide placeholder, show content area (implicitly by adding splitter)
+        self.placeholder_status_label.setVisible(False)
 
-        h_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.content_layout.addWidget(h_splitter) # Add splitter to content layout
+        # Create and add the splitter to the content_layout managed by the base class
+        # Ensure it's created fresh each time
+        self.h_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.content_layout.addWidget(self.h_splitter)
 
         # Setup Left and Right Panels within the Splitter
-        left_widget = QWidget()
-        left_layout = QVBoxLayout(left_widget)
+        self.left_widget = QWidget()
+        left_layout = QVBoxLayout(self.left_widget)
         left_layout.setSpacing(10)
-        h_splitter.addWidget(left_widget)
+        self.h_splitter.addWidget(self.left_widget)
 
-        right_widget = QWidget()
-        right_layout = QVBoxLayout(right_widget)
+        self.right_widget = QWidget()
+        right_layout = QVBoxLayout(self.right_widget)
         right_layout.setSpacing(10)
-        h_splitter.addWidget(right_widget)
+        self.h_splitter.addWidget(self.right_widget)
 
-        # --- Populate Left Column --- #
+        # --- Populate Left & Right Columns --- #
         self._add_section_label(f"Repository: {self.repo.repo_name}", left_layout)
         path_label = QLabel(f"<i>{self.repo.git_dir}</i>")
         path_label.setWordWrap(True)
@@ -194,47 +127,79 @@ class OverviewTab(QWidget):
 
         self._add_section_label("Lines of Code by Author (Top 10)", left_layout)
         if blame_df_list: # Check if the list is not empty
-             blame_df = pd.DataFrame(blame_df_list)
-             table = DataFrameTable()
-             table.set_dataframe(blame_df, columns=["author", "loc"], show_index=False)
-             left_layout.addWidget(table)
+            try:
+                blame_df = pd.DataFrame(blame_df_list)
+                if not blame_df.empty:
+                    table = DataFrameTable()
+                    table.set_dataframe(blame_df, columns=["author", "loc"], show_index=False)
+                    left_layout.addWidget(table)
+                else:
+                    left_layout.addWidget(QLabel("<i>No blame data found.</i>"))
+            except Exception as e:
+                logger.error(f"Error creating blame DataFrame or Table: {e}")
+                left_layout.addWidget(QLabel("<font color='orange'>Error displaying blame data.</font>"))
         else:
-             left_layout.addWidget(QLabel("<font color='orange'>Blame data not available or failed to load.</font>"))
+            left_layout.addWidget(QLabel("<font color='orange'>Blame data not available or failed to load.</font>"))
         left_layout.addSpacing(10)
 
         self._add_section_label("File Counts by Language", left_layout)
         if lang_counts is not None and not lang_counts.empty:
-            table = DataFrameTable()
-            table.set_dataframe(lang_counts, columns=['Language', 'Count'], show_index=False, stretch_last=False)
-            left_layout.addWidget(table)
+            try:
+                table = DataFrameTable()
+                # Ensure columns exist before setting
+                cols_to_show = [col for col in ['Language', 'Count'] if col in lang_counts.columns]
+                table.set_dataframe(lang_counts, columns=cols_to_show, show_index=False, stretch_last=False)
+                left_layout.addWidget(table)
+            except Exception as e:
+                logger.error(f"Error creating language count Table: {e}")
+                left_layout.addWidget(QLabel("<font color='orange'>Error displaying language data.</font>"))
+        elif lang_counts is not None: # It's an empty DataFrame
+            left_layout.addWidget(QLabel("<i>No language data found.</i>"))
         else:
             left_layout.addWidget(QLabel("<font color='orange'>Language data not available.</font>"))
         left_layout.addStretch()
 
-        # --- Populate Right Column --- #
-        self._add_section_label(f"Recent Commits (Branch: {self.repo.default_branch})", right_layout)
+        self._add_section_label(f"Recent Commits (Branch: {self.repo.default_branch if self.repo else 'N/A'})", right_layout)
         if commits_df is not None and not commits_df.empty:
-            table = DataFrameTable()
-            table.set_dataframe(commits_df, columns=['commit_date', 'author', 'message'], show_index=False)
-            right_layout.addWidget(table)
+            try:
+                table = DataFrameTable()
+                cols_to_show = [col for col in ['commit_date', 'author', 'message'] if col in commits_df.columns]
+                table.set_dataframe(commits_df, columns=cols_to_show, show_index=False)
+                right_layout.addWidget(table)
+            except Exception as e:
+                logger.error(f"Error creating commits Table: {e}")
+                right_layout.addWidget(QLabel("<font color='orange'>Error displaying commit data.</font>"))
+        elif commits_df is not None: # Empty
+            right_layout.addWidget(QLabel("<i>No commit history found for this branch.</i>"))
         else:
-             right_layout.addWidget(QLabel("<font color='orange'>Commit history not available.</font>"))
+            right_layout.addWidget(QLabel("<font color='orange'>Commit history not available.</font>"))
         right_layout.addSpacing(10)
 
         self._add_section_label("Bus Factor", right_layout)
         if bus_factor_df is not None and not bus_factor_df.empty:
-            factor_value = bus_factor_df.iloc[0]['bus factor']
-            right_layout.addWidget(QLabel(f"Overall Repository Bus Factor: <b>{factor_value}</b>"))
-            right_layout.addWidget(QLabel("<i>(Lower means higher risk)</i>"))
+            try:
+                factor_value = bus_factor_df.iloc[0]['bus factor']
+                right_layout.addWidget(QLabel(f"Overall Repository Bus Factor: <b>{factor_value}</b>"))
+                right_layout.addWidget(QLabel("<i>(Lower means higher risk)</i>"))
+            except (KeyError, IndexError) as e:
+                logger.error(f"Error extracting bus factor value: {e}")
+                right_layout.addWidget(QLabel("<font color='orange'>Error displaying bus factor.</font>"))
+        elif bus_factor_df is not None: # Empty
+            right_layout.addWidget(QLabel("<i>Bus factor data not calculated.</i>"))
         else:
             right_layout.addWidget(QLabel("<i>Bus factor data not available.</i>"))
         right_layout.addSpacing(10)
 
         self._add_section_label("Recently Active Branches (Last 7 Days)", right_layout)
         if active_branches_df is not None and not active_branches_df.empty:
-            table = DataFrameTable()
-            table.set_dataframe(active_branches_df, columns=['branch', 'last_commit_date', 'author'], show_index=False)
-            right_layout.addWidget(table)
+            try:
+                table = DataFrameTable()
+                cols_to_show = [col for col in ['branch', 'last_commit_date', 'author'] if col in active_branches_df.columns]
+                table.set_dataframe(active_branches_df, columns=cols_to_show, show_index=False)
+                right_layout.addWidget(table)
+            except Exception as e:
+                logger.error(f"Error creating active branches Table: {e}")
+                right_layout.addWidget(QLabel("<font color='orange'>Error displaying active branch data.</font>"))
         elif active_branches_df is not None: # Empty DataFrame means no active branches
             right_layout.addWidget(QLabel("<i>No branches found with commits in the last 7 days.</i>"))
         else: # None means an error occurred during fetch
@@ -242,7 +207,7 @@ class OverviewTab(QWidget):
         right_layout.addStretch()
 
         # --- Final UI State --- #
-        self._hide_loading() # Restore refresh button state
+        self._hide_loading() # Restore refresh button state via base method
 
     def _add_section_label(self, text, layout):
         label = QLabel(text)

@@ -1,4 +1,4 @@
-.PHONY: setup run clean test
+.PHONY: setup run clean clean-cache test
 
 # Default target
 all: run
@@ -25,12 +25,18 @@ run: setup
 	@echo "Running GitNOC Desktop application..."
 	@$(PYTHON) main.py
 
-# Clean: Remove virtual environment and __pycache__
+# Clean: Remove virtual environment, __pycache__, and cache file
 clean:
 	@echo "Cleaning up..."
 	@rm -rf $(VENV_DIR)
 	@find . -type d -name "__pycache__" -exec rm -r {} +
+	@$(MAKE) clean-cache # Call the clean-cache target
 	@echo "Cleanup complete."
+
+# Clean Cache: Remove the application cache file
+clean-cache:
+	@echo "Removing GitNOC Desktop cache file..."
+	@rm -f $(HOME)/.gitnoc_desktop/cache.json.gz
 
 # Test: Run tests using pytest through uv
 # Accepts PYTEST_ARGS for passing extra arguments to pytest

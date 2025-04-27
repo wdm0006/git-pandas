@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import traceback
 from datetime import datetime
+import logging
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -20,107 +21,41 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 
 from .dataframe_table import DataFrameTable
+from .base_tab import BaseTabWidget
 
-class CodeHealthTab(QWidget):
+logger = logging.getLogger(__name__)
+
+class CodeHealthTab(BaseTabWidget):
     # Signal to request data refresh
     refresh_requested = Signal()
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.repo = None
+        super().__init__(tab_title="Code Health", parent=parent)
+        # Base class handles repo, last_refreshed, main_layout, header_layout,
+        # content_layout, placeholder_status_label
+
+        # --- Specific Widgets for CodeHealthTab --- #
         self.merged_data = pd.DataFrame()
-        self.last_refreshed = None
+        self.health_table = None # Reference to the table widget
 
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
-        self.main_layout.setSpacing(5)
-
-        self.header_layout = QHBoxLayout()
-        self.header_layout.setContentsMargins(0, 0, 0, 5)
-        self.header_label = QLabel("Code Health")
-        self.header_label.setStyleSheet("font-weight: bold;")
-        self.header_layout.addWidget(self.header_label)
-        self.header_layout.addStretch()
-
-        self.refresh_time_label = QLabel("Last refreshed: N/A")
-        self.refresh_time_label.setStyleSheet("font-style: italic; color: grey;")
-        self.header_layout.addWidget(self.refresh_time_label)
-        self.header_layout.addSpacing(10)
-
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Reload data for this tab, bypassing cache")
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.clicked.connect(self._request_refresh)
-        self.header_layout.addWidget(self.refresh_button)
-        self.main_layout.addLayout(self.header_layout)
-
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0,0,0,0)
-        self.content_layout.setSpacing(5)
-        self.main_layout.addWidget(self.content_widget, 1)
-
-        # Placeholder Label
-        self.placeholder_label = QLabel("<i>Select a repository to view code health data.</i>")
-        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.placeholder_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.content_layout.addWidget(self.placeholder_label)
-
-        # Status Label (Loading/Error)
-        self.status_label = QLabel("")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.status_label.setVisible(False)
-        self.content_layout.addWidget(self.status_label)
-
-        # Data Container
+        # Data Container - This part is specific and correct
         self.data_container_widget = QWidget()
         self.data_container_layout = QVBoxLayout(self.data_container_widget)
         self.data_container_layout.setContentsMargins(0,0,0,0)
         self.data_container_layout.setSpacing(5)
-        self.data_container_widget.setVisible(False)
+        self.data_container_widget.setVisible(False) # Initially hidden
+        # Add the specific container to the content_layout created by the base class
         self.content_layout.addWidget(self.data_container_widget)
 
+        # Call _show_placeholder explicitly to set initial state
         self._show_placeholder()
 
     def _request_refresh(self):
         # Emit the signal for MainWindow to catch
         self.refresh_requested.emit()
 
-    def _show_placeholder(self):
-        # Show placeholder, hide other views
-        self.placeholder_label.setVisible(True)
-        self.status_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.refresh_button.setEnabled(False)
-        self.refresh_time_label.setText("Last refreshed: N/A")
-        self.repo = None
-        self.merged_data = pd.DataFrame()
-        self.last_refreshed = None
-
-    def _show_loading(self):
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
-        # Clear views and show loading indicator
-        self.placeholder_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.status_label.setText("<i>Loading code health data...</i>")
-        self.status_label.setStyleSheet("color: grey;")
-        self.status_label.setVisible(True)
-
-    def _hide_loading(self):
-        self.refresh_button.setEnabled(self.repo is not None)
-        self.refresh_button.setText("Refresh")
-
-    def _show_error(self, message="Failed to load code health data."):
-        # Clear views and show error message
-        self.placeholder_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.status_label.setText(f"<font color='orange'>{message}</font>")
-        self.status_label.setVisible(True)
-        self._hide_loading()
-
     def populate_ui(self, repo, health_data, refreshed_at):
+        logger.debug(f"Populating CodeHealthTab UI for repo: {repo.repo_name if repo else 'None'}")
         self.repo = repo
         self.last_refreshed = refreshed_at
         if refreshed_at:
@@ -128,15 +63,8 @@ class CodeHealthTab(QWidget):
             self.refresh_time_label.setText(f"Last refreshed: {ts}")
         else:
             self.refresh_time_label.setText("Last refreshed: Error")
-        # Hide placeholder and status for actual data
-        self.placeholder_label.setVisible(False)
-        self.status_label.setVisible(False)
         # Clear previous data
-        while self.data_container_layout.count():
-            item = self.data_container_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
+        self._clear_data_container()
 
         if health_data is None or health_data.get('merged_data') is None:
             self._show_error("Failed to load code health data in background.")
@@ -157,61 +85,90 @@ class CodeHealthTab(QWidget):
         self._add_health_table(self.merged_data)
 
         # Show data
+        self.placeholder_status_label.setVisible(False)
         self.data_container_widget.setVisible(True)
-
         self._hide_loading()
 
+    def _clear_data_container(self):
+        """Helper to remove widgets from the specific data container layout."""
+        while self.data_container_layout.count():
+            item = self.data_container_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
+        self.health_table = None
+
     def _add_health_table(self, df):
-        if df is None or df.empty:
-            self.content_layout.addWidget(QLabel("<i>No detailed file health data available.</i>"))
-            return
+        """Creates and adds the DataFrameTable for health data."""
+        # Assume df is not None and not empty based on caller check
+        logger.debug(f"Adding health table. Columns: {df.columns}")
+        display_df = df.copy()
 
-        # Format coverage as percentage and round numeric columns
-        df = df.copy()
+        # Ensure 'file' is a column
+        if 'file' not in display_df.columns and display_df.index.name == 'file':
+            display_df.reset_index(inplace=True)
+        elif 'file' not in display_df.columns:
+            # Try to find a likely candidate or log a warning
+            if 'index' in display_df.columns:
+                display_df.rename(columns={'index': 'file'}, inplace=True)
+            elif display_df.index.name is not None:
+                display_df.reset_index(inplace=True)
+            else:
+                logger.warning("Could not identify file column for health table.")
+                # Create a placeholder if needed?
+                # display_df['file'] = "Unknown"
 
-        # Ensure 'file' is a column, not just the index
-        if 'file' not in df.columns:
-            df.reset_index(inplace=True)
-            # Rename index column if it wasn't named 'file' originally
-            if 'index' in df.columns and 'file' not in df.columns:
-                 df.rename(columns={'index': 'file'}, inplace=True)
-            elif 'level_0' in df.columns and 'file' not in df.columns: # Handle potential multi-index reset
-                df.rename(columns={'level_0': 'file'}, inplace=True)
+        # --- Data Cleaning and Formatting --- # Requires specific knowledge of expected columns
 
-        # Now 'file' should exist as a column
-        df['coverage'] = df['coverage'].apply(lambda x: f"{x:.1%}" if pd.notna(x) else "N/A")
-        # df['change_rate'] = df['change_rate'].round(2) # This column doesn't exist, use edit_rate later
-        # df['complexity'] = df['complexity'].astype(int) # This column doesn't exist
-        df['loc'] = df['loc'].astype(int)
-        # df['token_count'] = df['token_count'].astype(int) # This column doesn't exist
-
-        # Calculate change rate if columns exist
-        if 'abs_rate_of_change' in df.columns and 'net_rate_of_change' in df.columns:
-            df['edit_rate'] = df['abs_rate_of_change'] - df['net_rate_of_change']
+        # Example: Calculate edit_rate if relevant columns exist
+        if 'abs_rate_of_change' in display_df.columns and 'net_rate_of_change' in display_df.columns:
+            display_df['edit_rate'] = display_df['abs_rate_of_change'] - display_df['net_rate_of_change']
+            if pd.api.types.is_numeric_dtype(display_df['edit_rate']):
+                display_df['edit_rate'] = display_df['edit_rate'].round(2)
+        elif 'change_rate' in display_df.columns: # Use if exists
+            display_df['edit_rate'] = display_df['change_rate'].round(2)
         else:
-            df['edit_rate'] = 0.0 # Default if rates aren't available
+            display_df['edit_rate'] = pd.NA # Indicate missing data
 
-        # Add columns if they don't exist (e.g., from older cache)
-        if 'coverage' not in df.columns:
-            df['coverage'] = pd.NA
-        if 'edit_rate' not in df.columns:
-            df['edit_rate'] = 0.0
+        # Format coverage
+        if 'coverage' in display_df.columns:
+            display_df['coverage_pct'] = display_df['coverage'].apply(
+                lambda x: f"{x:.1%}" if pd.notna(x) and isinstance(x, (float, int)) else "N/A"
+            )
+        else:
+            display_df['coverage_pct'] = "N/A"
 
-        # Round for display
-        if pd.api.types.is_numeric_dtype(df['edit_rate']):
-            df['edit_rate'] = df['edit_rate'].round(2)
-        if pd.api.types.is_numeric_dtype(df['coverage']):
-            df['coverage'] = (df['coverage'] * 100).round(1) # Display as percentage
+        # Ensure required display columns exist, filling with defaults if necessary
+        required_cols = { # Column name: default value
+            'file': 'Unknown File',
+            'loc': 0,
+            'edit_rate': 'N/A',
+            'coverage_pct': 'N/A'
+        }
+        for col, default in required_cols.items():
+            if col not in display_df.columns:
+                logger.warning(f"Health data missing expected column '{col}'. Filling with default.")
+                display_df[col] = default
+            elif col != 'file': # Ensure numeric types for non-file columns if possible
+                if col == 'loc':
+                    display_df[col] = pd.to_numeric(display_df[col], errors='coerce').fillna(0).astype(int)
+                # Add similar coercions for other expected numeric cols if needed
 
-        # Select and rename columns for display
-        # display_df = df[['file', 'loc', 'complexity', 'token_count', 'edit_rate', 'coverage']].copy()
-        display_df = df[['file', 'loc', 'edit_rate', 'coverage']].copy()
+        # --- Select and Rename Columns for Display --- #
+        # Define the final columns and their display headers
+        display_columns_map = {
+            'file': 'File',
+            'loc': 'Lines of Code',
+            'edit_rate': 'Edit Rate',
+            'coverage_pct': 'Coverage'
+            # Add complexity, token_count etc. here if available and desired
+        }
+        final_columns = list(display_columns_map.keys())
+        display_df_final = display_df[final_columns].copy()
+        display_df_final.rename(columns=display_columns_map, inplace=True)
 
-        # Define columns and their display names
-        # columns = ['file', 'loc', 'complexity', 'token_count', 'edit_rate', 'coverage']
-        columns = ['file', 'loc', 'edit_rate', 'coverage']
-
-        # Create and configure table
-        table = DataFrameTable()
-        table.set_dataframe(display_df, columns=columns, show_index=False)
-        self.content_layout.addWidget(table, 1) 
+        # --- Create and Add Table --- #
+        self.health_table = DataFrameTable()
+        self.health_table.set_dataframe(display_df_final, columns=list(display_columns_map.values()), show_index=False)
+        self.data_container_layout.addWidget(self.health_table, 1) # Allow table to stretch 

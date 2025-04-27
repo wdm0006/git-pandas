@@ -39,7 +39,7 @@ from core.data_fetcher import (
 )
 from ui.widgets.overview_tab import OverviewTab
 from ui.widgets.code_health_tab import CodeHealthTab
-from ui.widgets.contributors_tab import ContributorPatternsTab
+from ui.widgets.contributors_tab import ContributorsTab
 from ui.widgets.tags_tab import TagsTab
 from ui.widgets.cumulative_blame_tab import CumulativeBlameTab
 from ui.styles import STYLESHEET
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         # Create tabs once, update them later
         self.overview_tab = OverviewTab(self) # Pass parent
         self.code_health_tab = CodeHealthTab(self)
-        self.contributors_tab = ContributorPatternsTab(self)
+        self.contributors_tab = ContributorsTab(self)
         self.tags_tab = TagsTab(self)
         self.cumulative_blame_tab = CumulativeBlameTab(self) # Instantiate the new tab
 

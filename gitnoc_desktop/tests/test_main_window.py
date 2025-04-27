@@ -30,7 +30,7 @@ def main_window(qtbot, mocker):
     mock_cumulative_blame = MagicMock()
     mocker.patch('ui.main_window.OverviewTab', return_value=mock_overview)
     mocker.patch('ui.main_window.CodeHealthTab', return_value=mock_code_health)
-    mocker.patch('ui.main_window.ContributorPatternsTab', return_value=mock_contributors)
+    mocker.patch('ui.main_window.ContributorsTab', return_value=mock_contributors)
     mocker.patch('ui.main_window.TagsTab', return_value=mock_tags)
     mocker.patch('ui.main_window.CumulativeBlameTab', return_value=mock_cumulative_blame)
 
@@ -184,9 +184,4 @@ def test_repo_selection_uses_cache(qtbot, main_window, mocker, tmp_path):
     assert len(worker_instance.args) == 2, f"Expected 2 args for worker target, got {len(worker_instance.args)}"
     assert worker_instance.args[0] == repo_info
     assert worker_instance.args[1] is main_window.cache_backend
-
-# Placeholder for remove repo test
-# def test_remove_repository(...):
-#     pass
-
  

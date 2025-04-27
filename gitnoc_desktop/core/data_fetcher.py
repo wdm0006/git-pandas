@@ -65,73 +65,189 @@ def fetch_overview_data(repo: Repository, force_refresh=False):
     data = {}
     try:
         # Bypass cache if force_refresh is True
-        blame = repo.blame(committer=False, force_refresh=force_refresh)
-        blame.index.name = "author"
-        data['blame'] = blame.reset_index().to_dict(orient='records')
-        logger.debug(f"Fetched blame data for {repo_name}")
+        try:
+            blame = repo.blame(committer=False, force_refresh=force_refresh)
+            blame.index.name = "author"
+            data['blame'] = blame.reset_index().to_dict(orient='records')
+            logger.debug(f"Fetched blame data for {repo_name}")
+        except KeyError as ke:
+            # Specifically handle KeyError which can happen with cache issues
+            logger.warning(f"KeyError '{ke}' occurred in blame for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                blame = repo.blame(committer=False, force_refresh=True)
+                blame.index.name = "author"
+                data['blame'] = blame.reset_index().to_dict(orient='records')
+                logger.debug(f"Successfully fetched blame data on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for blame also failed: {retry_e}")
+                data['blame'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching blame for {repo_name}: {e}")
+            data['blame'] = None
     except Exception as e:
         logger.warning(f"Error fetching blame for {repo_name}: {e}")
         data['blame'] = None
 
     try:
-        files = repo.list_files(force_refresh=force_refresh)
-        lang_counts = {}
-        for f in files['file']:
-            ext = Path(f).suffix
-            if ext:
-                lang = get_language_from_extension(ext)
-                lang_counts[lang] = lang_counts.get(lang, 0) + 1
-        sorted_langs = sorted(lang_counts.items(), key=lambda item: item[1], reverse=True)
-        data['lang_counts'] = pd.DataFrame(sorted_langs, columns=['Language', 'Count'])
-        logger.debug(f"Fetched language counts for {repo_name}")
+        try:
+            files = repo.list_files(force_refresh=force_refresh)
+            lang_counts = {}
+            for f in files['file']:
+                ext = Path(f).suffix
+                if ext:
+                    lang = get_language_from_extension(ext)
+                    lang_counts[lang] = lang_counts.get(lang, 0) + 1
+            sorted_langs = sorted(lang_counts.items(), key=lambda item: item[1], reverse=True)
+            data['lang_counts'] = pd.DataFrame(sorted_langs, columns=['Language', 'Count'])
+            logger.debug(f"Fetched language counts for {repo_name}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in list_files for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                files = repo.list_files(force_refresh=True)
+                lang_counts = {}
+                for f in files['file']:
+                    ext = Path(f).suffix
+                    if ext:
+                        lang = get_language_from_extension(ext)
+                        lang_counts[lang] = lang_counts.get(lang, 0) + 1
+                sorted_langs = sorted(lang_counts.items(), key=lambda item: item[1], reverse=True)
+                data['lang_counts'] = pd.DataFrame(sorted_langs, columns=['Language', 'Count'])
+                logger.debug(f"Successfully fetched language counts on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for list_files also failed: {retry_e}")
+                data['lang_counts'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching language counts for {repo_name}: {e}")
+            data['lang_counts'] = None
     except Exception as e:
         logger.warning(f"Error fetching language counts for {repo_name}: {e}")
         data['lang_counts'] = None
 
     try:
-        commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=force_refresh)
-        if not commits.empty:
-             commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
-        data['commits'] = commits # Pass DataFrame
-        logger.debug(f"Fetched commit history for {repo_name}")
+        try:
+            commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=force_refresh)
+            if not commits.empty:
+                 commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
+            data['commits'] = commits # Pass DataFrame
+            logger.debug(f"Fetched commit history for {repo_name}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in commit_history for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                commits = repo.commit_history(limit=5, branch=repo.default_branch, force_refresh=True)
+                if not commits.empty:
+                    commits['commit_date'] = commits.index.strftime('%Y-%m-%d %H:%M')
+                data['commits'] = commits # Pass DataFrame
+                logger.debug(f"Successfully fetched commit history on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for commit_history also failed: {retry_e}")
+                data['commits'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching commit history for {repo_name}: {e}")
+            data['commits'] = None
     except Exception as e:
         logger.warning(f"Error fetching commit history for {repo_name}: {e}")
         data['commits'] = None
 
     try:
-        data['bus_factor'] = repo.bus_factor(force_refresh=force_refresh) # Pass DataFrame
-        logger.debug(f"Fetched bus factor for {repo_name}")
+        try:
+            data['bus_factor'] = repo.bus_factor(force_refresh=force_refresh) # Pass DataFrame
+            logger.debug(f"Fetched bus factor for {repo_name}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in bus_factor for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                data['bus_factor'] = repo.bus_factor(force_refresh=True) # Pass DataFrame
+                logger.debug(f"Successfully fetched bus factor on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for bus_factor also failed: {retry_e}")
+                data['bus_factor'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching bus factor for {repo_name}: {e}")
+            data['bus_factor'] = None
     except Exception as e:
         logger.warning(f"Error fetching bus factor for {repo_name}: {e}")
         data['bus_factor'] = None
 
     try:
         active_branches_list = []
-        base_commits = repo.commit_history(limit=1, branch=repo.default_branch, force_refresh=force_refresh)
-        if not base_commits.empty:
-            cutoff_date = datetime.now(tz=base_commits.index.tz) - timedelta(days=7)
-            all_branches = repo.branches(force_refresh=force_refresh)
-            logger.debug(f"Checking {len(all_branches)} branches for recent activity in {repo_name}")
-            for branch_name in all_branches['branch']:
-                try:
-                    branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=force_refresh)
-                    if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
-                        logger.debug(f"Branch '{branch_name}' is active in {repo_name}.")
-                        active_branches_list.append({
-                            'branch': branch_name,
-                            'last_commit_date': branch_commits.index[0].strftime('%Y-%m-%d %H:%M'),
-                            'author': branch_commits.iloc[0]['author']
-                        })
-                except git.exc.GitCommandError as git_err:
-                    logger.warning(f"Could not get history for branch '{branch_name}' in {repo_name}: {git_err}")
-                    continue # Ignore branches that fail to load history
-                except Exception as branch_err:
-                    logger.warning(f"Unexpected error checking branch '{branch_name}' in {repo_name}: {branch_err}")
-                    continue
-            data['active_branches'] = pd.DataFrame(active_branches_list).sort_values('last_commit_date', ascending=False)
-        else:
-             logger.warning(f"No base commits found for {repo_name}, cannot determine active branches.")
-             data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author']) # Empty DF
+        try:
+            base_commits = repo.commit_history(limit=1, branch=repo.default_branch, force_refresh=force_refresh)
+            if not base_commits.empty:
+                cutoff_date = datetime.now(tz=base_commits.index.tz) - timedelta(days=7)
+                all_branches = repo.branches(force_refresh=force_refresh)
+                logger.debug(f"Checking {len(all_branches)} branches for recent activity in {repo_name}")
+                for branch_name in all_branches['branch']:
+                    try:
+                        branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=force_refresh)
+                        # Check for empty dataframe first to avoid index[0] errors
+                        if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
+                            logger.debug(f"Branch '{branch_name}' is active in {repo_name}.")
+                            try:
+                                commit_date_str = branch_commits.index[0].strftime('%Y-%m-%d %H:%M')
+                                active_branches_list.append({
+                                    'branch': branch_name,
+                                    'last_commit_date': commit_date_str,
+                                    'author': branch_commits.iloc[0]['author']
+                                })
+                            except (IndexError, AttributeError, KeyError) as e:
+                                # Log but don't raise, to avoid breaking the entire overview
+                                logger.warning(f"Error processing branch '{branch_name}' data: {e}")
+                    except git.exc.GitCommandError as git_err:
+                        logger.warning(f"Could not get history for branch '{branch_name}' in {repo_name}: {git_err}")
+                        continue # Ignore branches that fail to load history
+                    except Exception as branch_err:
+                        logger.warning(f"Unexpected error checking branch '{branch_name}' in {repo_name}: {branch_err}")
+                        continue
+                
+                # Only try to sort if we have branches with valid data
+                if active_branches_list:
+                    data['active_branches'] = pd.DataFrame(active_branches_list).sort_values('last_commit_date', ascending=False)
+                else:
+                    # Create empty DataFrame with expected columns
+                    data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author'])
+            else:
+                 logger.warning(f"No base commits found for {repo_name}, cannot determine active branches.")
+                 data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author']) # Empty DF
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in active branches processing for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                active_branches_list = []
+                base_commits = repo.commit_history(limit=1, branch=repo.default_branch, force_refresh=True)
+                if not base_commits.empty:
+                    cutoff_date = datetime.now(tz=base_commits.index.tz) - timedelta(days=7)
+                    all_branches = repo.branches(force_refresh=True)
+                    logger.debug(f"Retry: Checking {len(all_branches)} branches for recent activity in {repo_name}")
+                    for branch_name in all_branches['branch']:
+                        try:
+                            branch_commits = repo.commit_history(branch=branch_name, limit=1, force_refresh=True)
+                            if not branch_commits.empty and branch_commits.index[0] >= cutoff_date:
+                                logger.debug(f"Retry: Branch '{branch_name}' is active in {repo_name}.")
+                                try:
+                                    commit_date_str = branch_commits.index[0].strftime('%Y-%m-%d %H:%M')
+                                    active_branches_list.append({
+                                        'branch': branch_name,
+                                        'last_commit_date': commit_date_str,
+                                        'author': branch_commits.iloc[0]['author']
+                                    })
+                                except (IndexError, AttributeError, KeyError) as e:
+                                    logger.warning(f"Retry: Error processing branch '{branch_name}' data: {e}")
+                        except Exception as branch_err:
+                            logger.warning(f"Retry: Error checking branch '{branch_name}': {branch_err}")
+                            continue
+                    
+                    if active_branches_list:
+                        data['active_branches'] = pd.DataFrame(active_branches_list).sort_values('last_commit_date', ascending=False)
+                    else:
+                        data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author'])
+                else:
+                    data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author'])
+                logger.debug(f"Successfully processed active branches on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for active branches also failed: {retry_e}")
+                data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author'])
+        except Exception as e:
+            logger.warning(f"Error processing active branches for {repo_name}: {e}")
+            data['active_branches'] = pd.DataFrame(columns=['branch', 'last_commit_date', 'author'])
+            
         logger.debug(f"Finished checking active branches for {repo_name}")
     except Exception as e:
         logger.exception(f"Error fetching active branches for {repo_name}: {e}")
@@ -147,53 +263,107 @@ def fetch_code_health_data(repo: Repository, force_refresh=False):
     logger.info(f"Fetching code health data for {repo_name} (force_refresh={force_refresh})")
     data = {}
     try:
-        has_cov = repo.has_coverage()
-        logger.debug(f"Coverage available for {repo_name}: {has_cov}")
-        coverage_df = repo.coverage() if has_cov else pd.DataFrame(columns=['filename', 'coverage'])
-        logger.debug(f"Fetched coverage data for {repo_name}")
-        change_rates_df = repo.file_change_rates(days=7, coverage=False, branch=repo.default_branch)
-        logger.debug(f"Fetched change rates for {repo_name}")
-        
-        # Get file details and ensure datetime columns are properly handled
-        file_details_df = repo.file_detail()
-        if not file_details_df.empty and 'last_edit_date' in file_details_df.columns:
+        try:
+            has_cov = repo.has_coverage()
+            logger.debug(f"Coverage available for {repo_name}: {has_cov}")
+            coverage_df = repo.coverage() if has_cov else pd.DataFrame(columns=['filename', 'coverage'])
+            logger.debug(f"Fetched coverage data for {repo_name}")
+            change_rates_df = repo.file_change_rates(days=7, coverage=False, branch=repo.default_branch, force_refresh=force_refresh)
+            logger.debug(f"Fetched change rates for {repo_name}")
+            
+            # Get file details and ensure datetime columns are properly handled
+            file_details_df = repo.file_detail(force_refresh=force_refresh)
+            if not file_details_df.empty and 'last_edit_date' in file_details_df.columns:
+                try:
+                    # Convert to datetime with UTC timezone
+                    file_details_df['last_edit_date'] = pd.to_datetime(file_details_df['last_edit_date'], utc=True)
+                except Exception as e:
+                    logger.warning(f"Error converting last_edit_date to datetime: {e}")
+                    file_details_df['last_edit_date'] = pd.NaT
+            logger.debug(f"Fetched file details for {repo_name}")
+
+            coverage_df = coverage_df.rename(columns={'filename': 'file'}).set_index('file')
+            change_rates_df = change_rates_df.rename_axis('file')
+            file_details_df = file_details_df.rename_axis('file')
+
+            merged = pd.merge(file_details_df, change_rates_df, on='file', how='outer')
+            merged_data = pd.merge(merged, coverage_df, on='file', how='outer')
+            data['merged_data'] = merged_data # Pass DataFrame
+            logger.debug(f"Merged health data for {repo_name}, shape: {merged_data.shape}")
+
+            overall_coverage = "N/A"
+            if has_cov and 'lines_covered' in merged_data.columns and 'total_lines' in merged_data.columns:
+                total_lines = merged_data['total_lines'].fillna(0).sum()
+                if total_lines > 0:
+                    overall_coverage = f"{merged_data['lines_covered'].fillna(0).sum() / total_lines:.1%}"
+                else:
+                    overall_coverage = "0.0%"
+            elif has_cov and not merged_data.empty and 'coverage' in merged_data.columns:
+                 mean_cov = merged_data['coverage'].mean()
+                 overall_coverage = f"{mean_cov:.1%}" if pd.notna(mean_cov) else "N/A"
+            data['overall_coverage'] = overall_coverage
+            logger.debug(f"Calculated overall coverage for {repo_name}: {overall_coverage}")
+
+            avg_edit_rate = "N/A"
+            if 'edit_rate' in merged_data.columns:
+                median_rate = merged_data['edit_rate'].fillna(0).median()
+                avg_edit_rate = f"{median_rate:.2f}"
+            data['avg_edit_rate'] = avg_edit_rate
+            logger.debug(f"Calculated avg edit rate for {repo_name}: {avg_edit_rate}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in code health data for {repo_name}. Retrying with force_refresh=True.")
             try:
-                # Convert to datetime with UTC timezone
-                file_details_df['last_edit_date'] = pd.to_datetime(file_details_df['last_edit_date'], utc=True)
-            except Exception as e:
-                logger.warning(f"Error converting last_edit_date to datetime: {e}")
-                file_details_df['last_edit_date'] = pd.NaT
-        logger.debug(f"Fetched file details for {repo_name}")
-
-        coverage_df = coverage_df.rename(columns={'filename': 'file'}).set_index('file')
-        change_rates_df = change_rates_df.rename_axis('file')
-        file_details_df = file_details_df.rename_axis('file')
-
-        merged = pd.merge(file_details_df, change_rates_df, on='file', how='outer')
-        merged_data = pd.merge(merged, coverage_df, on='file', how='outer')
-        data['merged_data'] = merged_data # Pass DataFrame
-        logger.debug(f"Merged health data for {repo_name}, shape: {merged_data.shape}")
-
-        overall_coverage = "N/A"
-        if has_cov and 'lines_covered' in merged_data.columns and 'total_lines' in merged_data.columns:
-            total_lines = merged_data['total_lines'].fillna(0).sum()
-            if total_lines > 0:
-                overall_coverage = f"{merged_data['lines_covered'].fillna(0).sum() / total_lines:.1%}"
-            else:
-                overall_coverage = "0.0%"
-        elif has_cov and not merged_data.empty and 'coverage' in merged_data.columns:
-             mean_cov = merged_data['coverage'].mean()
-             overall_coverage = f"{mean_cov:.1%}" if pd.notna(mean_cov) else "N/A"
-        data['overall_coverage'] = overall_coverage
-        logger.debug(f"Calculated overall coverage for {repo_name}: {overall_coverage}")
-
-        avg_edit_rate = "N/A"
-        if 'edit_rate' in merged_data.columns:
-            median_rate = merged_data['edit_rate'].fillna(0).median()
-            avg_edit_rate = f"{median_rate:.2f}"
-        data['avg_edit_rate'] = avg_edit_rate
-        logger.debug(f"Calculated avg edit rate for {repo_name}: {avg_edit_rate}")
-
+                # Retry all operations with force_refresh=True
+                has_cov = repo.has_coverage()
+                coverage_df = repo.coverage() if has_cov else pd.DataFrame(columns=['filename', 'coverage'])
+                change_rates_df = repo.file_change_rates(days=7, coverage=False, branch=repo.default_branch, force_refresh=True)
+                file_details_df = repo.file_detail(force_refresh=True)
+                
+                if not file_details_df.empty and 'last_edit_date' in file_details_df.columns:
+                    try:
+                        file_details_df['last_edit_date'] = pd.to_datetime(file_details_df['last_edit_date'], utc=True)
+                    except Exception as e:
+                        logger.warning(f"Retry: Error converting last_edit_date to datetime: {e}")
+                        file_details_df['last_edit_date'] = pd.NaT
+                
+                coverage_df = coverage_df.rename(columns={'filename': 'file'}).set_index('file')
+                change_rates_df = change_rates_df.rename_axis('file')
+                file_details_df = file_details_df.rename_axis('file')
+                
+                merged = pd.merge(file_details_df, change_rates_df, on='file', how='outer')
+                merged_data = pd.merge(merged, coverage_df, on='file', how='outer')
+                data['merged_data'] = merged_data
+                
+                # Calculate metrics
+                overall_coverage = "N/A"
+                if has_cov and 'lines_covered' in merged_data.columns and 'total_lines' in merged_data.columns:
+                    total_lines = merged_data['total_lines'].fillna(0).sum()
+                    if total_lines > 0:
+                        overall_coverage = f"{merged_data['lines_covered'].fillna(0).sum() / total_lines:.1%}"
+                    else:
+                        overall_coverage = "0.0%"
+                elif has_cov and not merged_data.empty and 'coverage' in merged_data.columns:
+                     mean_cov = merged_data['coverage'].mean()
+                     overall_coverage = f"{mean_cov:.1%}" if pd.notna(mean_cov) else "N/A"
+                data['overall_coverage'] = overall_coverage
+                
+                avg_edit_rate = "N/A"
+                if 'edit_rate' in merged_data.columns:
+                    median_rate = merged_data['edit_rate'].fillna(0).median()
+                    avg_edit_rate = f"{median_rate:.2f}"
+                data['avg_edit_rate'] = avg_edit_rate
+                
+                logger.debug(f"Successfully fetched code health data on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for code health data also failed: {retry_e}")
+                data['merged_data'] = None
+                data['overall_coverage'] = "Error"
+                data['avg_edit_rate'] = "Error"
+        except Exception as e:
+            logger.exception(f"Error fetching code health data for {repo_name}: {e}")
+            data['merged_data'] = None
+            data['overall_coverage'] = "Error"
+            data['avg_edit_rate'] = "Error"
     except Exception as e:
         logger.exception(f"Error fetching code health data for {repo_name}: {e}")
         data['merged_data'] = None
@@ -211,9 +381,22 @@ def fetch_contributor_data(repo: Repository, force_refresh=False):
     logger.info(f"Fetching contributor data for {repo_name} (force_refresh={force_refresh})")
     data = {}
     try:
-        hours_df = repo.hours_estimate(branch=repo.default_branch, committer=False)
-        data['hours'] = hours_df # Pass DataFrame
-        logger.debug(f"Fetched hours estimate for {repo_name}")
+        try:
+            hours_df = repo.hours_estimate(branch=repo.default_branch, committer=False, force_refresh=force_refresh)
+            data['hours'] = hours_df # Pass DataFrame
+            logger.debug(f"Fetched hours estimate for {repo_name}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in hours_estimate for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                hours_df = repo.hours_estimate(branch=repo.default_branch, committer=False, force_refresh=True)
+                data['hours'] = hours_df # Pass DataFrame
+                logger.debug(f"Successfully fetched hours estimate on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for hours estimate also failed: {retry_e}")
+                data['hours'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching hours estimate for {repo_name}: {e}")
+            data['hours'] = None
     except Exception as e:
         logger.warning(f"Error fetching hours estimate for {repo_name}: {e}")
         data['hours'] = None
@@ -228,9 +411,22 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
     logger.info(f"Fetching tags data for {repo_name} (force_refresh={force_refresh})")
     data = {}
     try:
-        tags_df = repo.tags()
-        data['tags'] = tags_df # Pass DataFrame
-        logger.debug(f"Fetched tags data for {repo_name}")
+        try:
+            tags_df = repo.tags(force_refresh=force_refresh)
+            data['tags'] = tags_df # Pass DataFrame
+            logger.debug(f"Fetched tags data for {repo_name}")
+        except KeyError as ke:
+            logger.warning(f"KeyError '{ke}' occurred in tags for {repo_name}. Retrying with force_refresh=True.")
+            try:
+                tags_df = repo.tags(force_refresh=True)
+                data['tags'] = tags_df # Pass DataFrame
+                logger.debug(f"Successfully fetched tags data on retry for {repo_name}")
+            except Exception as retry_e:
+                logger.warning(f"Retry for tags also failed: {retry_e}")
+                data['tags'] = None
+        except Exception as e:
+            logger.warning(f"Error fetching tags data for {repo_name}: {e}")
+            data['tags'] = None
     except Exception as e:
         logger.warning(f"Error fetching tags data for {repo_name}: {e}")
         data['tags'] = None
@@ -242,19 +438,65 @@ def fetch_tags_data(repo: Repository, force_refresh=False):
 def fetch_cumulative_blame_data(repo: Repository, force_refresh=False):
     """Worker function to fetch data for Cumulative Blame tab."""
     repo_name = repo.repo_name
-    logger.info(f"Fetching cumulative blame data for {repo_name} (force_refresh={force_refresh}, num_datapoints=50)")
+    commit_limit = 100 # Explicitly limit commits processed
+    logger.info(f"Fetching cumulative blame data for {repo_name} (force_refresh={force_refresh}, commit_limit={commit_limit})")
     data = {}
+    blame_df = None # Initialize blame_df
     try:
-        # Use a fixed number of datapoints for performance
-        kwargs = {'num_datapoints': 10, "committer": False}
-        blame_df = repo.cumulative_blame(**kwargs)
-        data['blame'] = blame_df # Pass DataFrame
-        logger.debug(f"Fetched cumulative blame data for {repo_name}")
-    except Exception as e:
-        logger.exception(f"Error fetching cumulative blame for {repo_name}: {e}")
-        data['blame'] = None # Set to None on error
+        kwargs = {
+            "committer": False,
+            "limit": commit_limit # Pass the commit limit
+            # Removed force_refresh=True - let gitpandas handle cache via decorator/backend
+        }
+        logger.debug(f"Calling repo.cumulative_blame for {repo_name} with kwargs: {kwargs}")
+        start_time = time.time()
+        # Pass force_refresh to the method if it accepts it, otherwise rely on cache backend
+        # Assuming cumulative_blame uses the @multicache decorator which respects force_refresh if passed
+        # Let's try passing it explicitly
+        try:
+            blame_df = repo.cumulative_blame(force_refresh=force_refresh, **kwargs)
+        except KeyError as ke:
+            # Specifically handle KeyError on 'rev' which can happen in gitpandas
+            if 'rev' in str(ke):
+                logger.warning(f"KeyError 'rev' occurred in cumulative_blame for {repo_name}. This is likely a gitpandas issue.")
+                # Try once more with force_refresh=True to bypass cache
+                logger.info(f"Retrying cumulative_blame for {repo_name} with force_refresh=True")
+                try:
+                    blame_df = repo.cumulative_blame(force_refresh=True, **kwargs)
+                except Exception as retry_e:
+                    logger.exception(f"Retry also failed with: {retry_e}")
+                    blame_df = None
+            else:
+                # Re-raise other KeyErrors
+                raise
+                
+        end_time = time.time()
+        logger.info(f"repo.cumulative_blame call completed in {end_time - start_time:.2f} seconds for {repo_name}")
 
-    logger.info(f"Finished fetching cumulative blame data for {repo_name}")
+        # --- Detailed Logging of Result --- #
+        if blame_df is None:
+            logger.warning(f"repo.cumulative_blame returned None for {repo_name}")
+        elif not isinstance(blame_df, pd.DataFrame):
+             logger.warning(f"repo.cumulative_blame returned type {type(blame_df)}, expected DataFrame, for {repo_name}")
+        elif blame_df.empty:
+            logger.warning(f"repo.cumulative_blame returned an empty DataFrame for {repo_name}")
+        else:
+            logger.debug(f"Fetched cumulative blame DataFrame shape: {blame_df.shape} for {repo_name}")
+            logger.debug(f"DataFrame columns: {blame_df.columns.tolist()}")
+            logger.debug(f"DataFrame index type: {type(blame_df.index)}")
+            # Avoid logging large dataframes, maybe just head?
+            # logger.debug(f"DataFrame head:\n{blame_df.head()}")
+
+        # Store the result (or None if issues occurred)
+        data['cumulative_blame'] = blame_df
+
+    except Exception as e:
+        # Log the specific error during the call
+        logger.exception(f"Error during repo.cumulative_blame call for {repo_name}: {e}")
+        data['cumulative_blame'] = None # Ensure it's None on error
+
+    logger.info(f"Finished fetch_cumulative_blame_data function for {repo_name}. Returning data dict.")
+    logger.debug(f"Returning data structure: {{ 'data': {{ 'cumulative_blame': type {type(data.get('cumulative_blame'))} }}, 'refreshed_at': ... }}")
     # Return dict with data and timestamp
     return {'data': data, 'refreshed_at': datetime.now()}
 

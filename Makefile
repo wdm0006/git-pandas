@@ -20,10 +20,10 @@ setup-examples:
 setup-all:
 	$(UV) pip install -e ".[all]"
 
-test:
+test: setup-all
 	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing -m "not slow"
 
-test-single:
+test-single: setup-all
 	@if [ "$(test)" = "" ]; then \
 		echo "Error: Please specify a test using test=<path_to_test>"; \
 		echo "Example: make test-single test=tests/test_Repository/test_advanced.py::TestRepositoryAdvanced::test_parallel_cumulative_blame"; \

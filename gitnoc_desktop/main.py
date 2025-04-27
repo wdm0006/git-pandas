@@ -38,6 +38,13 @@ def setup_logging():
     file_handler.setLevel(logging.DEBUG) # Log DEBUG and above to file
     logger.addHandler(file_handler)
 
+    # Set gitpandas logger to DEBUG level specifically for file output
+    gitpandas_logger = logging.getLogger('gitpandas')
+    gitpandas_logger.setLevel(logging.DEBUG)
+    # Note: We don't add handlers here, it uses the root logger's handlers.
+    # If we wanted separate file/console levels for gitpandas, we'd add handlers here
+    # and set gitpandas_logger.propagate = False
+
     logging.info("Logging configured.")
 
 setup_logging()

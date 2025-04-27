@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime
+import logging
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -14,182 +15,164 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 
 from .dataframe_table import DataFrameTable
+from .base_tab import BaseTabWidget # Import base class
 
-class TagsTab(QWidget):
+logger = logging.getLogger(__name__)
+
+# Inherit from BaseTabWidget
+class TagsTab(BaseTabWidget):
     # Signal to request data refresh
     refresh_requested = Signal()
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.repo = None
-        self.tags_data = pd.DataFrame() # Store the DataFrame
-        self.last_refreshed = None
-        
-        # Create main layout
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
-        self.main_layout.setSpacing(5)
-        
-        # Create header layout
-        self.header_layout = QHBoxLayout()
-        self.header_layout.setContentsMargins(0, 0, 0, 5)
-        
-        # Add header label
-        self.header_label = QLabel("Tags")
-        self.header_label.setStyleSheet("font-weight: bold;")
-        self.header_layout.addWidget(self.header_label)
-        self.header_layout.addStretch()
-        
-        # Add refresh time label
-        self.refresh_time_label = QLabel("Last refreshed: N/A")
-        self.refresh_time_label.setStyleSheet("font-style: italic; color: grey;")
-        self.header_layout.addWidget(self.refresh_time_label)
-        self.header_layout.addSpacing(10)
-        
-        # Add refresh button
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Reload data for this tab, bypassing cache")
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.clicked.connect(self._request_refresh) # Connect to internal slot
-        self.header_layout.addWidget(self.refresh_button)
-        
-        self.main_layout.addLayout(self.header_layout)
-        
-        # Create scroll area for content
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        
-        # Create widget for scroll area
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0, 0, 0, 0)
-        scroll.setWidget(self.content_widget)
-        
-        self.main_layout.addWidget(scroll)
-        
-        # Placeholder Label
-        self.placeholder_label = QLabel("<i>Select a repository to view tags data.</i>")
-        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.placeholder_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.content_layout.addWidget(self.placeholder_label)
+        # Call base init with title
+        super().__init__(tab_title="Tags", parent=parent)
+        # Base class handles repo, last_refreshed, main_layout, header_layout,
+        # content_layout, placeholder_status_label
 
-        # Status Label (Loading/Error)
-        self.status_label = QLabel("")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.status_label.setVisible(False)
-        self.content_layout.addWidget(self.status_label)
+        # --- Specific Widgets for Tags Tab --- #
+        self.tags_data = pd.DataFrame()
+        self.tags_table = None
 
-        # Data Container Widget
-        self.data_container_widget = QWidget()
-        self.data_container_layout = QVBoxLayout(self.data_container_widget)
-        self.data_container_layout.setContentsMargins(0,0,0,0)
-        self.data_container_layout.setSpacing(5)
-        self.data_container_widget.setVisible(False)
-        self.content_layout.addWidget(self.data_container_widget)
+        # Create scroll area for content - This part is specific and correct
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll_content_widget = QWidget()
+        self.scroll_content_layout = QVBoxLayout(self.scroll_content_widget)
+        self.scroll_content_layout.setContentsMargins(5, 5, 5, 5)
+        self.scroll_content_layout.setSpacing(10)
+        self.scroll_area.setWidget(self.scroll_content_widget)
+
+        # Add the scroll area to the content_layout created by the base class
+        # Need to ensure placeholder is added *after* scroll area if not already handled
+        # Check base class: it adds placeholder_status_label to content_layout.
+        # So, just add scroll_area here.
+        self.content_layout.addWidget(self.scroll_area)
+        self.scroll_area.setVisible(False) # Hide scroll area initially
+
+        # Call _show_placeholder explicitly to set initial state
+        self._show_placeholder()
 
     def _request_refresh(self):
         # Emit the signal for MainWindow to catch
         self.refresh_requested.emit()
 
-    def _show_placeholder(self):
-        """Shows placeholder when no repository is loaded."""
-        self.placeholder_label.setText("<i>No repository loaded</i>")
-        self.placeholder_label.setVisible(True)
-        self.status_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.refresh_button.setEnabled(False)
-        self.refresh_time_label.setText("Last refreshed: N/A")
-        self.repo = None
-        self.tags_data = pd.DataFrame()
-        self.last_refreshed = None
+    def _clear_scroll_content(self):
+        """Helper to remove widgets specifically from the scroll layout."""
+        while self.scroll_content_layout.count():
+             item = self.scroll_content_layout.takeAt(0)
+             widget = item.widget()
+             if widget:
+                 widget.setParent(None)
+                 widget.deleteLater()
+        self.tags_table = None
 
-    def _show_loading(self):
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
-        self.placeholder_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.status_label.setText("<i>Loading tags data...</i>")
-        self.status_label.setStyleSheet("color: grey;")
-        self.status_label.setVisible(True)
+    def _show_placeholder(self, message=None):
+        """Overrides base just to hide the scroll area."""
+        self.scroll_area.setVisible(False)
+        self._clear_scroll_content() # Also clear content when showing placeholder
+        super()._show_placeholder(message) # Call base to handle placeholder label etc.
+        self.tags_data = pd.DataFrame() # Reset specific data
+
+    def _show_loading(self, message=None):
+        """Overrides base just to hide the scroll area."""
+        self.scroll_area.setVisible(False)
+        self._clear_scroll_content() # Also clear content when showing loading
+        super()._show_loading(message) # Call base to handle placeholder label etc.
+
+    def populate_ui(self, repo, data, refreshed_at):
+        """Populates the Tags tab UI with fetched data."""
+        logger.debug(f"Populating TagsTab UI for repo: {repo.repo_name if repo else 'None'}")
+        self.repo = repo
+        self._update_refresh_time_label(refreshed_at) # Use base method
+
+        # Extract DataFrame (assuming data = {'tags': df, ...} structure)
+        tags_df = None
+        if isinstance(data, dict) and 'tags' in data and isinstance(data['tags'], pd.DataFrame):
+             tags_df = data['tags']
+
+        # Validate Data
+        if tags_df is None:
+             self._show_error("Failed to load or parse tags data.") # Use base error display
+             self.scroll_area.setVisible(False) # Ensure scroll area is hidden on error
+             return
+        if tags_df.empty:
+            self._show_error("No tags found in this repository.") # Use base error display
+            self.scroll_area.setVisible(False) # Ensure scroll area is hidden on error
+            return
+
+        # Data is valid, store it
+        self.tags_data = tags_df
+
+        # Clear previous content from scroll area
+        self._clear_scroll_content()
+
+        # Prepare views - show scroll area, hide placeholder
+        self.placeholder_status_label.setVisible(False)
+        self.scroll_area.setVisible(True)
+
+        # --- Populate Scroll Content --- #
+        try:
+             # Populate scroll_content_layout
+             repo_label = QLabel(f"Repository: <b>{self.repo.repo_name}</b>")
+             self.scroll_content_layout.addWidget(repo_label) # Add to scroll layout
+             self.scroll_content_layout.addSpacing(5)
+             self._add_section_label("Git Tags", self.scroll_content_layout)
+
+             # Format dates (using tags_df from earlier)
+             tags_df_processed = self.tags_data.copy()
+             # Consolidate date parsing
+             for col in ['tag_date', 'commit_date']:
+                 if col in tags_df_processed.columns and not pd.api.types.is_datetime64_any_dtype(tags_df_processed[col]):
+                     try:
+                         tags_df_processed[col] = pd.to_datetime(tags_df_processed[col], errors='coerce')
+                     except Exception as e:
+                         logger.warning(f"Could not parse {col}: {e}")
+
+             # Define columns to show & filter to only existing ones
+             cols_to_show = ['tag', 'tag_date', 'commit_date', 'annotated', 'annotation']
+             cols_present = [col for col in cols_to_show if col in tags_df_processed.columns]
+
+             # Create and add the table
+             self.tags_table = DataFrameTable()
+             # Format the date columns for display *after* setting the dataframe
+             # Or ensure DataFrameTable handles datetime formatting
+             self.tags_table.set_dataframe(tags_df_processed, columns=cols_present, show_index=False)
+             self.scroll_content_layout.addWidget(self.tags_table)
+
+             self.scroll_content_layout.addStretch()
+
+        except Exception as e:
+             logger.error(f"Error populating tags tab content: {e}", exc_info=True)
+             self._show_error(f"Error displaying tags data: {e}") # Use base error display
+             self.scroll_area.setVisible(False) # Ensure scroll area hidden on population error
+             return
+
+        # Restore button state using base method
+        self._hide_loading()
+
+    def _add_section_label(self, text, layout):
+        """Adds a section header label to the specified layout."""
+        label = QLabel(text)
+        label.setStyleSheet("font-weight: bold; margin-top: 5px;")
+        layout.addWidget(label)
 
     def _hide_loading(self):
         self.refresh_button.setEnabled(self.repo is not None)
         self.refresh_button.setText("Refresh")
 
     def _show_error(self, message="Failed to load tags data."):
-        self.placeholder_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.status_label.setText(f"<font color='orange'>{message}</font>")
-        self.status_label.setVisible(True)
+        logger.error(f"Showing error for {self.header_label.text()}: {message}")
+        self._clear_scroll_content()
+        self.scroll_area.setVisible(False)
+        # Let base handle the placeholder label text/visibility and button state
+        super()._show_error(message)
         self._hide_loading()
 
-    def populate_ui(self, repo, data, refreshed_at):
-        """Populates the UI with fetched tags data and refresh time."""
-        self.repo = repo
-        self.last_refreshed = refreshed_at
-        # Update refresh time label
+    def _update_refresh_time_label(self, refreshed_at):
         if refreshed_at:
             ts = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
             self.refresh_time_label.setText(f"Last refreshed: {ts}")
         else:
-            self.refresh_time_label.setText("Last refreshed: Error")
-        # Prepare views
-        self.placeholder_label.setVisible(False)
-        self.status_label.setVisible(False)
-        self.data_container_layout.parent().setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.data_container_layout.parent()  # ensure attribute
-        # Clear previous data container
-        while self.data_container_layout.count():
-            item = self.data_container_layout.takeAt(0)
-            widget = item.widget()
-            if widget: widget.deleteLater()
-        
-        if data is None or data.get('tags') is None:
-            self._show_error("Failed to load tags data in background.")
-            return
-        
-        tags_df = data['tags']
-        
-        # Populate data container
-        repo_label = QLabel(f"Repository: <b>{self.repo.repo_name}</b>")
-        self.data_container_layout.addWidget(repo_label)
-        self.data_container_layout.addSpacing(10)
-        self._add_section_label("Git Tags", self.data_container_layout)
-        
-        if isinstance(tags_df, pd.DataFrame) and not tags_df.empty:
-            # Format dates
-            if 'tag_date' in tags_df.index.names:
-                tags_df = tags_df.copy()  # Make a copy to avoid modifying the original
-                tags_df = tags_df.reset_index()
-                tags_df['tag_date'] = pd.to_datetime(tags_df['tag_date'])
-            if 'commit_date' in tags_df.index.names or 'commit_date' in tags_df.columns:
-                if 'commit_date' in tags_df.index.names:
-                    tags_df = tags_df.reset_index()
-                tags_df['commit_date'] = pd.to_datetime(tags_df['commit_date'])
-            
-            # Define columns to show
-            cols_to_show = ['tag', 'tag_date', 'commit_date', 'annotated', 'annotation']
-            # Filter to only columns that exist
-            cols_to_show = [col for col in cols_to_show if col in tags_df.columns]
-            
-            # Create and add the table
-            table = DataFrameTable()
-            table.set_dataframe(tags_df, columns=cols_to_show, show_index=False)
-            self.data_container_layout.addWidget(table)
-        else:
-            self.data_container_layout.addWidget(QLabel("<i>No tags found in this repository.</i>"))
-        
-        self.data_container_layout.addStretch()
-        # Show data
-        self.data_container_widget.setVisible(True)
-        self._hide_loading()
-        self.refresh_button.setEnabled(True)
-
-    def _add_section_label(self, text, layout):
-        """Adds a section header label to the layout."""
-        label = QLabel(text)
-        label.setStyleSheet("font-weight: bold; margin-top: 5px;")
-        layout.addWidget(label) 
+            self.refresh_time_label.setText("Last refreshed: Error") 

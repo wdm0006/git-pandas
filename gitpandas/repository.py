@@ -980,7 +980,30 @@ class Repository:
             elif skip is not None:
                 limit = limit * skip
 
-        ds = [[x.committed_date, x.name_rev.split(" ")[0]] for x in self.repo.iter_commits(branch, max_count=limit)]
+        ds = []
+        try:
+            commits_iterator = self.repo.iter_commits(branch, max_count=limit)
+            for x in commits_iterator:
+                try:
+                    # Attempt to access commit data that might fail
+                    committed_date = x.committed_date
+                    name_rev = x.name_rev
+                    rev_sha = name_rev.split(" ")[0]
+                    ds.append([committed_date, rev_sha])
+                except ValueError as e:
+                    # Log and skip commits that cause gitdb resolution errors
+                    logger.warning(f"Skipping commit due to gitdb error: {e}")
+                    continue # Skip to the next commit
+                except Exception as e:
+                    # Log and skip commits with other unexpected errors
+                    logger.warning(f"Skipping commit due to unexpected error: {e}")
+                    continue # Skip to the next commit
+        except GitCommandError as e:
+            logger.error(f"Could not iterate commits for branch '{branch}' in revs(): {e}")
+            # Return empty DataFrame if iteration fails
+            return pd.DataFrame(columns=["date", "rev"])
+
+        # ds = [[x.committed_date, x.name_rev.split(" ")[0]] for x in self.repo.iter_commits(branch, max_count=limit)]
         df = DataFrame(ds, columns=["date", "rev"])
 
         if skip is not None:
@@ -1049,10 +1072,29 @@ class Repository:
 
         # get the commit history to stub out committers (hacky and slow)
         logger.debug("Fetching all committers to pre-populate columns...")
-        if sys.version_info.major == 2:
-            committers = {x.committer.name for x in self.repo.iter_commits(branch)}
-        else:
-            committers = {x.committer.name for x in self.repo.iter_commits(branch)}
+        committers = set()
+        try:
+            for commit in self.repo.iter_commits(branch):
+                try:
+                    # Determine the name based on the 'committer' flag
+                    name = commit.committer.name if committer else commit.author.name
+                    committers.add(name)
+                except ValueError as e:
+                    # Handle potential errors resolving commit objects (e.g., due to corruption)
+                    logger.warning(f"Could not resolve commit object {commit.hexsha} when fetching committers: {e}")
+                except Exception as e:
+                    # Catch other potential errors getting name (e.g., missing name)
+                    logger.warning(f"Error getting committer/author name for commit {commit.hexsha}: {e}")
+        except GitCommandError as e:
+            logger.error(f"Could not iterate commits for branch '{branch}' to get committers: {e}")
+            # Return empty DataFrame if we can't even get committers
+            return pd.DataFrame()
+
+        # Check if any committers were found
+        if not committers:
+            logger.warning(f"No valid committers found for branch '{branch}'. Returning empty DataFrame.")
+            # Return an empty DataFrame with a 'date' index to avoid errors downstream
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
 
         for y in committers:
             revs[y] = 0
@@ -1064,10 +1106,10 @@ class Repository:
         # now populate that table with some actual values
         for idx, row in revs.iterrows():
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"Processing blame for rev: {row.rev} (Index: {idx})")
+                logger.debug(f"Processing blame for rev: {row['rev']} (Index: {idx})")
 
             blame = self.blame(
-                rev=row.rev,
+                rev=row['rev'],
                 committer=committer,
                 ignore_globs=ignore_globs,
                 include_globs=include_globs,
@@ -1077,7 +1119,6 @@ class Repository:
                     loc = blame.loc[y, "loc"]
                     revs.at[idx, y] = loc
                 except KeyError:
-                    logger.warning(f"Committer '{y}' not found in blame results for rev {row.rev}")
                     pass
 
         del revs["rev"]

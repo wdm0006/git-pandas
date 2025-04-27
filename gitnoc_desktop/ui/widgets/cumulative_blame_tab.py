@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+import logging
+import traceback
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -13,78 +15,38 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 
-class CumulativeBlameTab(QWidget):
+from .base_tab import BaseTabWidget
+
+logger = logging.getLogger(__name__)
+
+class CumulativeBlameTab(BaseTabWidget):
     refresh_requested = Signal()
+    DEFAULT_PLACEHOLDER_TEXT = "<i>Select a repository to view the cumulative blame data.</i>"
     """A widget to display cumulative blame data as a stacked area chart."""
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.repo = None
+        super().__init__(tab_title="Cumulative Blame", parent=parent)
+        # Base class handles repo, last_refreshed, main_layout, header_layout,
+        # content_layout, placeholder_status_label
+
+        # --- Specific Widgets for CumulativeBlameTab --- #
         self.blame_data = pd.DataFrame()
-        self.last_refreshed = None
 
-        # --- Layouts ---
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
-        self.main_layout.setSpacing(5)
-
-        self.header_layout = QHBoxLayout()
-        self.header_layout.setContentsMargins(0, 0, 0, 5)
-
-        # --- Header Widgets ---
-        self.header_label = QLabel("Cumulative Blame")
-        self.header_label.setStyleSheet("font-weight: bold;")
-        self.header_layout.addWidget(self.header_label)
-        self.header_layout.addStretch()
-
-        self.refresh_time_label = QLabel("Last refreshed: N/A")
-        self.refresh_time_label.setStyleSheet("font-style: italic; color: grey;")
-        self.header_layout.addWidget(self.refresh_time_label)
-        self.header_layout.addSpacing(10)
-
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Reload data for this tab, bypassing cache")
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.clicked.connect(self._request_refresh)
-        self.header_layout.addWidget(self.refresh_button)
-
-        # --- Chart and Content Area ---
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0,0,0,0)
-        self.content_layout.setSpacing(5)
-
-        # Placeholder Label
-        self.placeholder_label = QLabel("<i>Select a repository to view cumulative blame data.</i>")
-        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.placeholder_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.content_layout.addWidget(self.placeholder_label)
-
-        # Status Label (Loading/Error)
-        self.status_label = QLabel("")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.status_label.setVisible(False)
-        self.content_layout.addWidget(self.status_label)
-
-        # Data Container for the chart
+        # Data Container for the chart - This part is specific and correct
         self.data_container_widget = QWidget()
         self.data_container_layout = QVBoxLayout(self.data_container_widget)
         self.data_container_layout.setContentsMargins(0,0,0,0)
         self.data_container_layout.setSpacing(5)
-        self.data_container_widget.setVisible(False)
-        self.content_layout.addWidget(self.data_container_widget)
 
         # Use Matplotlib canvas inside data container
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setVisible(False)
         self.data_container_layout.addWidget(self.canvas)
 
-        # --- Assembly ---
-        self.main_layout.addLayout(self.header_layout)
-        self.main_layout.addWidget(self.content_widget, 1)
+        # Add chart container to the main content layout managed by base class
+        self.content_layout.addWidget(self.data_container_widget)
+        self.data_container_widget.setVisible(False) # Hide initially
 
-        # Initial state
+        # Call _show_placeholder explicitly to set initial state
         self._show_placeholder()
 
     def _request_refresh(self):
@@ -93,127 +55,179 @@ class CumulativeBlameTab(QWidget):
         # if self.parent() and hasattr(self.parent(), 'refresh_cumulative_blame_data'):
         #     self.parent().refresh_cumulative_blame_data()
 
+    def _clear_data_container(self):
+         # Similar to other tabs, clear the layout and reset references
+         if self.canvas:
+              self.data_container_layout.removeWidget(self.canvas)
+              # Maybe just clear plot instead of deleting canvas?
+              # self.canvas.figure.clear()
+              # Or delete? Deleting might be safer if plot state persists
+              self.canvas.deleteLater()
+              self.canvas = None
+         # Recreate figure/axis/canvas if deleted?
+         # Or assume populate_ui will handle it?
+         # Let's assume populate_ui handles recreation if needed.
+         # For safety, ensure ax is cleared if figure still exists
+         if self.figure and self.ax:
+             self.ax.clear()
+             # self.canvas.draw() # Maybe needed?
+
+         self.blame_data = pd.DataFrame()
+
     def _show_placeholder(self, message=None):
-        # Show placeholder message
-        text = message or "<i>Select a repository to view cumulative blame data.</i>"
-        self.placeholder_label.setText(text)
-        self.placeholder_label.setVisible(True)
-        self.status_label.setVisible(False)
+        self._clear_data_container() # Clear specific content
+        self.data_container_widget.setVisible(False) # Hide container
+        super()._show_placeholder(message) # Call base for placeholder label
+        # Explicitly ensure placeholder is visible
+        self.placeholder_status_label.setVisible(True)
+
+    def _show_loading(self, message=None):
+        self._clear_data_container() # Clear specific content
+        self.data_container_widget.setVisible(False) # Hide container
+        super()._show_loading(message) # Call base for placeholder label
+        # Explicitly ensure placeholder is visible
+        self.placeholder_status_label.setVisible(True)
+
+    def _show_error(self, message):
+        """Shows an error message in the content area."""
+        # Call parent class method first
+        super()._show_error(message)
+        # Explicitly ensure placeholder is visible and data container is hidden
+        self.placeholder_status_label.setVisible(True)
         self.data_container_widget.setVisible(False)
-        self.refresh_button.setEnabled(False)
-        self.refresh_time_label.setText("Last refreshed: N/A")
-        self.repo = None
-        self.blame_data = pd.DataFrame()
-        self.last_refreshed = None
 
-    def _show_loading(self):
-        # Show loading state
-        self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
-        self.placeholder_label.setVisible(False)
-        self.data_container_widget.setVisible(False)
-        self.status_label.setText("<i>Loading cumulative blame data...</i>")
-        self.status_label.setStyleSheet("color: grey;")
-        self.status_label.setVisible(True)
-
-    def _hide_loading(self):
-        # Restore button state
-        self.refresh_button.setEnabled(self.repo is not None)
-        self.refresh_button.setText("Refresh")
-
-    def populate_ui(self, repo, blame_data, refreshed_at):
+    def populate_ui(self, repo, blame_data_in, refreshed_at):
         """Populates the UI with fetched blame data and refresh time."""
+        logger.debug(f"Populating CumulativeBlameTab UI for repo: {repo.repo_name if repo else 'None'}")
+        # [ADD] Log received data structure
+        logger.debug(f"Received blame_data_in type: {type(blame_data_in)}")
+        if isinstance(blame_data_in, dict):
+            logger.debug(f"Received blame_data_in keys: {blame_data_in.keys()}")
+            # [ADD] Check for error key first
+            if 'error' in blame_data_in and blame_data_in['error'] is not None:
+                logger.error(f"Error received from fetcher: {blame_data_in['error']}")
+                self._show_error(f"Error fetching data: {blame_data_in['error']}")
+                return
+            # [/ADD] End error check
+            if 'data' in blame_data_in and isinstance(blame_data_in['data'], dict):
+                logger.debug(f"Received blame_data_in['data'] keys: {blame_data_in['data'].keys()}")
+                if 'cumulative_blame' in blame_data_in['data']:
+                     logger.debug(f"Received blame_data_in['data']['cumulative_blame'] type: {type(blame_data_in['data']['cumulative_blame'])}")
+                     # Log shape if it's a DataFrame
+                     if isinstance(blame_data_in['data']['cumulative_blame'], pd.DataFrame):
+                          logger.debug(f"Received DataFrame shape: {blame_data_in['data']['cumulative_blame'].shape}")
+
+        self.repo = repo
+        self._update_refresh_time_label(refreshed_at)
+
         try:
-            # Update repo and time label regardless of data validity
-            self.repo = repo
-            self.last_refreshed = refreshed_at
-            if refreshed_at:
-                timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
-                self.refresh_time_label.setText(f"Last refreshed: {timestamp_str}")
-            else:
-                self.refresh_time_label.setText("Last refreshed: Error")
+            blame_df = None
+            # Extract DataFrame from the nested dict structure returned by the worker
+            if isinstance(blame_data_in, dict) and 'data' in blame_data_in:
+                 inner_data = blame_data_in['data']
+                 # Check if inner_data is a dict before accessing keys
+                 if isinstance(inner_data, dict) and 'cumulative_blame' in inner_data:
+                      # Check if the value is a DataFrame
+                      if isinstance(inner_data['cumulative_blame'], pd.DataFrame):
+                           blame_df = inner_data['cumulative_blame']
+            # Allow for direct DataFrame input (though worker doesn't do this currently)
+            elif isinstance(blame_data_in, pd.DataFrame):
+                blame_df = blame_data_in
 
-            # Extract DataFrame from dict structure if needed
-            if isinstance(blame_data, dict) and 'data' in blame_data:
-                blame_data = blame_data['data']
+            # --- Validate Data --- #
+            if blame_df is None:
+                # This error might now be redundant due to the earlier check, but leave as a fallback
+                self._show_error("Failed to load or parse cumulative blame data.")
+                return
+            if blame_df.empty:
+                self._show_error("No cumulative blame data found for this repository/branch.")
+                return
 
-            # Check for invalid data (None or not a DataFrame or empty DataFrame)
-            if not isinstance(blame_data, pd.DataFrame) or blame_data.empty:
-                # Show error placeholder
-                if isinstance(blame_data, pd.DataFrame) and blame_data.empty:
-                    msg = "No cumulative blame data found for this repository/branch."
-                else:
-                    msg = "Failed to load cumulative blame data."
-                self._show_placeholder(f"<font color='orange'>{msg}</font>")
-                self._hide_loading()
-                self.refresh_button.setEnabled(self.repo is not None)
-                return # Stop processing here
+            # --- Data is Valid: Store and Plot --- #
+            self.blame_data = blame_df
 
-            # --- Data is Valid: Proceed with plotting --- #
-            self.blame_data = blame_data
+            # Ensure the chart container is visible and placeholder is hidden
+            self.placeholder_status_label.setVisible(False)
+            self.data_container_widget.setVisible(True)
 
-            # Safely clear previous content
+            # --- Plotting Logic --- #
             try:
-                # Clear content layout, preserve placeholder/status widgets if needed
-                while self.data_container_layout.count():
-                    item = self.data_container_layout.takeAt(0)
-                    widget = item.widget()
-                    if widget:
-                        widget.deleteLater()
-                # Re-add canvas
-                self.data_container_layout.addWidget(self.canvas)
-            except RuntimeError:
-                # If we hit Qt C++ object deletion issues, recreate the canvas
-                self.figure, self.ax = plt.subplots()
-                self.canvas = FigureCanvas(self.figure)
+                # Recreate canvas if it was deleted by previous error/clear
+                if not hasattr(self, 'canvas') or self.canvas is None:
+                     logger.debug("Recreating Matplotlib canvas")
+                     # Ensure figure and ax exist too
+                     if not hasattr(self, 'figure') or self.figure is None:
+                         self.figure, self.ax = plt.subplots()
+                     elif not hasattr(self, 'ax') or self.ax is None:
+                         # If figure exists but ax doesn't (unlikely), clear figure or get ax
+                         self.figure.clear()
+                         self.ax = self.figure.add_subplot(111)
 
-            try:
-                # Only manipulate the canvas if it's still valid
-                if self.canvas and not self.canvas.isValid():
-                    # Canvas is invalid, recreate it
-                    self.figure, self.ax = plt.subplots()
-                    self.canvas = FigureCanvas(self.figure)
-                
+                     self.canvas = FigureCanvas(self.figure)
+                     # Need to re-add canvas to layout if it was removed
+                     # Check if layout still exists
+                     if hasattr(self, 'data_container_layout') and self.data_container_layout:
+                          # Remove potential old placeholders if layout was reused
+                          while self.data_container_layout.count():
+                              item = self.data_container_layout.takeAt(0)
+                              widget = item.widget()
+                              if widget: widget.deleteLater()
+                          # Add the new canvas
+                          self.data_container_layout.addWidget(self.canvas)
+                     else:
+                          logger.error("Cannot re-add canvas, data_container_layout missing!")
+                          self._show_error("Internal UI error: Layout missing.")
+                          return
+
                 self.ax.clear() # Clear previous plot
 
-                # Ensure index is datetime (moved check here)
+                # Ensure index is datetime
                 if not pd.api.types.is_datetime64_any_dtype(self.blame_data.index):
+                    try:
                         self.blame_data.index = pd.to_datetime(self.blame_data.index)
+                    except Exception as e:
+                        logger.error(f"Could not convert index to datetime: {e}")
+                        self._show_error("Error processing dates in blame data.")
+                        return
 
                 # Sort columns (committers) for consistent stacking order
                 self.blame_data = self.blame_data.sort_index(axis=1)
 
+                # Handle case with too many columns for legend
+                max_legend_items = 15
+                show_legend = len(self.blame_data.columns) <= max_legend_items
+
                 self.ax.stackplot(
                     self.blame_data.index,
-                    self.blame_data.values.T, # Transpose needed for stackplot
+                    self.blame_data.values.T, # Transpose needed
                     labels=self.blame_data.columns
                 )
-                self.ax.set_title(f"Cumulative Blame Over Time ({self.repo.repo_name})")
+                repo_name = getattr(self.repo, 'repo_name', 'Repository') # Safe access
+                self.ax.set_title(f"Cumulative Blame Over Time ({repo_name})")
                 self.ax.set_xlabel("Date")
                 self.ax.set_ylabel("Lines of Code")
-                self.ax.legend(loc='upper left', fontsize='small')
-                self.figure.autofmt_xdate() # Improve date formatting
-                self.figure.tight_layout() # Adjust layout
+                if show_legend:
+                    self.ax.legend(loc='upper left', fontsize='x-small') # Smaller font
+                else:
+                    logger.warning("Hiding legend due to too many committers.")
+                    # Optionally add a note to the plot?
+                    # self.ax.text(0.5, 0.01, 'Legend hidden (too many items)', ...)
 
-                # Only add the canvas if it's not already in the layout
-                self.canvas.setVisible(True)
-                
+                self.figure.autofmt_xdate() # Improve date formatting
+                self.figure.tight_layout()
+                self.canvas.draw() # Redraw the canvas
+
             except Exception as e:
-                import traceback
-                print(f"Error plotting cumulative blame: {e}")
-                traceback.print_exc()
-                self._show_placeholder(f"<font color='red'>Error generating chart: {e}</font>")
+                logger.error(f"Error plotting cumulative blame: {e}")
+                logger.error(traceback.format_exc())
+                self._show_error(f"Error generating chart: {e}")
+                return # Error shown, exit
 
             # --- Final Touches --- #
-            # Show data container
-            self.data_container_widget.setVisible(True)
-            self._hide_loading()
-            self.refresh_button.setEnabled(self.repo is not None)
-            
+            # The finished signal from the worker will call the base _hide_loading.
+
         except Exception as e:
-            import traceback
-            print(f"Error in populate_ui: {e}")
-            traceback.print_exc()
-            self._show_placeholder(f"<font color='red'>Unexpected error: {e}</font>")
-            self._hide_loading()
-            self.refresh_button.setEnabled(self.repo is not None)
+            # Catch-all for unexpected errors during population
+            logger.error(f"Unexpected error in populate_ui: {e}")
+            logger.error(traceback.format_exc())
+            self._show_error(f"An unexpected error occurred: {e}")
