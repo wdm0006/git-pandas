@@ -17,15 +17,11 @@ import sys
 import tempfile
 import time
 
+import git  # Import the full git module
 import numpy as np
 import pandas as pd
-from git import BadName, BadObject, GitCommandError, Repo, NULL_TREE
-import git  # Import the full git module
+from git import BadName, BadObject, GitCommandError, Repo
 from pandas import DataFrame, to_datetime
-from datetime import datetime, timezone
-import pytz
-import warnings
-from typing import Optional, List, Dict, Any, Union
 
 from gitpandas.cache import multicache
 from gitpandas.logging import logger
@@ -271,7 +267,17 @@ class Repository:
 
     @multicache(
         key_prefix="hours_estimate",
-        key_list=["branch", "grouping_window", "single_commit_hours", "limit", "days", "committer", "ignore_globs", "include_globs"])
+        key_list=[
+            "branch",
+            "grouping_window",
+            "single_commit_hours",
+            "limit",
+            "days",
+            "committer",
+            "ignore_globs",
+            "include_globs",
+        ],
+    )
     def hours_estimate(
         self,
         branch=None,
@@ -348,9 +354,7 @@ class Repository:
         logger.info(f"Finished hours estimation for branch '{branch}'. Found data for {len(df)} contributors.")
         return df
 
-    @multicache(
-        key_prefix="commit_history",
-        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
+    @multicache(key_prefix="commit_history", key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
     def commit_history(
         self,
         branch=None,
@@ -505,9 +509,7 @@ class Repository:
         logger.info(f"Finished fetching commit history for branch '{branch}'. Found {len(df)} relevant commits.")
         return df
 
-    @multicache(
-        key_prefix="file_change_history",
-        key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
+    @multicache(key_prefix="file_change_history", key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
     def file_change_history(
         self,
         branch=None,
@@ -569,18 +571,26 @@ class Repository:
                             logger.warning(f"Skipping commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
                             continue
                         else:
-                            logger.error(f"Error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.error(
+                                f"Error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             raise
                     except Exception as e:
                         if skip_broken:
-                            logger.warning(f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.warning(
+                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             continue
                         else:
-                            logger.error(f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.error(
+                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             raise
             except git.exc.GitCommandError as e:
                 logger.error(f"Error listing commits for branch '{branch}': {e}")
-                return pd.DataFrame(columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"])
+                return pd.DataFrame(
+                    columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"]
+                )
         else:
             try:
                 for i, x in enumerate(self.repo.iter_commits(branch)):
@@ -594,44 +604,54 @@ class Repository:
                             logger.warning(f"Skipping commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
                             continue
                         else:
-                            logger.error(f"Error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.error(
+                                f"Error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             raise
                     except Exception as e:
                         if skip_broken:
-                            logger.warning(f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.warning(
+                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             continue
                         else:
-                            logger.error(f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}")
+                            logger.error(
+                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                            )
                             raise
             except git.exc.GitCommandError as e:
                 logger.error(f"Error listing commits for branch '{branch}': {e}")
-                return pd.DataFrame(columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"])
+                return pd.DataFrame(
+                    columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"]
+                )
 
         # Return empty DataFrame with correct columns if no valid commits found
         if not history:
             logger.warning(f"No valid file change history found for branch '{branch}'")
-            df = pd.DataFrame(columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"])
+            df = pd.DataFrame(
+                columns=["filename", "insertions", "deletions", "lines", "message", "committer", "author"]
+            )
             df = self._add_labels_to_df(df)
             return df
 
         # Create DataFrame from the collected history data
         df = pd.DataFrame(history)
         df = df.reset_index(drop=True)
-        
+
         # Convert date column to datetime and set as index
         df["date"] = pd.to_datetime(df["date"], unit="s", utc=True)
         df = df.set_index(keys=["date"], drop=False)
         df = df.sort_index()
-        
+
         # Add repository labels
         df = self._add_labels_to_df(df)
 
         logger.info(f"Finished fetching file change history for branch '{branch}'. Found {len(df)} file changes.")
         return df
-        
+
     def _process_commit_for_file_history(self, commit, history, ignore_globs, include_globs, skip_broken):
         """Helper method to process a commit for file change history.
-        
+
         Args:
             commit: The commit object to process
             history: List to append the file change data to
@@ -643,8 +663,8 @@ class Repository:
         try:
             c_date = commit.committed_date
             c_message = commit.message
-            c_author = commit.author.name if hasattr(commit.author, 'name') else "Unknown"
-            c_committer = commit.committer.name if hasattr(commit.committer, 'name') else "Unknown"
+            c_author = commit.author.name if hasattr(commit.author, "name") else "Unknown"
+            c_committer = commit.committer.name if hasattr(commit.committer, "name") else "Unknown"
             hexsha = commit.hexsha
         except (ValueError, AttributeError) as e:
             if skip_broken:
@@ -658,10 +678,7 @@ class Repository:
 
         # Process each file in the commit
         try:
-            if parent:
-                diffs = commit.diff(parent)
-            else:
-                diffs = commit.diff(git.NULL_TREE)
+            diffs = commit.diff(parent) if parent else commit.diff(git.NULL_TREE)
 
             for diff in diffs:
                 try:
@@ -683,7 +700,7 @@ class Repository:
                     deletions = 0
                     try:
                         # Check if diff has stats attribute first
-                        if hasattr(diff, 'stats'):
+                        if hasattr(diff, "stats"):
                             stats = diff.stats
                             insertions = stats.get("insertions", 0)
                             deletions = stats.get("deletions", 0)
@@ -693,18 +710,18 @@ class Repository:
                             diff_content = diff.diff
                             # Check if diff.diff is bytes or string
                             if isinstance(diff_content, bytes):
-                                diff_lines = diff_content.decode('utf-8', errors='replace').splitlines()
+                                diff_lines = diff_content.decode("utf-8", errors="replace").splitlines()
                             elif isinstance(diff_content, str):
                                 diff_lines = diff_content.splitlines()
                             else:
                                 # If it's neither bytes nor string, we can't process it
                                 logger.warning(f"Diff content has unexpected type: {type(diff_content)}")
                                 continue
-                                
+
                             for line in diff_lines:
-                                if line.startswith('+') and not line.startswith('+++'):
+                                if line.startswith("+") and not line.startswith("+++"):
                                     insertions += 1
-                                elif line.startswith('-') and not line.startswith('---'):
+                                elif line.startswith("-") and not line.startswith("---"):
                                     deletions += 1
                     except (ValueError, AttributeError, KeyError, UnicodeDecodeError) as e:
                         if skip_broken:
@@ -714,16 +731,18 @@ class Repository:
                             raise
 
                     # Add to history
-                    history.append({
-                        "filename": path,
-                        "insertions": insertions,
-                        "deletions": deletions,
-                        "lines": insertions - deletions,
-                        "message": c_message,
-                        "committer": c_committer,
-                        "author": c_author,
-                        "date": c_date,
-                    })
+                    history.append(
+                        {
+                            "filename": path,
+                            "insertions": insertions,
+                            "deletions": deletions,
+                            "lines": insertions - deletions,
+                            "message": c_message,
+                            "committer": c_committer,
+                            "author": c_author,
+                            "date": c_date,
+                        }
+                    )
                 except Exception as e:
                     if skip_broken:
                         logger.warning(f"Error processing diff in commit {hexsha}: {e}")
@@ -745,7 +764,8 @@ class Repository:
 
     @multicache(
         key_prefix="file_change_rates",
-        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"])
+        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"],
+    )
     def file_change_rates(
         self,
         branch=None,
@@ -785,43 +805,47 @@ class Repository:
         try:
             # Get file change history, passing skip_broken parameter
             fch = self.file_change_history(
-                branch=branch, 
-                limit=limit, 
-                days=days, 
-                ignore_globs=ignore_globs, 
+                branch=branch,
+                limit=limit,
+                days=days,
+                ignore_globs=ignore_globs,
                 include_globs=include_globs,
-                skip_broken=skip_broken
+                skip_broken=skip_broken,
             )
-            
+
             # If file_change_history returns empty DataFrame, return empty DataFrame
             if fch.empty:
                 logger.warning(f"No file change history data found for '{branch}'. Returning empty DataFrame.")
-                return pd.DataFrame(columns=[
-                    "file", 
-                    "unique_committers",
-                    "abs_rate_of_change",
-                    "net_rate_of_change",
-                    "net_change",
-                    "abs_change",
-                    "edit_rate", 
-                    "lines", 
-                    "repository"
-                ])
-            
+                return pd.DataFrame(
+                    columns=[
+                        "file",
+                        "unique_committers",
+                        "abs_rate_of_change",
+                        "net_rate_of_change",
+                        "net_change",
+                        "abs_change",
+                        "edit_rate",
+                        "lines",
+                        "repository",
+                    ]
+                )
+
             # Reset index if not already done to make date a column
-            if isinstance(fch.index, pd.DatetimeIndex) and 'date' not in fch.columns:
+            if isinstance(fch.index, pd.DatetimeIndex) and "date" not in fch.columns:
                 fch = fch.reset_index()
-                
+
             # Group by filename and compute detailed stats
             if fch.shape[0] > 0:
-                file_history = fch.groupby("filename").agg({
-                    "insertions": ["sum", "max", "mean"],
-                    "deletions": ["sum", "max", "mean"],
-                    "message": lambda x: " | ".join([str(y) for y in x]),
-                    "committer": lambda x: " | ".join([str(y) for y in x]),
-                    "author": lambda x: " | ".join([str(y) for y in x]),
-                    "date": ["max", "min"],
-                })
+                file_history = fch.groupby("filename").agg(
+                    {
+                        "insertions": ["sum", "max", "mean"],
+                        "deletions": ["sum", "max", "mean"],
+                        "message": lambda x: " | ".join([str(y) for y in x]),
+                        "committer": lambda x: " | ".join([str(y) for y in x]),
+                        "author": lambda x: " | ".join([str(y) for y in x]),
+                        "date": ["max", "min"],
+                    }
+                )
 
                 # Flatten column names
                 file_history.columns = [
@@ -862,7 +886,52 @@ class Repository:
                 # Select key columns for the output
                 rates = file_history.reset_index()
                 rates = rates.rename(columns={"filename": "file"})
-                rates = rates[[
+                rates = rates[
+                    [
+                        "file",
+                        "unique_committers",
+                        "abs_rate_of_change",
+                        "net_rate_of_change",
+                        "net_change",
+                        "abs_change",
+                        "edit_rate",
+                        "lines",
+                    ]
+                ]
+
+                # Sort by edit rate
+                rates = rates.sort_values("edit_rate", ascending=False)
+
+                # Add coverage data if requested
+                if coverage:
+                    cov = self.coverage()
+                    rates = pd.merge(rates, cov, how="left", left_on="file", right_on="filename")
+
+                # Add repository name
+                rates["repository"] = self._repo_name()
+
+                return rates
+            else:
+                # If no file history after grouping, return empty DataFrame
+                logger.warning(f"No valid file change data could be analyzed for '{branch}'.")
+                return pd.DataFrame(
+                    columns=[
+                        "file",
+                        "unique_committers",
+                        "abs_rate_of_change",
+                        "net_rate_of_change",
+                        "net_change",
+                        "abs_change",
+                        "edit_rate",
+                        "lines",
+                        "repository",
+                    ]
+                )
+
+        except Exception as e:
+            logger.error(f"Failed to calculate file change rates: {e}")
+            return pd.DataFrame(
+                columns=[
                     "file",
                     "unique_committers",
                     "abs_rate_of_change",
@@ -871,48 +940,9 @@ class Repository:
                     "abs_change",
                     "edit_rate",
                     "lines",
-                ]]
-                
-                # Sort by edit rate
-                rates = rates.sort_values("edit_rate", ascending=False)
-
-                # Add coverage data if requested
-                if coverage:
-                    cov = self.coverage()
-                    rates = pd.merge(rates, cov, how="left", left_on="file", right_on="filename")
-                    
-                # Add repository name
-                rates["repository"] = self._repo_name()
-
-                return rates
-            else:
-                # If no file history after grouping, return empty DataFrame
-                logger.warning(f"No valid file change data could be analyzed for '{branch}'.")
-                return pd.DataFrame(columns=[
-                    "file", 
-                    "unique_committers",
-                    "abs_rate_of_change",
-                    "net_rate_of_change",
-                    "net_change",
-                    "abs_change",
-                    "edit_rate", 
-                    "lines", 
-                    "repository"
-                ])
-                
-        except Exception as e:
-            logger.error(f"Failed to calculate file change rates: {e}")
-            return pd.DataFrame(columns=[
-                "file", 
-                "unique_committers",
-                "abs_rate_of_change",
-                "net_rate_of_change",
-                "net_change",
-                "abs_change",
-                "edit_rate", 
-                "lines", 
-                "repository"
-            ])
+                    "repository",
+                ]
+            )
 
     @staticmethod
     def __check_extension(files, ignore_globs=None, include_globs=None):
@@ -949,9 +979,7 @@ class Repository:
         logger.debug(f"Finished checking extensions. Filtered files count: {len(out)}")
         return out
 
-    @multicache(
-        key_prefix="blame",
-        key_list=["rev", "committer", "by", "ignore_blobs", "include_globs"])
+    @multicache(key_prefix="blame", key_list=["rev", "committer", "by", "ignore_blobs", "include_globs"])
     def blame(
         self,
         rev="HEAD",
@@ -1068,9 +1096,7 @@ class Repository:
         logger.info(f"Finished calculating blame for rev '{rev}'. Found {len(blames_df)} blame entries.")
         return blames_df
 
-    @multicache(
-        key_prefix="revs",
-        key_list=["branch", "limit", "skip", "num_datapoints"])
+    @multicache(key_prefix="revs", key_list=["branch", "limit", "skip", "num_datapoints"])
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None, skip_broken=False):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
@@ -1128,15 +1154,17 @@ class Repository:
                         # Capture all needed data in a single access to avoid file handle issues
                         committed_date = commit.committed_date
                         name_rev = commit.name_rev
-                        
+
                         # Safely handle name_rev format
                         parts = name_rev.split(" ") if name_rev else []
                         rev_sha = parts[0] if parts else commit.hexsha
-                        
+
                         ds.append([committed_date, rev_sha])
                     except (ValueError, AttributeError) as e:
                         if skip_broken:
-                            logger.warning(f"Skipping commit {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}")
+                            logger.warning(
+                                f"Skipping commit {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}"
+                            )
                             skipped_count += 1
                             continue
                         else:
@@ -1166,7 +1194,7 @@ class Repository:
         if not ds:
             logger.warning(f"No valid revisions found for branch '{branch}'")
             return pd.DataFrame(columns=["date", "rev"])
-            
+
         df = DataFrame(ds, columns=["date", "rev"])
 
         if skip is not None:
@@ -1184,14 +1212,16 @@ class Repository:
         df = self._add_labels_to_df(df)
 
         if skipped_count > 0:
-            logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} valid revisions, skipped {skipped_count} corrupted objects.")
+            logger.info(
+                f"Finished fetching revisions for '{branch}'. Found {len(df)} valid revisions, skipped {skipped_count} corrupted objects."
+            )
         else:
             logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} revisions.")
         return df
 
     @multicache(
         key_prefix="cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"]
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"],
     )
     def cumulative_blame(
         self,
@@ -1250,27 +1280,31 @@ class Repository:
                     committers.add(name)
                 except ValueError as e:
                     # Handle potential errors resolving commit objects (e.g., due to corruption)
-                    logger.warning(f"Could not resolve commit object {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'} when fetching committers: {e}")
+                    logger.warning(
+                        f"Could not resolve commit object {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'} when fetching committers: {e}"
+                    )
                     continue
                 except Exception as e:
                     # Catch other potential errors getting name (e.g., missing name)
-                    logger.warning(f"Error getting committer/author name for commit {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}")
+                    logger.warning(
+                        f"Error getting committer/author name for commit {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}"
+                    )
                     continue
         except GitCommandError as e:
             logger.error(f"Could not iterate commits for branch '{branch}' to get committers: {e}")
             # Return empty DataFrame if we can't even get committers
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         # Check if any committers were found
         if not committers:
             logger.warning(f"No valid committers found for branch '{branch}'. Returning empty DataFrame.")
             # Return an empty DataFrame with a 'date' index to avoid errors downstream
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         # If revs is empty, return an empty DataFrame with proper index
         if revs.empty:
             logger.warning(f"No valid revisions found for branch '{branch}'. Returning empty DataFrame.")
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         for y in committers:
             revs[y] = 0
@@ -1286,7 +1320,7 @@ class Repository:
 
             try:
                 blame = self.blame(
-                    rev=row['rev'],
+                    rev=row["rev"],
                     committer=committer,
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
@@ -1307,7 +1341,7 @@ class Repository:
         # If revs is now empty after processing, return an empty DataFrame
         if revs.empty:
             logger.warning("No valid blame data found after processing. Returning empty DataFrame.")
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         try:
             del revs["rev"]
@@ -1339,20 +1373,20 @@ class Repository:
                     keep_idx.append(idx)
 
             logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
-            
+
             # Only filter if we have rows to keep
             if keep_idx:
                 revs = revs.loc[keep_idx]
         except Exception as e:
             logger.error(f"Error processing cumulative blame data: {e}")
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         logger.info(f"Finished cumulative blame calculation for '{branch}'. Result shape: {revs.shape}")
         return revs
 
     @multicache(
         key_prefix="parallel_cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"]
+        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"],
     )
     def parallel_cumulative_blame(
         self,
@@ -1401,11 +1435,11 @@ class Repository:
             cumulative_blame() instead.""")
 
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints, skip_broken=skip_broken)
-        
+
         # If revs is empty, return an empty DataFrame with proper index
         if revs.empty:
             logger.warning(f"No valid revisions found for branch '{branch}'. Returning empty DataFrame.")
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         logger.debug(f"Prepared {len(revs)} revisions for parallel processing.")
 
@@ -1414,12 +1448,13 @@ class Repository:
             revisions = [revisions[key] for key in revisions]
 
             ds = Parallel(n_jobs=workers, backend="threading", verbose=5)(
-                delayed(_parallel_cumulative_blame_func)(self, x, committer, ignore_globs, include_globs) for x in revisions
+                delayed(_parallel_cumulative_blame_func)(self, x, committer, ignore_globs, include_globs)
+                for x in revisions
             )
 
             if not ds:
                 logger.warning("No valid blame data found after processing. Returning empty DataFrame.")
-                return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+                return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
             revs = DataFrame(ds)
             del revs["rev"]
@@ -1451,16 +1486,16 @@ class Repository:
                     keep_idx.append(idx)
 
             logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
-            
+
             # Only filter if we have rows to keep
             if keep_idx:
                 revs = revs.loc[keep_idx]
-            
+
             logger.info(f"Finished parallel cumulative blame for '{branch}'. Result shape: {revs.shape}")
             return revs
         except Exception as e:
             logger.error(f"Error in parallel cumulative blame: {e}")
-            return pd.DataFrame(index=pd.to_datetime([]).tz_localize('UTC'))
+            return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
     @multicache(key_prefix="branches", key_list=[])
     def branches(self):
@@ -1694,13 +1729,13 @@ class Repository:
             "tag_sha",
             "commit_sha",
         ]
-        
+
         skipped_count = 0
         for tag in tags:
             try:
                 d = dict.fromkeys(cols)
                 d["tag"] = tag.name
-                
+
                 # Safely handle tag object access
                 tag_obj = None
                 try:
@@ -1709,7 +1744,7 @@ class Repository:
                 except (ValueError, AttributeError, git.exc.GitCommandError):
                     # Not an annotated tag or tag object is inaccessible
                     tag_obj = None
-                
+
                 if tag_obj is not None:
                     # This is a safer way to access tag properties - get all at once
                     try:
@@ -1731,13 +1766,13 @@ class Repository:
                     d["annotated"] = False
                     d["annotation"] = ""
                     d["tag_sha"] = None
-                
+
                 # Safely get commit information
                 try:
                     commit = tag.commit
                     d["commit_date"] = commit.committed_date
                     d["commit_sha"] = commit.hexsha
-                    
+
                     # For lightweight tags, use commit date as tag date
                     if "tag_date" not in d or d["tag_date"] is None:
                         d["tag_date"] = commit.committed_date
@@ -1749,7 +1784,7 @@ class Repository:
                     else:
                         logger.error(f"Error accessing commit for tag '{tag.name}': {e}")
                         raise
-                
+
                 tags_meta.append(d)
             except git.exc.GitCommandError as git_err:
                 # Handle Git command errors (like unknown object type)
@@ -1778,14 +1813,14 @@ class Repository:
                 else:
                     logger.error(f"Unexpected error while processing tag '{tag.name}': {e}")
                     raise
-        
+
         if not tags_meta:
             logger.info("No valid tags found in the repository.")
             # Return an empty DataFrame with the expected columns
             df = DataFrame(columns=cols)
             df = self._add_labels_to_df(df)
             return df
-            
+
         df = DataFrame(tags_meta, columns=cols)
 
         df["tag_date"] = to_datetime(df["tag_date"], unit="s", utc=True)
@@ -1858,10 +1893,7 @@ class Repository:
         """
         return f"git repository: {self._repo_name()} at: {self.git_dir}"
 
-    @multicache(
-        key_prefix="get_commit_content",
-        key_list=["rev", "ignore_globs", "include_globs"]
-    )
+    @multicache(key_prefix="get_commit_content", key_list=["rev", "ignore_globs", "include_globs"])
     def get_commit_content(self, rev, ignore_globs=None, include_globs=None):
         """Gets detailed content changes for a specific commit.
 
@@ -1978,10 +2010,7 @@ class Repository:
             logger.error(f"Failed to get content changes for revision '{rev}': {e}")
             return DataFrame(columns=["file", "change_type", "old_line_num", "new_line_num", "content"])
 
-    @multicache(
-        key_prefix="get_file_content",
-        key_list=["path", "rev"]
-    )
+    @multicache(key_prefix="get_file_content", key_list=["path", "rev"])
     def get_file_content(self, path, rev="HEAD"):
         """Gets the content of a file from the repository at a specific revision.
 
@@ -2021,9 +2050,7 @@ class Repository:
             logger.error(f"Failed to get content of file '{path}' at revision '{rev}': {e}")
             return None
 
-    @multicache(
-        key_prefix="list_files",
-        key_list=["rev"])
+    @multicache(key_prefix="list_files", key_list=["rev"])
     def list_files(self, rev="HEAD"):
         """Lists all files in the repository at a specific revision, respecting .gitignore.
 
@@ -2139,9 +2166,7 @@ class Repository:
         logger.info(f"Bus factor calculated: {tc}")
         return DataFrame([[self._repo_name(), tc]], columns=["repository", "bus factor"])
 
-    @multicache(
-        key_prefix="file_owner",
-        key_list=["rev", "filename", "committer"])
+    @multicache(key_prefix="file_owner", key_list=["rev", "filename", "committer"])
     def file_owner(self, rev, filename, committer=True):
         """Determines the primary owner of a file at a specific revision.
 
@@ -2185,18 +2210,18 @@ class Repository:
             logger.warning(f"Could not determine file owner for {filename} at rev {rev}: {e}")
             return None
 
-    def _get_last_edit_date(self, file_path, rev='HEAD'):
+    def _get_last_edit_date(self, file_path, rev="HEAD"):
         """Get the last edit date for a file at a given revision.
-        
+
         Args:
             file_path (str): Path to the file
             rev (str): Revision to check
-            
+
         Returns:
             datetime: Last edit date for the file
         """
         try:
-            cmd = ['git', 'log', '-1', '--format=%aI', rev, '--', file_path]
+            cmd = ["git", "log", "-1", "--format=%aI", rev, "--", file_path]
             date_str = self.repo.git.execute(cmd)
             if date_str:
                 # Parse ISO 8601 format which includes timezone
@@ -2207,8 +2232,8 @@ class Repository:
             return pd.NaT
 
     @multicache(
-        key_prefix="punchcard",
-        key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"])
+        key_prefix="punchcard", key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"]
+    )
     def punchcard(
         self,
         branch=None,
@@ -2307,9 +2332,7 @@ class Repository:
             logger.warning(f"Could not check branches in repo '{self._repo_name()}': {e}")
             return False
 
-    @multicache(
-        key_prefix="file_detail",
-        key_list=["include_globs", "ignore_globs", "rev", "committer"])
+    @multicache(key_prefix="file_detail", key_list=["include_globs", "ignore_globs", "rev", "committer"])
     def file_detail(self, include_globs=None, ignore_globs=None, rev="HEAD", committer=True):
         """Provides detailed information about all files in the repository.
 
@@ -2363,6 +2386,7 @@ class Repository:
 
         # map in file owners
         logger.debug("Mapping file owners...")
+
         # Use .get('name', None) to safely access potential None from file_owner
         # df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer).get("name", None) if (fo := self.file_owner(rev, x, committer=committer)) else None)
         def _get_owner_name_safe(file_path):
@@ -2370,7 +2394,6 @@ class Repository:
             return owner_info.get("name") if owner_info else None
 
         df["file_owner"] = df["file"].map(_get_owner_name_safe)
-
 
         # add extension (something like the language)
         logger.debug("Extracting file extensions...")

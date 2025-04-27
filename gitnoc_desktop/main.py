@@ -1,9 +1,9 @@
-import sys
-import os
-from pathlib import Path
-from gitpandas.cache import DiskCache
 import logging
 import logging.handlers
+import sys
+from pathlib import Path
+
+from gitpandas.cache import DiskCache
 
 # Configuration paths
 LOG_DIR = Path.home() / ".gitnoc_desktop"
@@ -11,13 +11,12 @@ LOG_FILE = LOG_DIR / "app.log"
 CACHE_DIR = Path.home() / ".gitnoc_desktop"
 CACHE_FILE = CACHE_DIR / "cache.json.gz"
 
+
 def setup_logging():
     """Configure application logging with console and file handlers."""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     log_level = logging.DEBUG
-    log_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     logger = logging.getLogger()
     logger.setLevel(log_level)
@@ -29,29 +28,28 @@ def setup_logging():
     logger.addHandler(console_handler)
 
     # File Handler - DEBUG level and above, rotates at 1MB with 3 backups
-    file_handler = logging.handlers.RotatingFileHandler(
-        LOG_FILE, maxBytes=1024*1024, backupCount=3
-    )
+    file_handler = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=3)
     file_handler.setFormatter(log_formatter)
     file_handler.setLevel(logging.DEBUG)
     logger.addHandler(file_handler)
 
     # Configure gitpandas logger
-    gitpandas_logger = logging.getLogger('gitpandas')
+    gitpandas_logger = logging.getLogger("gitpandas")
     gitpandas_logger.setLevel(logging.DEBUG)
 
     logging.info("Logging configured.")
 
+
 setup_logging()
 
 # Ensure module discoverability when running directly
-if __package__ is None and not hasattr(sys, 'frozen'):
+if __package__ is None and not hasattr(sys, "frozen"):
     script_dir = Path(__file__).resolve().parent
     sys.path.insert(0, str(script_dir))
     print(f"Adjusted sys.path for direct execution: {script_dir}")
 
-from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 from ui.main_window import MainWindow
 
@@ -71,7 +69,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Apply material design theme
-    apply_stylesheet(app, theme='dark_blue.xml')
+    apply_stylesheet(app, theme="dark_blue.xml")
 
     # Create and show main window
     try:
@@ -86,4 +84,4 @@ if __name__ == "__main__":
         app.aboutToQuit.connect(disk_cache.save)
         logging.info("Connected disk_cache.save to app.aboutToQuit signal.")
 
-    sys.exit(app.exec()) 
+    sys.exit(app.exec())

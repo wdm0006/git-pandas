@@ -1,10 +1,10 @@
 import datetime
+import os  # Added for setting environment variables
 from unittest.mock import MagicMock, patch
-import os # Added for setting environment variables
 
 import pandas as pd
 import pytest
-from git import Repo, Actor
+from git import Actor, Repo
 
 from gitpandas import Repository
 
@@ -56,7 +56,9 @@ def local_repo(tmp_path):
 
     # Go back to master and make different changes
     repo.git.checkout("master")
-    (repo_path / "src" / "main.py").write_text("def main():\n    print('Hello')\n    return True") # Modify one line, add one line
+    (repo_path / "src" / "main.py").write_text(
+        "def main():\n    print('Hello')\n    return True"
+    )  # Modify one line, add one line
     repo.index.add(["src/main.py"])
     commit_time_4 = datetime.datetime(2023, 1, 1, 13, 0, 0, tzinfo=datetime.timezone.utc)
     commit_timestamp_4 = int(commit_time_4.timestamp())
@@ -64,9 +66,9 @@ def local_repo(tmp_path):
 
     # Create a tag
     tag_time = datetime.datetime(2023, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc)
-    tag_timestamp = int(tag_time.timestamp())
+    int(tag_time.timestamp())
     # Create an annotated tag using git.tag directly instead of tagger/tag_date params
-    repo.git.tag('-a', 'v0.1.0', '-m', 'First version')
+    repo.git.tag("-a", "v0.1.0", "-m", "First version")
 
     return repo_path
 
@@ -157,19 +159,16 @@ class TestRepositoryAdvanced:
         test_file.write_text("Line 1\nLine 2\nLine 3")
         repo.index.add(["test_file.txt"])
         repo.index.commit("Commit 1", author=author1, committer=author1, commit_date=f"{timestamp_1} +0000")
-        commit_1_sha = repo.head.commit.hexsha
 
         # Commit 2: Author Two adds 2 lines and modifies Line 2
         test_file.write_text("Line 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
         repo.index.add(["test_file.txt"])
         repo.index.commit("Commit 2", author=author2, committer=author2, commit_date=f"{timestamp_2} +0000")
-        commit_2_sha = repo.head.commit.hexsha
 
         # Commit 3: Author One adds 1 line at the beginning
         test_file.write_text("Line 0 - A1\nLine 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
         repo.index.add(["test_file.txt"])
         repo.index.commit("Commit 3", author=author1, committer=author1, commit_date=f"{timestamp_3} +0000")
-        commit_3_sha = repo.head.commit.hexsha
 
         # Instantiate Repository and get cumulative blame
         repo_obj = Repository(working_dir=str(repo_path))
@@ -179,25 +178,25 @@ class TestRepositoryAdvanced:
         # Assertions
         assert isinstance(blame_df, pd.DataFrame)
         assert blame_df.index.name == "date"
-        
+
         # Check for author columns, ignoring the repository column and column order
-        author_columns = [col for col in blame_df.columns if col != 'repository']
+        author_columns = [col for col in blame_df.columns if col != "repository"]
         assert sorted(author_columns) == sorted(["Author One", "Author Two"])
-        
-        assert len(blame_df) == 3 # 3 commits
+
+        assert len(blame_df) == 3  # 3 commits
 
         # Check index values (timestamps) - allow for minor differences if needed
         expected_index = pd.to_datetime([commit_date_1, commit_date_2, commit_date_3], utc=True)
-        
+
         # Sort both DataFrames by index to ensure consistent order for comparison
         blame_df_sorted = blame_df.sort_index()
-        
+
         # Check that all expected dates are present (regardless of order)
         assert set(blame_df.index) == set(expected_index)
-        
+
         # Only do detailed assertions on the sorted DataFrame
         blame_df = blame_df_sorted
-        
+
         # Check blame values at each commit
         # Commit 1: Author One = 3, Author Two = 0
         assert blame_df.loc[commit_date_1, "Author One"] == 3.0
@@ -348,30 +347,32 @@ class TestRepositoryAdvanced:
         repo_path = tmp_path / "blame_test_repo"
         repo_path.mkdir()
         repo = Repo.init(repo_path)
-        
+
         # Create test file and commit it
         test_file = repo_path / "temp_file.txt"
         test_file.write_text("Line 1\nLine 2\nLine 3")
         repo.index.add(["temp_file.txt"])
-        
+
         # Use Unix timestamp format for dates
         commit_date = int(datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc).timestamp())
         author = Actor("Test User", "test@example.com")
         commit = repo.index.commit("Add file", author=author, committer=author, commit_date=f"{commit_date} +0000")
-        
+
         # Delete the file and commit deletion
         os.unlink(test_file)
         repo.index.remove(["temp_file.txt"])
         delete_date = int(datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.timezone.utc).timestamp())
-        delete_commit = repo.index.commit("Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000")
-        
+        repo.index.commit(
+            "Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000"
+        )
+
         # Create Repository object
         repo_obj = Repository(working_dir=str(repo_path))
-        
+
         # Test blame on previous revision where file existed
         blame_result = repo_obj.blame(rev=commit.hexsha)
         assert isinstance(blame_result, pd.DataFrame)
-        
+
         # Test blame on HEAD where file is deleted - should handle gracefully
         blame_head = repo_obj.blame(rev="HEAD")
         assert isinstance(blame_head, pd.DataFrame)  # Should return empty DataFrame

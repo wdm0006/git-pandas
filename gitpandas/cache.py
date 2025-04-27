@@ -1,9 +1,10 @@
-import pickle
-import os
-import logging
-import json
 import gzip
 import io
+import json
+import logging
+import os
+import pickle
+
 import pandas as pd
 
 try:
@@ -26,6 +27,7 @@ def multicache(key_prefix, key_list, skip_if=None):
     The decorated method can accept an optional `force_refresh=True` argument
     to bypass the cache read but still update the cache with the new result.
     """
+
     def multicache_nest(func):
         def deco(self, *args, **kwargs):
             # If no cache backend, just run the function
@@ -38,7 +40,7 @@ def multicache(key_prefix, key_list, skip_if=None):
                 return func(self, *args, **kwargs)
 
             # Check for force_refresh argument to bypass cache read but still write, and remove it from kwargs
-            force_refresh = kwargs.pop('force_refresh', False)
+            force_refresh = kwargs.pop("force_refresh", False)
 
             # Generate the cache key (ensure force_refresh itself is not part of the key)
             # Assumes 'force_refresh' is not included in key_list by the caller
@@ -54,7 +56,7 @@ def multicache(key_prefix, key_list, skip_if=None):
             if not force_refresh:
                 try:
                     # Include DiskCache in the type check
-                    if isinstance(self.cache_backend, (EphemeralCache, RedisDFCache, DiskCache)):
+                    if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
                         ret = self.cache_backend.get(key)
                         logging.debug(f"Cache hit for key: {key}")
                         cache_hit = True
@@ -65,7 +67,7 @@ def multicache(key_prefix, key_list, skip_if=None):
 
                 except CacheMissError:
                     logging.debug(f"Cache miss for key: {key}")
-                    pass # Proceed to execute the function
+                    pass  # Proceed to execute the function
                 except Exception as e:
                     logging.error(f"Error getting cache for key {key}: {e}", exc_info=True)
                     # Proceed to execute function on cache read error
@@ -77,7 +79,7 @@ def multicache(key_prefix, key_list, skip_if=None):
 
                 # Store the result in the cache (always happens after function execution)
                 try:
-                    if isinstance(self.cache_backend, (EphemeralCache, RedisDFCache, DiskCache)):
+                    if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
                         self.cache_backend.set(key, ret)
                         logging.debug(f"Cache set for key: {key}")
                     else:
@@ -102,6 +104,7 @@ class CacheMissError(Exception):
 
 class DataFrameEncodingError(Exception):
     """Custom exception for errors during DataFrame encoding/decoding."""
+
     pass
 
 
@@ -153,6 +156,7 @@ class DiskCache(EphemeralCache):
 
     Inherits LRU eviction logic from EphemeralCache.
     """
+
     def __init__(self, filepath, max_keys=1000):
         """
         Initializes the cache. Tries to load from the specified filepath
@@ -163,7 +167,7 @@ class DiskCache(EphemeralCache):
         """
         super().__init__(max_keys=max_keys)
         self.filepath = filepath
-        self.load() # Attempt to load existing cache on initialization
+        self.load()  # Attempt to load existing cache on initialization
 
     def load(self):
         """
@@ -173,39 +177,41 @@ class DiskCache(EphemeralCache):
         """
         if not os.path.exists(self.filepath) or os.path.getsize(self.filepath) == 0:
             logging.info(f"Cache file not found or empty, starting fresh: {self.filepath}")
-            return # Start with an empty cache
+            return  # Start with an empty cache
 
         try:
-            with gzip.open(self.filepath, 'rt', encoding='utf-8') as f:
+            with gzip.open(self.filepath, "rt", encoding="utf-8") as f:
                 loaded_data = json.load(f)
 
-            if not isinstance(loaded_data, dict) or '_cache' not in loaded_data or '_key_list' not in loaded_data:
+            if not isinstance(loaded_data, dict) or "_cache" not in loaded_data or "_key_list" not in loaded_data:
                 logging.warning(f"Invalid cache file format found: {self.filepath}. Starting fresh.")
                 self._cache = {}
                 self._key_list = []
                 return
 
-            self._key_list = loaded_data['_key_list']
-            raw_cache = loaded_data['_cache']
+            self._key_list = loaded_data["_key_list"]
+            raw_cache = loaded_data["_cache"]
             self._cache = {}
             for key, value in raw_cache.items():
                 try:
-                    if isinstance(value, dict) and '__dataframe__' in value:
+                    if isinstance(value, dict) and "__dataframe__" in value:
                         # Attempt to decode DataFrame from JSON string
-                        self._cache[key] = pd.read_json(io.StringIO(value['__dataframe__']), orient='split')
+                        self._cache[key] = pd.read_json(io.StringIO(value["__dataframe__"]), orient="split")
                     else:
                         # Store other JSON-native types directly
                         self._cache[key] = value
                 except (ValueError, TypeError) as df_err:
-                    logging.warning(f"Could not decode DataFrame for key '{key}' from cache file {self.filepath}: {df_err}. Skipping entry.")
+                    logging.warning(
+                        f"Could not decode DataFrame for key '{key}' from cache file {self.filepath}: {df_err}. Skipping entry."
+                    )
                     # Remove corresponding key from key list if it exists
                     if key in self._key_list:
-                         self._key_list.remove(key)
-                    continue # Skip this problematic entry
-            
+                        self._key_list.remove(key)
+                    continue  # Skip this problematic entry
+
             # Ensure consistency after loading (LRU eviction)
             if len(self._key_list) > self._max_keys:
-                 self.evict(len(self._key_list) - self._max_keys)
+                self.evict(len(self._key_list) - self._max_keys)
             logging.info(f"Cache loaded successfully from {self.filepath} using JSON.")
 
         except (gzip.BadGzipFile, json.JSONDecodeError, EOFError, TypeError, Exception) as e:
@@ -216,7 +222,6 @@ class DiskCache(EphemeralCache):
             logging.error(f"OS error loading cache file {self.filepath}: {e}. Starting fresh.")
             self._cache = {}
             self._key_list = []
-
 
     def save(self):
         """
@@ -230,17 +235,17 @@ class DiskCache(EphemeralCache):
                 try:
                     if isinstance(value, pd.DataFrame):
                         # Special handling for DataFrames
-                        processed_cache[key] = {"__dataframe__": value.to_json(orient='split', date_format='iso')}
+                        processed_cache[key] = {"__dataframe__": value.to_json(orient="split", date_format="iso")}
                     else:
                         # Attempt to store other types; will fail if not JSON serializable
-                        json.dumps(value) # Test serializability
+                        json.dumps(value)  # Test serializability
                         processed_cache[key] = value
                 except TypeError as e:
                     logging.warning(f"Could not serialize value for key '{key}' to JSON: {e}. Skipping entry.")
                     # Also remove from key list if it's there (prevent loading errors)
                     if key in self._key_list:
                         self._key_list.remove(key)
-                    continue # Skip this unserializable entry
+                    continue  # Skip this unserializable entry
 
             # Ensure parent directory exists
             parent_dir = os.path.dirname(self.filepath)
@@ -248,12 +253,9 @@ class DiskCache(EphemeralCache):
                 os.makedirs(parent_dir, exist_ok=True)
 
             # Save processed cache and key list to gzipped JSON
-            data_to_save = {
-                '_cache': processed_cache,
-                '_key_list': self._key_list
-            }
-            with gzip.open(self.filepath, 'wt', encoding='utf-8') as f:
-                json.dump(data_to_save, f, indent=2) # Use indent for readability if needed
+            data_to_save = {"_cache": processed_cache, "_key_list": self._key_list}
+            with gzip.open(self.filepath, "wt", encoding="utf-8") as f:
+                json.dump(data_to_save, f, indent=2)  # Use indent for readability if needed
 
             logging.info(f"Cache saved successfully to {self.filepath} using JSON.")
 

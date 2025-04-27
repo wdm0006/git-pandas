@@ -279,7 +279,7 @@ class ProjectDirectory:
             branch = self.default_branch
 
         columns = [
-            "file", 
+            "file",
             "unique_committers",
             "abs_rate_of_change",
             "net_rate_of_change",
@@ -287,7 +287,7 @@ class ProjectDirectory:
             "abs_change",
             "edit_rate",
             "lines",
-            "repository"
+            "repository",
         ]
         if coverage:
             columns += ["lines_covered", "total_lines", "coverage"]
@@ -554,18 +554,18 @@ class ProjectDirectory:
             "date",
             "author",
             "committer",
-            "message", 
+            "message",
             "filename",
             "insertions",
             "deletions",
         ]
         # Filter to only include columns that exist in the DataFrame
         available_columns = [col for col in desired_columns if col in df.columns]
-        
+
         # Select only available columns
         if available_columns:
             df = df[available_columns]
-            
+
         logger.info(f"Generated file change history with {len(df)} rows.")
         return df
 

@@ -1,30 +1,25 @@
 import logging
-from datetime import datetime
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod
 
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QSizePolicy
-)
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 logger = logging.getLogger(__name__)
+
 
 # Combined metaclass for QWidget and ABC
 class QtABCMeta(type(QWidget), ABCMeta):
     pass
 
+
 class BaseTabWidget(QWidget, metaclass=QtABCMeta):
     """
     Abstract base class for tab widgets with common functionality.
-    
+
     Provides header with title and refresh button, state management,
     and content area for subclasses to populate.
     """
+
     refresh_requested = Signal()
 
     def __init__(self, tab_title="Tab Title", parent=None):
@@ -62,7 +57,7 @@ class BaseTabWidget(QWidget, metaclass=QtABCMeta):
         # Content area
         self.content_widget = QWidget()
         self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(0,0,0,0)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.addWidget(self.content_widget, 1)
 
         # Placeholder/status label
@@ -75,17 +70,17 @@ class BaseTabWidget(QWidget, metaclass=QtABCMeta):
     def _request_refresh(self):
         """Emit refresh signal if a repository is loaded."""
         if self.repo:
-             logger.info(f"Refresh requested for tab: {self.header_label.text()}")
-             self.refresh_requested.emit()
+            logger.info(f"Refresh requested for tab: {self.header_label.text()}")
+            self.refresh_requested.emit()
         else:
-             logger.warning("Refresh requested but no repository is loaded.")
+            logger.warning("Refresh requested but no repository is loaded.")
 
     def _update_refresh_time_label(self, refreshed_at=None):
         """Update the last refreshed timestamp display."""
         timestamp_str = "N/A"
         if refreshed_at:
             try:
-                timestamp_str = refreshed_at.strftime('%Y-%m-%d %H:%M:%S')
+                timestamp_str = refreshed_at.strftime("%Y-%m-%d %H:%M:%S")
             except Exception as e:
                 logger.warning(f"Error formatting refresh timestamp: {e}")
                 timestamp_str = "Error"
@@ -141,9 +136,9 @@ class BaseTabWidget(QWidget, metaclass=QtABCMeta):
     def populate_ui(self, repo, data, refreshed_at):
         """
         Populate the tab with repository data.
-        
+
         Subclasses must implement this method to display specific content.
-        
+
         Args:
             repo: Repository instance
             data: Data to display
@@ -156,4 +151,4 @@ class BaseTabWidget(QWidget, metaclass=QtABCMeta):
         self.repo = repo
         self.refresh_button.setEnabled(self.repo is not None)
         if not repo:
-             self._show_placeholder() # Show placeholder if repo is cleared 
+            self._show_placeholder()  # Show placeholder if repo is cleared

@@ -2,10 +2,10 @@
 def get_language_from_extension(extension):
     """
     Map file extension to programming language name.
-    
+
     Args:
         extension: File extension including the dot (e.g., '.py')
-        
+
     Returns:
         String representing the programming language name
     """
@@ -35,4 +35,4 @@ def get_language_from_extension(extension):
         ".scala": "Scala",
         # Add more as needed
     }
-    return mapping.get(extension.lower(), f"Other ({extension})") 
+    return mapping.get(extension.lower(), f"Other ({extension})")

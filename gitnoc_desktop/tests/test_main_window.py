@@ -1,26 +1,29 @@
+import contextlib
+from unittest.mock import MagicMock
+
+import git  # Import git library for initializing repos
 import pytest
-from pytestqt.qt_compat import qt_api
-from unittest.mock import MagicMock, patch
+
+# Import Worker to check instance type
+from core.workers import Worker
+
 # Import QWidget for spec (might not be needed now but keep for context)
-from PySide6.QtWidgets import QListWidget, QPushButton, QTabWidget, QSplitter, QWidget
-from pathlib import Path # Import Path for mocking
-import git # Import git library for initializing repos
+from PySide6.QtWidgets import QListWidget, QPushButton, QSplitter, QTabWidget
+from pytestqt.qt_compat import qt_api
 
 # Adjust the import based on your project structure
 from ui.main_window import MainWindow
 
-# Import Worker to check instance type
-from core.workers import Worker
 
 # --- Fixture for MainWindow instance --- #
 @pytest.fixture
 def main_window(qtbot, mocker):
     """Provides a MainWindow instance with mocked dependencies."""
     mock_cache = MagicMock()
-    mocker.patch('ui.main_window.load_repositories', return_value={})
-    mock_save_func = mocker.patch('ui.main_window.save_repositories')
-    mocker.patch('main.apply_stylesheet')
-    mocker.patch('ui.main_window.STYLESHEET', "")
+    mocker.patch("ui.main_window.load_repositories", return_value={})
+    mock_save_func = mocker.patch("ui.main_window.save_repositories")
+    mocker.patch("main.apply_stylesheet")
+    mocker.patch("ui.main_window.STYLESHEET", "")
 
     # Mock Tab Widgets using MagicMock
     mock_overview = MagicMock()
@@ -28,17 +31,17 @@ def main_window(qtbot, mocker):
     mock_contributors = MagicMock()
     mock_tags = MagicMock()
     mock_cumulative_blame = MagicMock()
-    mocker.patch('ui.main_window.OverviewTab', return_value=mock_overview)
-    mocker.patch('ui.main_window.CodeHealthTab', return_value=mock_code_health)
-    mocker.patch('ui.main_window.ContributorsTab', return_value=mock_contributors)
-    mocker.patch('ui.main_window.TagsTab', return_value=mock_tags)
-    mocker.patch('ui.main_window.CumulativeBlameTab', return_value=mock_cumulative_blame)
+    mocker.patch("ui.main_window.OverviewTab", return_value=mock_overview)
+    mocker.patch("ui.main_window.CodeHealthTab", return_value=mock_code_health)
+    mocker.patch("ui.main_window.ContributorsTab", return_value=mock_contributors)
+    mocker.patch("ui.main_window.TagsTab", return_value=mock_tags)
+    mocker.patch("ui.main_window.CumulativeBlameTab", return_value=mock_cumulative_blame)
 
-    mock_add_tab = mocker.patch('PySide6.QtWidgets.QTabWidget.addTab')
+    mock_add_tab = mocker.patch("PySide6.QtWidgets.QTabWidget.addTab")
 
     # Mock DataFetcher
     mock_data_fetcher_instance = MagicMock()
-    mocker.patch('ui.main_window.DataFetcher', return_value=mock_data_fetcher_instance)
+    mocker.patch("ui.main_window.DataFetcher", return_value=mock_data_fetcher_instance)
 
     # Instantiate MainWindow
     window = MainWindow(cache_backend=mock_cache)
@@ -46,7 +49,7 @@ def main_window(qtbot, mocker):
 
     # --- Prevent threads from running --- #
     # Mock the threadpool start method to prevent background tasks
-    mock_threadpool_start = mocker.patch.object(window.threadpool, 'start')
+    mock_threadpool_start = mocker.patch.object(window.threadpool, "start")
 
     # Store mocks
     window._mock_overview_tab = mock_overview
@@ -57,11 +60,13 @@ def main_window(qtbot, mocker):
     window._mock_add_tab = mock_add_tab
     window._mock_save_func = mock_save_func
     window._mock_data_fetcher = mock_data_fetcher_instance
-    window._mock_threadpool_start = mock_threadpool_start # Store if needed
+    window._mock_threadpool_start = mock_threadpool_start  # Store if needed
 
     yield window
 
+
 # --- Tests --- #
+
 
 def test_main_window_initialization(main_window):
     """Test that the main window initializes without errors and has basic properties."""
@@ -69,6 +74,7 @@ def test_main_window_initialization(main_window):
     assert isinstance(main_window, qt_api.QtWidgets.QMainWindow)
     assert main_window.windowTitle() == "GitNOC Desktop"
     assert main_window.cache_backend is not None
+
 
 def test_main_window_initial_widgets(main_window):
     """Test the presence and initial state of key widgets."""
@@ -103,6 +109,7 @@ def test_main_window_initial_widgets(main_window):
     assert first_call_args[0] is main_window.overview_tab
     assert first_call_args[1] == "Overview"
 
+
 def test_add_repository_success(qtbot, main_window, mocker, tmp_path):
     """Test adding a repository successfully using a temporary directory."""
     fake_repo_dir = tmp_path / "fake-repo"
@@ -118,12 +125,12 @@ def test_add_repository_success(qtbot, main_window, mocker, tmp_path):
         repo.index.add(["README.md"])
         repo.index.commit("Initial commit")
         if repo.active_branch.name != expected_branch:
-            try: repo.git.branch('-m', expected_branch)
-            except git.GitCommandError: pass
+            with contextlib.suppress(git.GitCommandError):
+                repo.git.branch("-m", expected_branch)
     except Exception as e:
         pytest.fail(f"Failed to initialize git repo with commit at {fake_repo_path}: {e}")
 
-    mocker.patch('ui.main_window.QFileDialog.getExistingDirectory', return_value=fake_repo_path)
+    mocker.patch("ui.main_window.QFileDialog.getExistingDirectory", return_value=fake_repo_path)
     # mocker.patch('ui.main_window.QInputDialog.getText', return_value=(expected_branch, True))
 
     mock_save = main_window._mock_save_func
@@ -136,9 +143,10 @@ def test_add_repository_success(qtbot, main_window, mocker, tmp_path):
     assert item.data(qt_api.QtCore.Qt.ItemDataRole.UserRole) == expected_repo_name
 
     # Check save_repositories call - NOTE: Expecting None branch due to apparent bug in add_repository
-    expected_save_data = {expected_repo_name: {'path': fake_repo_path, 'default_branch': None}}
+    expected_save_data = {expected_repo_name: {"path": fake_repo_path, "default_branch": None}}
     mock_save.assert_called_once_with(expected_save_data)
     assert main_window.repositories == expected_save_data
+
 
 def test_repo_selection_uses_cache(qtbot, main_window, mocker, tmp_path):
     """Test selecting a repo starts worker via threadpool with correct args."""
@@ -147,7 +155,7 @@ def test_repo_selection_uses_cache(qtbot, main_window, mocker, tmp_path):
     repo_name = "my-test-repo"
     expected_branch = "main"
 
-    repo_info = {'path': repo_path, 'default_branch': expected_branch}
+    repo_info = {"path": repo_path, "default_branch": expected_branch}
     initial_repos = {repo_name: repo_info}
     main_window.repositories = initial_repos
     main_window.populate_repo_list()
@@ -161,11 +169,11 @@ def test_repo_selection_uses_cache(qtbot, main_window, mocker, tmp_path):
     print(f"\nDEBUG: Checking existence for path: {repo_path}\n")
 
     # Mock the target function that the Worker will run
-    mock_load_func = mocker.patch('ui.main_window.load_repository_instance')
+    mock_load_func = mocker.patch("ui.main_window.load_repository_instance")
 
     # --- Mock Path.exists to bypass the check --- #
     # Necessary because Path(tmp_path_abs_string).exists() fails in test context
-    mocker.patch('pathlib.Path.exists', return_value=True)
+    mocker.patch("pathlib.Path.exists", return_value=True)
 
     # Simulate selecting the item
     main_window.repo_list_widget.setCurrentItem(item)
@@ -178,10 +186,9 @@ def test_repo_selection_uses_cache(qtbot, main_window, mocker, tmp_path):
 
     # Check the worker instance and its stored arguments
     assert isinstance(worker_instance, Worker), "Argument passed to start() is not a Worker instance"
-    assert hasattr(worker_instance, 'fn'), "Worker instance lacks 'fn' attribute"
-    assert hasattr(worker_instance, 'args'), "Worker instance lacks 'args' attribute"
+    assert hasattr(worker_instance, "fn"), "Worker instance lacks 'fn' attribute"
+    assert hasattr(worker_instance, "args"), "Worker instance lacks 'args' attribute"
     assert worker_instance.fn is mock_load_func
     assert len(worker_instance.args) == 2, f"Expected 2 args for worker target, got {len(worker_instance.args)}"
     assert worker_instance.args[0] == repo_info
     assert worker_instance.args[1] is main_window.cache_backend
- 

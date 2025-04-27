@@ -1,68 +1,66 @@
-import sys
 import logging
 from pathlib import Path
-import traceback
 
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QListWidget,
-    QLabel,
-    QFileDialog,
-    QMessageBox,
-    QListWidgetItem,
-    QTabWidget,
-    QSplitter,
-    QInputDialog,
-)
-from PySide6.QtCore import QThreadPool, Qt, Signal
 import git
-
-from gitpandas import Repository
 
 # Project specific imports
 from config.loader import load_repositories, save_repositories
-from core.workers import Worker
 from core.data_fetcher import (
-    load_repository_instance,
-    fetch_overview_data,
+    DataFetcher,
     fetch_code_health_data,
     fetch_contributor_data,
-    fetch_tags_data,
-    DataFetcher,
     fetch_cumulative_blame_data,
+    fetch_overview_data,
+    fetch_tags_data,
+    load_repository_instance,
 )
-from ui.widgets.overview_tab import OverviewTab
+from core.workers import Worker
+from PySide6.QtCore import Qt, QThreadPool
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QHBoxLayout,
+    QInputDialog,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
+from ui.styles import STYLESHEET
 from ui.widgets.code_health_tab import CodeHealthTab
 from ui.widgets.contributors_tab import ContributorsTab
-from ui.widgets.tags_tab import TagsTab
 from ui.widgets.cumulative_blame_tab import CumulativeBlameTab
-from ui.styles import STYLESHEET
-from core.utils import get_language_from_extension
+from ui.widgets.overview_tab import OverviewTab
+from ui.widgets.tags_tab import TagsTab
+
+from gitpandas import Repository
 
 logger = logging.getLogger(__name__)
+
 
 class MainWindow(QMainWindow):
     """
     Main application window for GitNOC Desktop.
-    
+
     Manages repository selection, data loading and display in tabbed interface.
     """
+
     def __init__(self, cache_backend):
         super().__init__()
         logger.info("Initializing MainWindow...")
 
         self.setStyleSheet(STYLESHEET)
         self.setWindowTitle("GitNOC Desktop")
-        
+
         self.repositories = load_repositories()
         self.current_repo_instance = None
         self.pending_workers = 0
-        
+
         # Cache configuration
         self.cache_backend = cache_backend
         if self.cache_backend:
@@ -112,7 +110,7 @@ class MainWindow(QMainWindow):
         # Set splitter proportions
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 5)
-        
+
         # Set panel size constraints
         left_panel_widget.setMaximumWidth(300)
         left_panel_widget.setMinimumWidth(200)
@@ -163,7 +161,7 @@ class MainWindow(QMainWindow):
     def _set_loading_state(self, loading):
         """
         Enable/disable UI elements based on loading state.
-        
+
         Args:
             loading (bool): True if application is loading data
         """
@@ -172,7 +170,7 @@ class MainWindow(QMainWindow):
         self.add_button.setEnabled(not loading)
         self.remove_button.setEnabled(not loading)
         self.tab_widget.setEnabled(not loading)
-        
+
         if loading:
             self.setWindowTitle("GitNOC Desktop - Loading...")
             self.overview_tab._show_placeholder()
@@ -200,16 +198,15 @@ class MainWindow(QMainWindow):
 
         if dir_path:
             logger.info(f"Attempting to add repository: {dir_path}")
-            validated_repo = None
             default_branch = None
             try:
                 # First validation attempt (auto-detect branch)
                 Repository(working_dir=dir_path, cache_backend=self.cache_backend)
                 logger.info(f"Initial validation successful for {dir_path}")
             except git.exc.InvalidGitRepositoryError:
-                 logger.warning(f"Invalid Git repository selected: {dir_path}")
-                 QMessageBox.warning(self, "Error", f"Not a valid Git repository: {dir_path}")
-                 return
+                logger.warning(f"Invalid Git repository selected: {dir_path}")
+                QMessageBox.warning(self, "Error", f"Not a valid Git repository: {dir_path}")
+                return
             except ValueError as e:
                 # Check if it's the specific default branch error
                 if "Could not detect default branch" in str(e):
@@ -223,25 +220,33 @@ class MainWindow(QMainWindow):
                         default_branch = branch_name.strip()
                         try:
                             # Second validation attempt (with specified branch)
-                            Repository(working_dir=dir_path, default_branch=default_branch, cache_backend=self.cache_backend)
+                            Repository(
+                                working_dir=dir_path, default_branch=default_branch, cache_backend=self.cache_backend
+                            )
                             logger.info(f"Validation successful for {dir_path} with branch '{default_branch}'")
                         except Exception as e_retry:
-                            logger.exception(f"Failed to validate repository {dir_path} even with branch '{default_branch}'")
-                            QMessageBox.critical(self, "Error", f"Failed to validate repository with branch '{default_branch}':\n{str(e_retry)}")
-                            return # Abort adding
+                            logger.exception(
+                                f"Failed to validate repository {dir_path} even with branch '{default_branch}'"
+                            )
+                            QMessageBox.critical(
+                                self,
+                                "Error",
+                                f"Failed to validate repository with branch '{default_branch}':\n{str(e_retry)}",
+                            )
+                            return  # Abort adding
                     else:
                         logger.info("User cancelled providing default branch.")
-                        return # Abort adding if user cancels or enters empty
+                        return  # Abort adding if user cancels or enters empty
                 else:
                     # Different ValueError occurred during initial validation
                     logger.exception(f"Unexpected ValueError adding repository: {dir_path}")
                     QMessageBox.critical(self, "Error", f"Failed to validate repository: {str(e)}")
                     return
             except Exception as e:
-                 # Catch any other unexpected errors during validation
-                 logger.exception(f"Unexpected error adding repository: {dir_path}")
-                 QMessageBox.critical(self, "Error", f"Failed to add repository: {str(e)}")
-                 return
+                # Catch any other unexpected errors during validation
+                logger.exception(f"Unexpected error adding repository: {dir_path}")
+                QMessageBox.critical(self, "Error", f"Failed to add repository: {str(e)}")
+                return
 
             # If validation succeeded (either initially or with user input)
             repo_name = Path(dir_path).name
@@ -253,8 +258,8 @@ class MainWindow(QMainWindow):
 
             # Store in the new format
             self.repositories[repo_name] = {
-                'path': dir_path,
-                'default_branch': default_branch # Will be None if auto-detected
+                "path": dir_path,
+                "default_branch": default_branch,  # Will be None if auto-detected
             }
             save_repositories(self.repositories)
             logger.info(f"Successfully added repository '{repo_name}' at {dir_path} (default_branch: {default_branch})")
@@ -308,7 +313,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(name)
             item.setData(Qt.ItemDataRole.UserRole, name)
             tooltip = f"Path: {repo_info['path']}"
-            if repo_info.get('default_branch'):
+            if repo_info.get("default_branch"):
                 tooltip += f"\nDefault Branch: {repo_info['default_branch']}"
             item.setToolTip(tooltip)
             self.repo_list_widget.addItem(item)
@@ -334,19 +339,19 @@ class MainWindow(QMainWindow):
             return
 
         repo_info = self.repositories[repo_name]
-        repo_path = repo_info['path']
+        repo_path = repo_info["path"]
         logger.info(f"Repository selected: '{repo_name}' at {repo_path} (branch: {repo_info.get('default_branch')})")
 
         if not repo_path or not Path(repo_path).exists():
-             logger.error(f"Selected repository path not found: {repo_path}")
-             QMessageBox.warning(self, "Error", f"Path not found for {repo_name}: {repo_path}")
-             self.overview_tab._show_placeholder()
-             self.code_health_tab._show_placeholder()
-             self.contributors_tab._show_placeholder()
-             self.tags_tab._show_placeholder()
-             self.cumulative_blame_tab._show_placeholder()
-             self.current_repo_instance = None
-             return
+            logger.error(f"Selected repository path not found: {repo_path}")
+            QMessageBox.warning(self, "Error", f"Path not found for {repo_name}: {repo_path}")
+            self.overview_tab._show_placeholder()
+            self.code_health_tab._show_placeholder()
+            self.contributors_tab._show_placeholder()
+            self.tags_tab._show_placeholder()
+            self.cumulative_blame_tab._show_placeholder()
+            self.current_repo_instance = None
+            return
 
         self._set_loading_state(True)
         self.current_repo_instance = None
@@ -361,7 +366,7 @@ class MainWindow(QMainWindow):
         logger.error(f"Repository load worker failed: {exctype} - {value}\n{traceback_str}")
         QMessageBox.critical(self, "Repository Load Error", f"Failed to load repository:\n{value}")
         self.current_repo_instance = None
-        self._set_loading_state(False) # Ensure loading state is reset on error
+        self._set_loading_state(False)  # Ensure loading state is reset on error
         # Show placeholders on error
         self.overview_tab._show_placeholder()
         self.code_health_tab._show_placeholder()
@@ -372,35 +377,35 @@ class MainWindow(QMainWindow):
     def _on_repository_loaded(self, repo_instance):
         # Check if the worker returned a valid Repository instance
         if not repo_instance:
-             logger.error("Repository load worker failed to return a valid instance (likely default branch issue).")
-             # Get the currently selected repo name for the message
-             selected_items = self.repo_list_widget.selectedItems()
-             repo_name = "Unknown" # Fallback name
-             if selected_items:
-                 repo_name = selected_items[0].data(Qt.ItemDataRole.UserRole)
+            logger.error("Repository load worker failed to return a valid instance (likely default branch issue).")
+            # Get the currently selected repo name for the message
+            selected_items = self.repo_list_widget.selectedItems()
+            repo_name = "Unknown"  # Fallback name
+            if selected_items:
+                repo_name = selected_items[0].data(Qt.ItemDataRole.UserRole)
 
-             QMessageBox.warning(
-                 self, 
-                 "Repository Load Failed", 
-                 f"Could not load repository '{repo_name}'.\n\n"
-                 f"Its default branch could not be automatically determined (neither 'main' nor 'master' found).\n\n"
-                 f"Please remove the repository from the list and add it again. You will be prompted to enter the correct default branch name."
-             )
-             self._set_loading_state(False) # Reset loading state
-             # Clear selection and show placeholders
-             self.repo_list_widget.clearSelection()
-             self.current_repo_instance = None
-             self.overview_tab._show_placeholder()
-             self.code_health_tab._show_placeholder()
-             self.contributors_tab._show_placeholder()
-             self.tags_tab._show_placeholder()
-             self.cumulative_blame_tab._show_placeholder()
-             return
+            QMessageBox.warning(
+                self,
+                "Repository Load Failed",
+                f"Could not load repository '{repo_name}'.\n\n"
+                f"Its default branch could not be automatically determined (neither 'main' nor 'master' found).\n\n"
+                f"Please remove the repository from the list and add it again. You will be prompted to enter the correct default branch name.",
+            )
+            self._set_loading_state(False)  # Reset loading state
+            # Clear selection and show placeholders
+            self.repo_list_widget.clearSelection()
+            self.current_repo_instance = None
+            self.overview_tab._show_placeholder()
+            self.code_health_tab._show_placeholder()
+            self.contributors_tab._show_placeholder()
+            self.tags_tab._show_placeholder()
+            self.cumulative_blame_tab._show_placeholder()
+            return
 
         # --- Proceed if repo_instance is valid --- #
         logger.info(f"Repository {repo_instance.repo_name} loaded. Starting initial data fetch workers.")
         self.current_repo_instance = repo_instance
-        self.pending_workers = 0 # Reset counter for initial load
+        self.pending_workers = 0  # Reset counter for initial load
 
         # Start initial data fetch for all tabs (without force_refresh)
         self._start_data_fetch_worker(fetch_overview_data, self._handle_overview_result)
@@ -438,15 +443,15 @@ class MainWindow(QMainWindow):
         logger.debug(f"Initial data worker finished. Pending: {self.pending_workers}")
         if self.pending_workers <= 0:
             logger.info("All initial data workers finished.")
-            self.pending_workers = 0 # Ensure it's not negative
-            self._set_loading_state(False) # Reset global loading state
+            self.pending_workers = 0  # Ensure it's not negative
+            self._set_loading_state(False)  # Reset global loading state
 
     # --- Result Handlers for Initial Load --- #
     def _handle_overview_result(self, result_dict):
         """Handles the result from the overview data worker."""
         # result_dict contains { 'data': data, 'refreshed_at': datetime }
-        data = result_dict.get('data')
-        refreshed_at = result_dict.get('refreshed_at')
+        data = result_dict.get("data")
+        refreshed_at = result_dict.get("refreshed_at")
 
         # Check if we still have a current repo instance (user might have cleared selection)
         if self.current_repo_instance:
@@ -461,31 +466,37 @@ class MainWindow(QMainWindow):
         logger.debug("Received initial code health data result.")
         if self.current_repo_instance:
             # Pass data and timestamp to populate_ui
-            self.code_health_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+            self.code_health_tab.populate_ui(
+                self.current_repo_instance, result_dict["data"], result_dict["refreshed_at"]
+            )
         else:
             logger.warning("Received code health data but no current repo instance.")
 
     def _handle_contributor_result(self, result_dict):
         logger.debug("Received initial contributor data result.")
         if self.current_repo_instance:
-             # Pass data and timestamp to populate_ui
-             self.contributors_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+            # Pass data and timestamp to populate_ui
+            self.contributors_tab.populate_ui(
+                self.current_repo_instance, result_dict["data"], result_dict["refreshed_at"]
+            )
         else:
-             logger.warning("Received contributor data but no current repo instance.")
+            logger.warning("Received contributor data but no current repo instance.")
 
     def _handle_tags_result(self, result_dict):
         logger.debug("Received initial tags data result.")
         if self.current_repo_instance:
             # Pass data (DataFrame or None) and timestamp to populate_ui
-            self.tags_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+            self.tags_tab.populate_ui(self.current_repo_instance, result_dict["data"], result_dict["refreshed_at"])
         else:
-             logger.warning("Received tags data but no current repo instance.")
+            logger.warning("Received tags data but no current repo instance.")
 
     def _handle_cumulative_blame_result(self, result_dict):
         logger.debug("Received initial cumulative blame data result.")
         if self.current_repo_instance:
             # Pass data (DataFrame or None) and timestamp to populate_ui
-            self.cumulative_blame_tab.populate_ui(self.current_repo_instance, result_dict['data'], result_dict['refreshed_at'])
+            self.cumulative_blame_tab.populate_ui(
+                self.current_repo_instance, result_dict["data"], result_dict["refreshed_at"]
+            )
         else:
             logger.warning("Received cumulative blame data but no current repo instance.")
 
@@ -503,7 +514,7 @@ class MainWindow(QMainWindow):
         """Helper to start a refresh worker for a specific tab."""
         if not self.current_repo_instance:
             logger.warning(f"Cannot start refresh worker for {fetch_func.__name__}, no repository loaded.")
-            target_tab._hide_loading() # Ensure button is re-enabled
+            target_tab._hide_loading()  # Ensure button is re-enabled
             return
 
         logger.info(f"Starting REFRESH worker for {fetch_func.__name__} on tab {type(target_tab).__name__}")
@@ -520,8 +531,10 @@ class MainWindow(QMainWindow):
             # For other tabs, call populate_ui with timestamp via lambda
             worker.signals.result.connect(
                 lambda res_dict: target_tab.populate_ui(
-                    self.current_repo_instance, res_dict['data'], res_dict['refreshed_at']
-                ) if self.current_repo_instance else None
+                    self.current_repo_instance, res_dict["data"], res_dict["refreshed_at"]
+                )
+                if self.current_repo_instance
+                else None
             )
 
         # Connect error to a specific handler that knows which tab to update
@@ -544,9 +557,9 @@ class MainWindow(QMainWindow):
         # target_tab._hide_loading() # Now handled by finished signal connection
 
         # Call the tab's specific error handler
-        if hasattr(target_tab, '_show_error'):
+        if hasattr(target_tab, "_show_error"):
             target_tab._show_error(f"Error refreshing data: {value}")
-        # Note: _hide_loading is called by the finished signal, 
+        # Note: _hide_loading is called by the finished signal,
         # and _show_error also calls _hide_loading now to ensure button state is correct.
 
     def refresh_overview_data(self):
@@ -569,26 +582,27 @@ class MainWindow(QMainWindow):
     def _handle_repo_instantiation_failure(self, repo_path):
         """Handles the signal emitted when Repository instantiation fails."""
         logger.error(f"Received repo_instantiation_failed signal for path: {repo_path}")
-        repo_name = "Unknown repo" # Fallback
+        repo_name = "Unknown repo"  # Fallback
         for name, info in self.repositories.items():
-            if info['path'] == repo_path:
+            if info["path"] == repo_path:
                 repo_name = name
                 break
-        
+
         QMessageBox.critical(
-            self, 
-            "Repository Load Error", 
+            self,
+            "Repository Load Error",
             f"Failed to load repository: {repo_name}\n\n"
             f"Path: {repo_path}\n\n"
             f"This usually means the repository path is invalid or the default branch ('main' or 'master') could not be found.\n"
-            f"Please remove and re-add the repository, specifying the default branch if prompted."
+            f"Please remove and re-add the repository, specifying the default branch if prompted.",
         )
-        self._set_loading_state(False) # Ensure UI is unlocked
-        self._reset_tabs() # Clear tabs
+        self._set_loading_state(False)  # Ensure UI is unlocked
+        self._reset_tabs()  # Clear tabs
 
     def closeEvent(self, event):
         # Ensure proper indentation and add a pass statement
-        pass # Placeholder to fix indentation error
+        pass  # Placeholder to fix indentation error
+
 
 # Application Execution (if __name__ == "__main__")
-# ... (no changes needed here) 
+# ... (no changes needed here)

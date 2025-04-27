@@ -1,14 +1,14 @@
-import pytest
-from unittest.mock import MagicMock, patch
-import pandas as pd
 from datetime import datetime
+from unittest.mock import MagicMock, patch
 
-from PySide6.QtWidgets import QApplication, QWidget # Import QWidget
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg # Import for spec
+import pandas as pd
+import pytest
+from PySide6.QtWidgets import QWidget  # Import QWidget
 
 # Assuming your project structure allows this import
 from ui.widgets.cumulative_blame_tab import CumulativeBlameTab
-from gitpandas import Repository # Mocking target
+
+from gitpandas import Repository  # Mocking target
 
 
 @pytest.fixture
@@ -16,9 +16,10 @@ def blame_tab(qtbot):
     """Provides an instance of CumulativeBlameTab for testing."""
     # Mock matplotlib dependencies within the tab's __init__
     # Patch 'FigureCanvas' where it's looked up in the CumulativeBlameTab module
-    with patch('matplotlib.pyplot.subplots') as mock_subplots, \
-         patch('ui.widgets.cumulative_blame_tab.FigureCanvas') as MockFigureCanvas: # Patch the class lookup
-
+    with (
+        patch("matplotlib.pyplot.subplots") as mock_subplots,
+        patch("ui.widgets.cumulative_blame_tab.FigureCanvas") as MockFigureCanvas,
+    ):  # Patch the class lookup
         # Configure mocks
         mock_figure = MagicMock()
         mock_ax = MagicMock()
@@ -36,9 +37,8 @@ def blame_tab(qtbot):
         # If tests need to assert calls on the canvas (like draw), they can use this.
         # We might need to copy attributes/methods from real_widget_for_canvas if needed.
 
-
         tab = CumulativeBlameTab()
-        qtbot.addWidget(tab) # Add the widget under test to qtbot for cleanup/handling
+        qtbot.addWidget(tab)  # Add the widget under test to qtbot for cleanup/handling
 
         # Store mocks/objects on the tab instance for later assertions
         tab._mock_figure = mock_figure
@@ -49,11 +49,13 @@ def blame_tab(qtbot):
         # Provide the separate mock for method tracking if needed (though maybe less useful now)
         tab._mock_canvas_instance_methods = mock_canvas_methods
         tab._mock_subplots = mock_subplots
-        tab._mock_canvas_class = MockFigureCanvas # The patched class
+        tab._mock_canvas_class = MockFigureCanvas  # The patched class
 
         yield tab
 
+
 # --- Test Cases ---
+
 
 def test_populate_ui_initial_state(blame_tab):
     """Test the initial state of the widget before data is loaded."""
@@ -63,18 +65,19 @@ def test_populate_ui_initial_state(blame_tab):
 
 # More tests will be added here for populate_ui logic
 
-@patch('ui.widgets.cumulative_blame_tab.logger') # Mock logger
+
+@patch("ui.widgets.cumulative_blame_tab.logger")  # Mock logger
 def test_populate_ui_valid_data(mock_logger, blame_tab):
     """Test populate_ui with a valid, non-empty DataFrame."""
     mock_repo = MagicMock(spec=Repository)
     mock_repo.repo_name = "test-repo"
-    
+
     # Create a sample valid DataFrame
-    dates = pd.to_datetime(['2023-01-01', '2023-01-02'])
-    data = {'Committer A': [10, 15], 'Committer B': [5, 8]}
+    dates = pd.to_datetime(["2023-01-01", "2023-01-02"])
+    data = {"Committer A": [10, 15], "Committer B": [5, 8]}
     sample_df = pd.DataFrame(data, index=dates)
-    
-    input_data = {'data': {'cumulative_blame': sample_df}, 'refreshed_at': datetime.now()}
+
+    input_data = {"data": {"cumulative_blame": sample_df}, "refreshed_at": datetime.now()}
 
     # Ensure plot functions are mocked on the mock_ax
     blame_tab._mock_ax.stackplot = MagicMock()
@@ -94,7 +97,7 @@ def test_populate_ui_valid_data(mock_logger, blame_tab):
     the_widget_canvas.draw = MagicMock()
 
     # Call the method ONCE
-    blame_tab.populate_ui(mock_repo, input_data, input_data['refreshed_at'])
+    blame_tab.populate_ui(mock_repo, input_data, input_data["refreshed_at"])
 
     # --- Assertions ---
     # Instead of checking visibility, verify the plotting calls were made
@@ -102,7 +105,7 @@ def test_populate_ui_valid_data(mock_logger, blame_tab):
     blame_tab._mock_ax.stackplot.assert_called_once()
     # Check if columns were sorted for stackplot labels
     call_args, call_kwargs = blame_tab._mock_ax.stackplot.call_args
-    assert list(call_kwargs['labels']) == sorted(sample_df.columns)
+    assert list(call_kwargs["labels"]) == sorted(sample_df.columns)
     blame_tab._mock_ax.set_title.assert_called_once()
     blame_tab._mock_ax.set_xlabel.assert_called_once()
     blame_tab._mock_ax.set_ylabel.assert_called_once()
@@ -120,30 +123,32 @@ def test_populate_ui_valid_data(mock_logger, blame_tab):
     assert "Error fetching data:" not in blame_tab.placeholder_status_label.text()
     assert "Failed to load or parse cumulative blame data." not in blame_tab.placeholder_status_label.text()
 
-@patch('ui.widgets.cumulative_blame_tab.logger')
+
+@patch("ui.widgets.cumulative_blame_tab.logger")
 def test_populate_ui_empty_dataframe(mock_logger, blame_tab):
     """Test populate_ui when the fetched DataFrame is empty."""
     mock_repo = MagicMock(spec=Repository)
     mock_repo.repo_name = "test-repo"
-    empty_df = pd.DataFrame(columns=['Committer A'])
-    input_data = {'data': {'cumulative_blame': empty_df}, 'refreshed_at': datetime.now()}
+    empty_df = pd.DataFrame(columns=["Committer A"])
+    input_data = {"data": {"cumulative_blame": empty_df}, "refreshed_at": datetime.now()}
 
-    blame_tab.populate_ui(mock_repo, input_data, input_data['refreshed_at'])
+    blame_tab.populate_ui(mock_repo, input_data, input_data["refreshed_at"])
 
     # --- Assertions ---
     # Check for error message in text rather than visibility
     assert "No cumulative blame data found" in blame_tab.placeholder_status_label.text()
     # The error is logged in base_tab, not in the mocked logger, so we don't assert on mock_logger.error
 
-@patch('ui.widgets.cumulative_blame_tab.logger')
+
+@patch("ui.widgets.cumulative_blame_tab.logger")
 def test_populate_ui_error_key(mock_logger, blame_tab):
     """Test populate_ui when the input dict contains an 'error' key."""
     mock_repo = MagicMock(spec=Repository)
     mock_repo.repo_name = "test-repo"
     error_message = "Fetcher crashed"
-    input_data = {'error': error_message, 'refreshed_at': datetime.now()}
+    input_data = {"error": error_message, "refreshed_at": datetime.now()}
 
-    blame_tab.populate_ui(mock_repo, input_data, input_data['refreshed_at'])
+    blame_tab.populate_ui(mock_repo, input_data, input_data["refreshed_at"])
 
     # --- Assertions ---
     # Check for error message in text rather than visibility
@@ -151,35 +156,38 @@ def test_populate_ui_error_key(mock_logger, blame_tab):
     # This specific message is logged in the mocked logger
     mock_logger.error.assert_any_call(f"Error received from fetcher: {error_message}")
 
-@patch('ui.widgets.cumulative_blame_tab.logger')
+
+@patch("ui.widgets.cumulative_blame_tab.logger")
 def test_populate_ui_malformed_data_no_blame_key(mock_logger, blame_tab):
     """Test populate_ui with data missing the 'blame' key."""
     mock_repo = MagicMock(spec=Repository)
     mock_repo.repo_name = "test-repo"
-    input_data = {'data': {'wrong_key': pd.DataFrame()}, 'refreshed_at': datetime.now()}
+    input_data = {"data": {"wrong_key": pd.DataFrame()}, "refreshed_at": datetime.now()}
 
-    blame_tab.populate_ui(mock_repo, input_data, input_data['refreshed_at'])
+    blame_tab.populate_ui(mock_repo, input_data, input_data["refreshed_at"])
 
     # --- Assertions ---
     # Check for error message in text rather than visibility
     assert "Failed to load or parse cumulative blame data." in blame_tab.placeholder_status_label.text()
     # The error is logged in base_tab, not in the mocked logger, so we don't assert on mock_logger.error
 
-@patch('ui.widgets.cumulative_blame_tab.logger')
+
+@patch("ui.widgets.cumulative_blame_tab.logger")
 def test_populate_ui_malformed_data_no_data_key(mock_logger, blame_tab):
     """Test populate_ui with data missing the 'data' key."""
     mock_repo = MagicMock(spec=Repository)
     mock_repo.repo_name = "test-repo"
-    input_data = {'not_data': {'cumulative_blame': pd.DataFrame()}, 'refreshed_at': datetime.now()}
+    input_data = {"not_data": {"cumulative_blame": pd.DataFrame()}, "refreshed_at": datetime.now()}
 
-    blame_tab.populate_ui(mock_repo, input_data, input_data['refreshed_at'])
+    blame_tab.populate_ui(mock_repo, input_data, input_data["refreshed_at"])
 
     # --- Assertions ---
     # Check for error message in text rather than visibility
     assert "Failed to load or parse cumulative blame data." in blame_tab.placeholder_status_label.text()
     # The error is logged in base_tab, not in the mocked logger, so we don't assert on mock_logger.error
 
-@patch('ui.widgets.cumulative_blame_tab.logger')
+
+@patch("ui.widgets.cumulative_blame_tab.logger")
 def test_populate_ui_non_dict_input(mock_logger, blame_tab):
     """Test populate_ui with input that is not a dictionary."""
     mock_repo = MagicMock(spec=Repository)
@@ -192,4 +200,4 @@ def test_populate_ui_non_dict_input(mock_logger, blame_tab):
     # --- Assertions ---
     # Check for error message in text rather than visibility
     assert "Failed to load or parse cumulative blame data." in blame_tab.placeholder_status_label.text()
-    # The error is logged in base_tab, not in the mocked logger, so we don't assert on mock_logger.error 
+    # The error is logged in base_tab, not in the mocked logger, so we don't assert on mock_logger.error

@@ -3,6 +3,6 @@
 from .loader import load_repositories, save_repositories
 
 __all__ = [
-    'load_repositories',
-    'save_repositories',
+    "load_repositories",
+    "save_repositories",
 ]

@@ -1,24 +1,17 @@
-import os
-from pathlib import Path
-from datetime import datetime, timedelta
-import pandas as pd
 import logging
+from pathlib import Path
 
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QHeaderView,
-    QSplitter,
-    QPushButton,
-    QGridLayout,
-    QSizePolicy
-)
+import pandas as pd
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
+    QLabel,
+    QSplitter,
+    QVBoxLayout,
+    QWidget,
+)
 
-from .dataframe_table import DataFrameTable
 from .base_tab import BaseTabWidget
+from .dataframe_table import DataFrameTable
 
 # Cache file path - consistent with main.py
 CACHE_DIR = Path.home() / ".gitnoc_desktop"
@@ -26,9 +19,10 @@ CACHE_FILE = CACHE_DIR / "cache.json.gz"
 
 logger = logging.getLogger(__name__)
 
+
 class OverviewTab(BaseTabWidget):
     """Tab displaying repository overview information."""
-    
+
     refresh_requested = Signal()
 
     def __init__(self, parent=None):
@@ -62,7 +56,7 @@ class OverviewTab(BaseTabWidget):
     def populate_ui(self, repo, overview_data, refreshed_at=None):
         """
         Populate the Overview tab with repository data.
-        
+
         Args:
             repo: Repository instance
             overview_data: Dictionary containing repository overview information
@@ -83,11 +77,11 @@ class OverviewTab(BaseTabWidget):
         self._clear_overview_content()
 
         # Extract data components
-        blame_df_list = overview_data.get('blame')
-        lang_counts = overview_data.get('lang_counts')
-        commits_df = overview_data.get('commits')
-        bus_factor_df = overview_data.get('bus_factor')
-        active_branches_df = overview_data.get('active_branches')
+        blame_df_list = overview_data.get("blame")
+        lang_counts = overview_data.get("lang_counts")
+        commits_df = overview_data.get("commits")
+        bus_factor_df = overview_data.get("bus_factor")
+        active_branches_df = overview_data.get("active_branches")
 
         # Hide placeholder and prepare layout
         self.placeholder_status_label.setVisible(False)
@@ -138,7 +132,7 @@ class OverviewTab(BaseTabWidget):
         if lang_counts is not None and not lang_counts.empty:
             try:
                 table = DataFrameTable()
-                cols_to_show = [col for col in ['Language', 'Count'] if col in lang_counts.columns]
+                cols_to_show = [col for col in ["Language", "Count"] if col in lang_counts.columns]
                 table.set_dataframe(lang_counts, columns=cols_to_show, show_index=False, stretch_last=False)
                 left_layout.addWidget(table)
             except Exception as e:
@@ -151,11 +145,13 @@ class OverviewTab(BaseTabWidget):
         left_layout.addStretch()
 
         # Add recent commits to right panel
-        self._add_section_label(f"Recent Commits (Branch: {self.repo.default_branch if self.repo else 'N/A'})", right_layout)
+        self._add_section_label(
+            f"Recent Commits (Branch: {self.repo.default_branch if self.repo else 'N/A'})", right_layout
+        )
         if commits_df is not None and not commits_df.empty:
             try:
                 table = DataFrameTable()
-                cols_to_show = [col for col in ['commit_date', 'author', 'message'] if col in commits_df.columns]
+                cols_to_show = [col for col in ["commit_date", "author", "message"] if col in commits_df.columns]
                 table.set_dataframe(commits_df, columns=cols_to_show, show_index=False)
                 right_layout.addWidget(table)
             except Exception as e:
@@ -171,7 +167,7 @@ class OverviewTab(BaseTabWidget):
         self._add_section_label("Bus Factor", right_layout)
         if bus_factor_df is not None and not bus_factor_df.empty:
             try:
-                factor_value = bus_factor_df.iloc[0]['bus factor']
+                factor_value = bus_factor_df.iloc[0]["bus factor"]
                 right_layout.addWidget(QLabel(f"Overall Repository Bus Factor: <b>{factor_value}</b>"))
                 right_layout.addWidget(QLabel("<i>(Lower means higher risk)</i>"))
             except (KeyError, IndexError) as e:
@@ -188,7 +184,9 @@ class OverviewTab(BaseTabWidget):
         if active_branches_df is not None and not active_branches_df.empty:
             try:
                 table = DataFrameTable()
-                cols_to_show = [col for col in ['branch', 'last_commit_date', 'author'] if col in active_branches_df.columns]
+                cols_to_show = [
+                    col for col in ["branch", "last_commit_date", "author"] if col in active_branches_df.columns
+                ]
                 table.set_dataframe(active_branches_df, columns=cols_to_show, show_index=False)
                 right_layout.addWidget(table)
             except Exception as e:
@@ -207,4 +205,4 @@ class OverviewTab(BaseTabWidget):
     def _add_section_label(self, text, layout):
         """Add a section header label to the specified layout."""
         label = QLabel(f"<b>{text}</b>")
-        layout.addWidget(label) 
+        layout.addWidget(label)

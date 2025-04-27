@@ -1,21 +1,18 @@
+import logging  # Added logging
+
 import pandas as pd
-from datetime import datetime
-import logging # Added logging
-
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
     QLabel,
-    QPushButton,
-    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import Qt, Signal
 
+from .base_tab import BaseTabWidget  # Import base class
 from .dataframe_table import DataFrameTable
-from .base_tab import BaseTabWidget # Import base class
 
 logger = logging.getLogger(__name__)
+
 
 class ContributorsTab(BaseTabWidget):
     # Signal to request data refresh
@@ -27,18 +24,18 @@ class ContributorsTab(BaseTabWidget):
         # Base handles self.repo, self.last_refreshed, layouts, header widgets
 
         # --- Specific Widgets for ContributorsTab --- #
-        self.contributor_data = {} # Store the raw data dict if needed
-        self.hours_table = None # Reference to the table widget
+        self.contributor_data = {}  # Store the raw data dict if needed
+        self.hours_table = None  # Reference to the table widget
 
         # Create the container widget that will hold the tables/charts
         self.data_container_widget = QWidget()
         self.data_container_layout = QVBoxLayout(self.data_container_widget)
-        self.data_container_layout.setContentsMargins(0,0,0,0)
-        self.data_container_layout.setSpacing(10) # Increased spacing a bit
+        self.data_container_layout.setContentsMargins(0, 0, 0, 0)
+        self.data_container_layout.setSpacing(10)  # Increased spacing a bit
 
         # Add container to the base content layout (will be shown/hidden)
         self.content_layout.addWidget(self.data_container_widget)
-        self.data_container_widget.setVisible(False) # Initially hidden
+        self.data_container_widget.setVisible(False)  # Initially hidden
 
         # Call _show_placeholder explicitly to set initial state
         self._show_placeholder()
@@ -50,11 +47,11 @@ class ContributorsTab(BaseTabWidget):
     def _clear_data_container(self):
         """Helper to remove widgets from the specific data container layout."""
         while self.data_container_layout.count():
-             item = self.data_container_layout.takeAt(0)
-             widget = item.widget()
-             if widget:
-                 widget.setParent(None)
-                 widget.deleteLater()
+            item = self.data_container_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
         self.hours_table = None
         # Reset other specific widgets if added later (e.g., punchcard chart)
 
@@ -64,7 +61,7 @@ class ContributorsTab(BaseTabWidget):
         self._clear_data_container()
         self.data_container_widget.setVisible(False)
         super()._show_placeholder(message)
-        self.contributor_data = {} # Reset specific data
+        self.contributor_data = {}  # Reset specific data
 
     def _show_loading(self, message=None):
         """Overrides base to also hide data container and clear its content."""
@@ -73,7 +70,7 @@ class ContributorsTab(BaseTabWidget):
         self.data_container_widget.setVisible(False)
         super()._show_loading(message)
 
-    def _hide_loading(self): # Mainly for refresh button state now
+    def _hide_loading(self):  # Mainly for refresh button state now
         self.refresh_button.setEnabled(self.repo is not None)
         self.refresh_button.setText("Refresh")
 
@@ -96,8 +93,8 @@ class ContributorsTab(BaseTabWidget):
         # Extract data parts
         hours_df = None
         if isinstance(self.contributor_data, dict):
-             hours_df = self.contributor_data.get('hours')
-             # punchcard_df = self.contributor_data.get('punchcard') # Example for later
+            hours_df = self.contributor_data.get("hours")
+            # punchcard_df = self.contributor_data.get('punchcard') # Example for later
 
         # --- Validate Data --- #
         # Check if we have at least some data to show
@@ -125,27 +122,23 @@ class ContributorsTab(BaseTabWidget):
             # --- Estimated Hours Section --- #
             self._add_section_label("Estimated Hours by Contributor", self.data_container_layout)
             if not hours_df.empty:
-                 # Check if index needs resetting (older versions might have author in index)
-                 if hours_df.index.name == 'author':
-                      hours_df_display = hours_df.reset_index()
-                 else:
-                      hours_df_display = hours_df.copy()
+                # Check if index needs resetting (older versions might have author in index)
+                hours_df_display = hours_df.reset_index() if hours_df.index.name == "author" else hours_df.copy()
 
-                 # Ensure required columns exist
-                 if 'author' not in hours_df_display.columns or 'hours' not in hours_df_display.columns:
-                      logger.warning("Hours DataFrame missing expected columns ('author', 'hours').")
-                      self.data_container_layout.addWidget(QLabel("<i>Could not display hours data (missing columns).</i>"))
-                 else:
-                      # Round hours for display
-                      hours_df_display['hours'] = hours_df_display['hours'].round(1)
-                      self.hours_table = DataFrameTable()
-                      self.hours_table.set_dataframe(
-                          hours_df_display,
-                          columns=['author', 'hours'],
-                          show_index=False,
-                          stretch_last=False
-                      )
-                      self.data_container_layout.addWidget(self.hours_table)
+                # Ensure required columns exist
+                if "author" not in hours_df_display.columns or "hours" not in hours_df_display.columns:
+                    logger.warning("Hours DataFrame missing expected columns ('author', 'hours').")
+                    self.data_container_layout.addWidget(
+                        QLabel("<i>Could not display hours data (missing columns).</i>")
+                    )
+                else:
+                    # Round hours for display
+                    hours_df_display["hours"] = hours_df_display["hours"].round(1)
+                    self.hours_table = DataFrameTable()
+                    self.hours_table.set_dataframe(
+                        hours_df_display, columns=["author", "hours"], show_index=False, stretch_last=False
+                    )
+                    self.data_container_layout.addWidget(self.hours_table)
             else:
                 self.data_container_layout.addWidget(QLabel("<i>No contributor hours data found.</i>"))
 
@@ -167,9 +160,9 @@ class ContributorsTab(BaseTabWidget):
             return
 
         # --- Final Touches --- #
-        self._hide_loading() # Restore refresh button state
+        self._hide_loading()  # Restore refresh button state
 
     def _add_section_label(self, text, layout):
         label = QLabel(text)
-        label.setStyleSheet("font-weight: bold; margin-top: 10px;") # Added top margin
-        layout.addWidget(label) 
+        label.setStyleSheet("font-weight: bold; margin-top: 10px;")  # Added top margin
+        layout.addWidget(label)

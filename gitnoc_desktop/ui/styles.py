@@ -203,4 +203,4 @@ QToolTip {
     border: 1px solid #323232;
     padding: 5px;
 }
-""" 
+"""
