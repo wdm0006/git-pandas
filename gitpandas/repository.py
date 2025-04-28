@@ -791,7 +791,17 @@ class Repository:
             skip_broken (bool, optional): Whether to skip corrupted Git objects. Defaults to True.
 
         Returns:
-            pandas.DataFrame: A DataFrame with file change rate information
+            pandas.DataFrame: A DataFrame with columns:
+                - file (str): Path to the file
+                - unique_committers (int): Number of unique committers
+                - abs_rate_of_change (float): Absolute rate of change
+                - net_rate_of_change (float): Net rate of change
+                - net_change (int): Net lines changed
+                - abs_change (int): Absolute lines changed
+                - edit_rate (float): Edit rate
+                - lines (int): Current line count
+                - repository (str): Repository name
+                Additional columns for any labels specified in labels_to_add
         """
         if branch is None:
             branch = self.default_branch
@@ -862,6 +872,12 @@ class Repository:
                     "min_date",
                 ]
 
+                # Reset index to make filename a column
+                file_history = file_history.reset_index()
+                
+                # Rename filename to file for consistency
+                file_history = file_history.rename(columns={"filename": "file"})
+
                 # Calculate net changes
                 file_history["net_change"] = file_history["total_insertions"] - file_history["total_deletions"]
                 file_history["abs_change"] = file_history["total_insertions"] + file_history["total_deletions"]
@@ -877,16 +893,9 @@ class Repository:
                 file_history["edit_rate"] = file_history["abs_rate_of_change"] - file_history["net_rate_of_change"]
                 file_history["unique_committers"] = file_history["committers"].apply(lambda x: len(set(x.split(" | "))))
                 file_history["lines"] = file_history["net_change"]  # For compatibility with simplified version
-                # Don't add a duplicate 'file' column - it will already be included from reset_index below
-
-                # Get commit count per file - needed for compatibility with existing implementations
-                commits_per_file = fch.groupby("filename").size()
-                file_history["commits"] = commits_per_file
 
                 # Select key columns for the output
-                rates = file_history.reset_index()
-                rates = rates.rename(columns={"filename": "file"})
-                rates = rates[
+                rates = file_history[
                     [
                         "file",
                         "unique_committers",
@@ -905,10 +914,16 @@ class Repository:
                 # Add coverage data if requested
                 if coverage:
                     cov = self.coverage()
-                    rates = pd.merge(rates, cov, how="left", left_on="file", right_on="filename")
+                    if not cov.empty:
+                        # Ensure coverage DataFrame has 'file' as column, not index
+                        if 'file' not in cov.columns and 'filename' in cov.columns:
+                            cov = cov.rename(columns={'filename': 'file'})
+                        elif 'file' not in cov.columns and isinstance(cov.index.name, str) and cov.index.name == 'file':
+                            cov = cov.reset_index()
+                        rates = pd.merge(rates, cov, on="file", how="left")
 
                 # Add repository name
-                rates["repository"] = self._repo_name()
+                rates = self._add_labels_to_df(rates)
 
                 return rates
             else:
@@ -2347,7 +2362,8 @@ class Repository:
                 Defaults to True.
 
         Returns:
-            pandas.DataFrame: A DataFrame indexed by file path with columns:
+            pandas.DataFrame: A DataFrame with columns:
+                - file (str): Path to the file
                 - file_owner (str): Name of primary committer/author
                 - last_edit_date (datetime): When file was last modified
                 - loc (int): Lines of code in file
@@ -2381,14 +2397,11 @@ class Repository:
         # reduce it to files and total LOC
         logger.debug("Reducing to files and total LOC...")
         df = blame.reindex(columns=["file", "loc"])
-        df = df.groupby("file").agg({"loc": "sum"})
-        df = df.reset_index(level=-1)
+        df = df.groupby("file").agg({"loc": "sum"}).reset_index()  # Keep file as column
 
         # map in file owners
         logger.debug("Mapping file owners...")
 
-        # Use .get('name', None) to safely access potential None from file_owner
-        # df["file_owner"] = df["file"].map(lambda x: self.file_owner(rev, x, committer=committer).get("name", None) if (fo := self.file_owner(rev, x, committer=committer)) else None)
         def _get_owner_name_safe(file_path):
             owner_info = self.file_owner(rev, file_path, committer=committer)
             return owner_info.get("name") if owner_info else None
@@ -2403,7 +2416,7 @@ class Repository:
         logger.debug("Mapping last edit dates...")
         df["last_edit_date"] = df["file"].map(lambda x: self._get_last_edit_date(x, rev=rev))
 
-        df = df.set_index("file")
+        # Add repository labels without setting index
         df = self._add_labels_to_df(df)
 
         logger.info(f"Finished fetching file details for rev '{rev}'. Found details for {len(df)} files.")

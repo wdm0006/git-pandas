@@ -1,9 +1,0 @@
-PySide6
-git-pandas
-GitPython==3.1.40 # Required by git-pandas, pinned to avoid issues with git 2.39+
-qt-material
-pandas 
-matplotlib
-pytest
-pytest-qt
-pytest-mock
