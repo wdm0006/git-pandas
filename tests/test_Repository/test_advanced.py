@@ -362,9 +362,7 @@ class TestRepositoryAdvanced:
         os.unlink(test_file)
         repo.index.remove(["temp_file.txt"])
         delete_date = int(datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.timezone.utc).timestamp())
-        repo.index.commit(
-            "Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000"
-        )
+        repo.index.commit("Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000")
 
         # Create Repository object
         repo_obj = Repository(working_dir=str(repo_path))

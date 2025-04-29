@@ -163,19 +163,19 @@ class TestFileOperations:
     def test_file_change_rates_index_ambiguity(self, local_repo):
         """Test that file_change_rates handles file index/column ambiguity correctly."""
         repo = local_repo["repo"]
-        
+
         # Get file change rates
         change_rates = repo.file_change_rates()
-        
+
         # Verify file is not both an index and column
-        assert 'file' not in change_rates.index.names, "file should not be in index"
-        assert 'file' in change_rates.columns, "file should be a column"
-        
+        assert "file" not in change_rates.index.names, "file should not be in index"
+        assert "file" in change_rates.columns, "file should be a column"
+
         # Try merging with another DataFrame to ensure no ambiguity
         file_details = repo.file_detail()
-        
+
         # This merge should work without ambiguity
         try:
-            merged = pd.merge(file_details, change_rates, on="file", how="outer")
+            pd.merge(file_details, change_rates, on="file", how="outer")
         except ValueError as e:
             pytest.fail(f"Merge failed due to ambiguity: {e}")

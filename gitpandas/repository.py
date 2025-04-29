@@ -578,12 +578,14 @@ class Repository:
                     except Exception as e:
                         if skip_broken:
                             logger.warning(
-                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                                f"Unexpected error processing commit "
+                                f"{x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
                             )
                             continue
                         else:
                             logger.error(
-                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                                f"Unexpected error processing commit "
+                                f"{x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
                             )
                             raise
             except git.exc.GitCommandError as e:
@@ -611,12 +613,14 @@ class Repository:
                     except Exception as e:
                         if skip_broken:
                             logger.warning(
-                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                                f"Unexpected error processing commit "
+                                f"{x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
                             )
                             continue
                         else:
                             logger.error(
-                                f"Unexpected error processing commit {x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
+                                f"Unexpected error processing commit "
+                                f"{x.hexsha if hasattr(x, 'hexsha') else 'unknown'}: {e}"
                             )
                             raise
             except git.exc.GitCommandError as e:
@@ -874,7 +878,7 @@ class Repository:
 
                 # Reset index to make filename a column
                 file_history = file_history.reset_index()
-                
+
                 # Rename filename to file for consistency
                 file_history = file_history.rename(columns={"filename": "file"})
 
@@ -916,9 +920,9 @@ class Repository:
                     cov = self.coverage()
                     if not cov.empty:
                         # Ensure coverage DataFrame has 'file' as column, not index
-                        if 'file' not in cov.columns and 'filename' in cov.columns:
-                            cov = cov.rename(columns={'filename': 'file'})
-                        elif 'file' not in cov.columns and isinstance(cov.index.name, str) and cov.index.name == 'file':
+                        if "file" not in cov.columns and "filename" in cov.columns:
+                            cov = cov.rename(columns={"filename": "file"})
+                        elif "file" not in cov.columns and isinstance(cov.index.name, str) and cov.index.name == "file":
                             cov = cov.reset_index()
                         rates = pd.merge(rates, cov, on="file", how="left")
 
@@ -1228,7 +1232,8 @@ class Repository:
 
         if skipped_count > 0:
             logger.info(
-                f"Finished fetching revisions for '{branch}'. Found {len(df)} valid revisions, skipped {skipped_count} corrupted objects."
+                f"Finished fetching revisions for '{branch}'. Found {len(df)} "
+                f"valid revisions, skipped {skipped_count} corrupted objects."
             )
         else:
             logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} revisions.")
@@ -1296,13 +1301,15 @@ class Repository:
                 except ValueError as e:
                     # Handle potential errors resolving commit objects (e.g., due to corruption)
                     logger.warning(
-                        f"Could not resolve commit object {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'} when fetching committers: {e}"
+                        f"Could not resolve commit object "
+                        f"{commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'} when fetching committers: {e}"
                     )
                     continue
                 except Exception as e:
                     # Catch other potential errors getting name (e.g., missing name)
                     logger.warning(
-                        f"Error getting committer/author name for commit {commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}"
+                        f"Error getting committer/author name for commit "
+                        f"{commit.hexsha if hasattr(commit, 'hexsha') else 'unknown'}: {e}"
                     )
                     continue
         except GitCommandError as e:

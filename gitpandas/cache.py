@@ -202,7 +202,8 @@ class DiskCache(EphemeralCache):
                         self._cache[key] = value
                 except (ValueError, TypeError) as df_err:
                     logging.warning(
-                        f"Could not decode DataFrame for key '{key}' from cache file {self.filepath}: {df_err}. Skipping entry."
+                        f"Could not decode DataFrame for key '{key}' "
+                        f"from cache file {self.filepath}: {df_err}. Skipping entry."
                     )
                     # Remove corresponding key from key list if it exists
                     if key in self._key_list:
