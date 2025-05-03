@@ -1,14 +1,13 @@
+import os
+import tempfile
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
-import os
-import tempfile
-import time
-from unittest import mock
 
-from gitpandas.cache import CacheMissError, EphemeralCache, RedisDFCache, multicache, DiskCache
+from gitpandas.cache import CacheMissError, DiskCache, EphemeralCache, RedisDFCache, multicache
 
 
 class TestEphemeralCache:
@@ -400,20 +399,19 @@ class TestRedisDFCache:
 
 class MockRepoMethod:
     """Class that simulates a repository object with a cached method."""
-    
+
     def __init__(self, repo_name="test_repo", cache_backend=None):
         self.repo_name = repo_name
         self.cache_backend = cache_backend
         self.call_count = 0
-    
+
     @multicache(key_prefix="test_method_", key_list=["param1", "param2"])
     def test_method(self, param1=None, param2=None, force_refresh=False):
         """Test method that increments call_count and returns a dataframe."""
         self.call_count += 1
         return pd.DataFrame({"count": [self.call_count], "param1": [param1], "param2": [param2]})
-    
-    @multicache(key_prefix="skip_method_", key_list=["param"], 
-                skip_if=lambda kwargs: kwargs.get("skip_cache", False))
+
+    @multicache(key_prefix="skip_method_", key_list=["param"], skip_if=lambda kwargs: kwargs.get("skip_cache", False))
     def skip_test_method(self, param=None, skip_cache=False):
         """Test method with skip_if condition."""
         self.call_count += 1
@@ -422,7 +420,7 @@ class MockRepoMethod:
 
 class TestDiskCache:
     """Test class for DiskCache functionality with multicache decorator."""
-    
+
     @pytest.fixture
     def temp_cache_file(self):
         """Create a temporary file for the cache."""
@@ -431,147 +429,147 @@ class TestDiskCache:
         yield path
         if os.path.exists(path):
             os.unlink(path)
-    
+
     def test_cache_hit(self, temp_cache_file):
         """Test that cache hits work correctly."""
         # Create cache and mock repo
         cache = DiskCache(filepath=temp_cache_file)
         repo = MockRepoMethod(cache_backend=cache)
-        
+
         # First call - should execute method
         result1 = repo.test_method(param1="val1", param2="val2")
         assert repo.call_count == 1
         assert result1["count"][0] == 1
-        
+
         # Second call with same params - should use cache
         with mock.patch("gitpandas.cache.logging.debug") as mock_debug:
             result2 = repo.test_method(param1="val1", param2="val2")
             # Check that we got a cache hit message
             assert any("Cache hit" in call[0][0] for call in mock_debug.call_args_list)
-        
+
         # Call count shouldn't increase for cached call
         assert repo.call_count == 1
         # Results should be identical
         pd.testing.assert_frame_equal(result1, result2)
-    
+
     def test_force_refresh(self, temp_cache_file):
         """Test that force_refresh skips cache read but still updates cache."""
         cache = DiskCache(filepath=temp_cache_file)
         repo = MockRepoMethod(cache_backend=cache)
-        
+
         # First call
-        result1 = repo.test_method(param1="val1", param2="val2")
+        repo.test_method(param1="val1", param2="val2")
         assert repo.call_count == 1
-        
+
         # Force refresh call - should execute method again
         with mock.patch("gitpandas.cache.logging.info") as mock_info:
             result2 = repo.test_method(param1="val1", param2="val2", force_refresh=True)
             # Check for force refresh message
             assert any("Force refresh requested" in call[0][0] for call in mock_info.call_args_list)
-        
+
         # Call count should increase
         assert repo.call_count == 2
         assert result2["count"][0] == 2
-        
+
         # Third call without force_refresh - should use updated cache
         result3 = repo.test_method(param1="val1", param2="val2")
-        
+
         # Call count shouldn't increase
         assert repo.call_count == 2
         # Result should match second call (the forced refresh result)
         pd.testing.assert_frame_equal(result2, result3)
-    
+
     def test_different_parameters(self, temp_cache_file):
         """Test that different parameters create different cache entries."""
         cache = DiskCache(filepath=temp_cache_file)
         repo = MockRepoMethod(cache_backend=cache)
-        
+
         # First call with params A
         result_a1 = repo.test_method(param1="valA", param2="valB")
         assert repo.call_count == 1
-        
+
         # Call with different params
-        result_b = repo.test_method(param1="valX", param2="valY")
+        repo.test_method(param1="valX", param2="valY")
         assert repo.call_count == 2
-        
+
         # Call with original params again - should hit cache
         result_a2 = repo.test_method(param1="valA", param2="valB")
-        
+
         # Call count shouldn't increase for the cached call
         assert repo.call_count == 2
         # Results for same params should match
         pd.testing.assert_frame_equal(result_a1, result_a2)
-    
+
     def test_skip_if_condition(self, temp_cache_file):
         """Test that skip_if condition works correctly."""
         cache = DiskCache(filepath=temp_cache_file)
         repo = MockRepoMethod(cache_backend=cache)
-        
+
         # First call
         result1 = repo.skip_test_method(param="val")
         assert repo.call_count == 1
-        
+
         # Second call, but skip caching entirely
-        result2 = repo.skip_test_method(param="val", skip_cache=True)
+        repo.skip_test_method(param="val", skip_cache=True)
         assert repo.call_count == 2
-        
+
         # With our updated fix, the second call will *not* set a new cache value
         # since we skip both read and write operations with skip_if
         # So the third call will hit the first cached result (not get a cache miss)
         result3 = repo.skip_test_method(param="val")
         assert repo.call_count == 2  # Should NOT increment due to cache hit from first call
-        
+
         # Results should match first call
         pd.testing.assert_frame_equal(result1, result3)
-    
+
     def test_cache_persistence(self, temp_cache_file):
         """Test that cache persists between instances."""
         # First instance
         cache1 = DiskCache(filepath=temp_cache_file)
         repo1 = MockRepoMethod(cache_backend=cache1)
-        
+
         # Call method
         result1 = repo1.test_method(param1="persist", param2="test")
         assert repo1.call_count == 1
-        
+
         # Create new cache instance pointing to same file
         cache2 = DiskCache(filepath=temp_cache_file)
         repo2 = MockRepoMethod(cache_backend=cache2)
-        
+
         # Call method with same parameters
         result2 = repo2.test_method(param1="persist", param2="test")
-        
+
         # Should be a cache hit
         assert repo2.call_count == 0  # Fresh instance
         # Results should match
         pd.testing.assert_frame_equal(result1, result2)
-    
+
     def test_cache_key_format(self, temp_cache_file):
         """Test that cache keys are generated correctly."""
         cache = DiskCache(filepath=temp_cache_file)
-        
+
         # Mock the cache's set method to capture the key
         original_set = cache.set
         captured_keys = []
-        
+
         def mock_set(k, v):
             captured_keys.append(k)
             return original_set(k, v)
-        
+
         cache.set = mock_set
-        
+
         # Create repo and call method
         repo = MockRepoMethod(repo_name="test/repo", cache_backend=cache)
         repo.test_method(param1="val1", param2="val2")
-        
+
         # Check key format
         assert len(captured_keys) == 1
         key = captured_keys[0]
-        
+
         # Key should have proper separators
         assert key.startswith("test_method_")
         assert "_test/repo_" in key
-        
+
         # Key should contain parameter values
         assert "val1" in key
         assert "val2" in key

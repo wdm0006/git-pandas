@@ -1286,8 +1286,14 @@ class Repository:
             f"Committer: {committer}, Skip Broken: {skip_broken}"
         )
 
-        # Pass skip_broken to ensure robustness when getting revisions
+        # Pass skip_broken and force_refresh to ensure robustness when getting revisions
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints, skip_broken=skip_broken)
+
+        # Check immediately after calling revs()
+        if not revs.empty and "rev" not in revs.columns:
+            logger.error("DataFrame returned from self.revs() is missing the 'rev' column.")
+            # Raise a specific error to make it clear.
+            raise ValueError("Internal Error: self.revs() returned DataFrame without 'rev' column.")
 
         # get the commit history to stub out committers (hacky and slow)
         logger.debug("Fetching all committers to pre-populate columns...")

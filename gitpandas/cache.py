@@ -1,11 +1,7 @@
 import gzip
-import io
-import json
 import logging
 import os
 import pickle
-
-import pandas as pd
 
 try:
     import redis
@@ -138,7 +134,7 @@ class EphemeralCache:
             self.evict(len(self._key_list) - self._max_keys)
 
         # Add empty save method call for compatibility with DiskCache
-        if hasattr(self, 'save'):
+        if hasattr(self, "save"):
             self.save()  # Only call save if it exists to maintain backward compatibility
 
     def get(self, k):
@@ -153,7 +149,7 @@ class EphemeralCache:
 
     def exists(self, k):
         return k in self._cache
-        
+
     # Add empty save method for compatibility with DiskCache
     def save(self):
         """Empty save method for compatibility with DiskCache."""
@@ -252,7 +248,7 @@ class DiskCache(EphemeralCache):
                 self._key_list.append(k)
                 # If list exceeds max keys due to this, handle it (though ideally cache and list are always synced)
                 if len(self._key_list) > self._max_keys:
-                     self.evict(len(self._key_list) - self._max_keys)
+                    self.evict(len(self._key_list) - self._max_keys)
             return self._cache[k]
         else:
             # Key not in memory, try loading from disk
@@ -260,18 +256,18 @@ class DiskCache(EphemeralCache):
             self.load()
             # Check again after loading
             if k in self._cache:
-                 logging.debug(f"Key '{k}' found in cache after disk load.")
-                 # Update LRU list as it was just accessed
-                 try:
-                     idx = self._key_list.index(k)
-                     self._key_list.pop(idx)
-                     self._key_list.append(k)
-                 except ValueError:
-                     # Add to list if somehow missing after load
-                     self._key_list.append(k)
-                     if len(self._key_list) > self._max_keys:
-                         self.evict(len(self._key_list) - self._max_keys)
-                 return self._cache[k]
+                logging.debug(f"Key '{k}' found in cache after disk load.")
+                # Update LRU list as it was just accessed
+                try:
+                    idx = self._key_list.index(k)
+                    self._key_list.pop(idx)
+                    self._key_list.append(k)
+                except ValueError:
+                    # Add to list if somehow missing after load
+                    self._key_list.append(k)
+                    if len(self._key_list) > self._max_keys:
+                        self.evict(len(self._key_list) - self._max_keys)
+                return self._cache[k]
             else:
                 # Key not found even after loading from disk
                 logging.debug(f"Key '{k}' not found after attempting disk load.")
