@@ -45,7 +45,8 @@ def multicache(key_prefix, key_list, skip_if=None):
             # Generate the cache key (ensure force_refresh itself is not part of the key)
             # Assumes 'force_refresh' is not included in key_list by the caller
             key_parts = [str(kwargs.get(k)) for k in key_list]
-            key = key_prefix + self.repo_name + "_".join(key_parts)
+            # Fix: Add underscore separator between key_prefix, repo_name and key parts
+            key = f"{key_prefix}_{self.repo_name}_{'_'.join(key_parts)}"
             logging.debug(f"Cache key generated for {key_prefix}: {key}")
             # Explicitly log force refresh bypass of cache read
             if force_refresh:
@@ -136,6 +137,10 @@ class EphemeralCache:
         if len(self._key_list) > self._max_keys:
             self.evict(len(self._key_list) - self._max_keys)
 
+        # Add empty save method call for compatibility with DiskCache
+        if hasattr(self, 'save'):
+            self.save()  # Only call save if it exists to maintain backward compatibility
+
     def get(self, k):
         if self.exists(k):
             # Move the key to the end of the list (most recently used)
@@ -148,6 +153,11 @@ class EphemeralCache:
 
     def exists(self, k):
         return k in self._cache
+        
+    # Add empty save method for compatibility with DiskCache
+    def save(self):
+        """Empty save method for compatibility with DiskCache."""
+        pass
 
 
 class DiskCache(EphemeralCache):
@@ -180,8 +190,8 @@ class DiskCache(EphemeralCache):
             return  # Start with an empty cache
 
         try:
-            with gzip.open(self.filepath, "rt", encoding="utf-8") as f:
-                loaded_data = json.load(f)
+            with gzip.open(self.filepath, "rb") as f:  # Use binary mode 'rb' for pickle
+                loaded_data = pickle.load(f)
 
             if not isinstance(loaded_data, dict) or "_cache" not in loaded_data or "_key_list" not in loaded_data:
                 logging.warning(f"Invalid cache file format found: {self.filepath}. Starting fresh.")
@@ -189,34 +199,17 @@ class DiskCache(EphemeralCache):
                 self._key_list = []
                 return
 
+            # Directly assign loaded data as pickle handles complex objects
+            self._cache = loaded_data["_cache"]
             self._key_list = loaded_data["_key_list"]
-            raw_cache = loaded_data["_cache"]
-            self._cache = {}
-            for key, value in raw_cache.items():
-                try:
-                    if isinstance(value, dict) and "__dataframe__" in value:
-                        # Attempt to decode DataFrame from JSON string
-                        self._cache[key] = pd.read_json(io.StringIO(value["__dataframe__"]), orient="split")
-                    else:
-                        # Store other JSON-native types directly
-                        self._cache[key] = value
-                except (ValueError, TypeError) as df_err:
-                    logging.warning(
-                        f"Could not decode DataFrame for key '{key}' "
-                        f"from cache file {self.filepath}: {df_err}. Skipping entry."
-                    )
-                    # Remove corresponding key from key list if it exists
-                    if key in self._key_list:
-                        self._key_list.remove(key)
-                    continue  # Skip this problematic entry
 
             # Ensure consistency after loading (LRU eviction)
             if len(self._key_list) > self._max_keys:
                 self.evict(len(self._key_list) - self._max_keys)
-            logging.info(f"Cache loaded successfully from {self.filepath} using JSON.")
+            logging.info(f"Cache loaded successfully from {self.filepath} using pickle.")
 
-        except (gzip.BadGzipFile, json.JSONDecodeError, EOFError, TypeError, Exception) as e:
-            logging.error(f"Error loading cache file {self.filepath} (JSON/Gzip): {e}. Starting fresh.")
+        except (gzip.BadGzipFile, pickle.UnpicklingError, EOFError, TypeError, Exception) as e:  # Catch pickle errors
+            logging.error(f"Error loading cache file {self.filepath} (pickle/Gzip): {e}. Starting fresh.")
             self._cache = {}
             self._key_list = []
         except OSError as e:
@@ -230,38 +223,62 @@ class DiskCache(EphemeralCache):
         specified filepath using pickle. Creates parent directories if needed.
         """
         try:
-            # Prepare cache for JSON serialization
-            processed_cache = {}
-            for key, value in self._cache.items():
-                try:
-                    if isinstance(value, pd.DataFrame):
-                        # Special handling for DataFrames
-                        processed_cache[key] = {"__dataframe__": value.to_json(orient="split", date_format="iso")}
-                    else:
-                        # Attempt to store other types; will fail if not JSON serializable
-                        json.dumps(value)  # Test serializability
-                        processed_cache[key] = value
-                except TypeError as e:
-                    logging.warning(f"Could not serialize value for key '{key}' to JSON: {e}. Skipping entry.")
-                    # Also remove from key list if it's there (prevent loading errors)
-                    if key in self._key_list:
-                        self._key_list.remove(key)
-                    continue  # Skip this unserializable entry
-
             # Ensure parent directory exists
             parent_dir = os.path.dirname(self.filepath)
             if parent_dir:
                 os.makedirs(parent_dir, exist_ok=True)
 
-            # Save processed cache and key list to gzipped JSON
-            data_to_save = {"_cache": processed_cache, "_key_list": self._key_list}
-            with gzip.open(self.filepath, "wt", encoding="utf-8") as f:
-                json.dump(data_to_save, f, indent=2)  # Use indent for readability if needed
+            # Save cache and key list to gzipped pickle file
+            data_to_save = {"_cache": self._cache, "_key_list": self._key_list}
+            with gzip.open(self.filepath, "wb") as f:  # Use binary mode 'wb' for pickle
+                pickle.dump(data_to_save, f, protocol=pickle.HIGHEST_PROTOCOL)  # Use highest protocol
 
-            logging.info(f"Cache saved successfully to {self.filepath} using JSON.")
+            logging.info(f"Cache saved successfully to {self.filepath} using pickle.")
 
-        except (OSError, TypeError, Exception) as e:
+        except (OSError, pickle.PicklingError, Exception) as e:  # Catch pickle errors
             logging.error(f"Error saving cache file {self.filepath}: {e}")
+
+    def get(self, k):
+        # Initial check in memory
+        if k in self._cache:
+            # Move the key to the end of the list (most recently used)
+            try:
+                idx = self._key_list.index(k)
+                self._key_list.pop(idx)
+                self._key_list.append(k)
+            except ValueError:
+                # Should not happen if k is in _cache, but handle defensively
+                # If key is in cache but not list, add it to the list (end)
+                self._key_list.append(k)
+                # If list exceeds max keys due to this, handle it (though ideally cache and list are always synced)
+                if len(self._key_list) > self._max_keys:
+                     self.evict(len(self._key_list) - self._max_keys)
+            return self._cache[k]
+        else:
+            # Key not in memory, try loading from disk
+            logging.debug(f"Key '{k}' not in memory cache, attempting disk load.")
+            self.load()
+            # Check again after loading
+            if k in self._cache:
+                 logging.debug(f"Key '{k}' found in cache after disk load.")
+                 # Update LRU list as it was just accessed
+                 try:
+                     idx = self._key_list.index(k)
+                     self._key_list.pop(idx)
+                     self._key_list.append(k)
+                 except ValueError:
+                     # Add to list if somehow missing after load
+                     self._key_list.append(k)
+                     if len(self._key_list) > self._max_keys:
+                         self.evict(len(self._key_list) - self._max_keys)
+                 return self._cache[k]
+            else:
+                # Key not found even after loading from disk
+                logging.debug(f"Key '{k}' not found after attempting disk load.")
+                raise CacheMissError(k)
+
+    def exists(self, k):
+        return k in self._cache
 
 
 class RedisDFCache:
