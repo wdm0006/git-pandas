@@ -1772,9 +1772,9 @@ class Repository:
                     try:
                         # Store all tag object attributes we need in one go
                         d["annotated"] = True
-                        d["tag_date"] = tag_obj.tagged_date
-                        d["annotation"] = tag_obj.message
-                        d["tag_sha"] = tag_obj.hexsha
+                        d["tag_date"] = str(tag_obj.tagged_date)
+                        d["annotation"] = str(tag_obj.message)
+                        d["tag_sha"] = str(tag_obj.hexsha)
                     except (ValueError, AttributeError, git.exc.GitCommandError) as e:
                         if skip_broken:
                             logger.warning(f"Skipping corrupted tag object '{tag.name}': {e}")
