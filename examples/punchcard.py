@@ -13,7 +13,7 @@ from gitpandas.utilities.plotting import plot_punchcard
 g = ProjectDirectory(working_dir=[str(GIT_PANDAS_DIR)], verbose=True)
 
 by = None
-punchcard = g.punchcard(branch="master", include_globs=["*.py"], by=by, normalize=2500)
+punchcard = g.punchcard(include_globs=["*.py"], by=by, normalize=2500)
 
 if punchcard.empty:
     print("No commit data available for punchcard analysis.")
