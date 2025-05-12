@@ -61,7 +61,7 @@ def repository(path):
 
     # Build repository object
     ignore_dirs = ["docs/*", "tests/*", "Data/*"]
-    r = Repository(path)
+    r = Repository(path, default_branch="main")
 
     # Check if bare
     print("\nRepository type:")
