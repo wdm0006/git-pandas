@@ -43,8 +43,8 @@ jobs:
     
     - name: Run tests
       run: |
-        make test
+        MPLBACKEND=Agg uv run pytest -v
     
     - name: Run linting
       run: |
-        make lint
+        uv run ruff check .

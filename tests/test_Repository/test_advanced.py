@@ -377,7 +377,7 @@ class TestRepositoryAdvanced:
 
     def test_time_between_revs(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
-        commits = list(repo.repo.iter_commits('master', max_count=2))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test time_between_revs")
         rev1, rev2 = commits[1].hexsha, commits[0].hexsha  # older, newer
@@ -385,45 +385,45 @@ class TestRepositoryAdvanced:
         assert isinstance(days, float)
         assert days >= 0
         # Should be 2 hours = 2/24 days in our fixture
-        assert abs(days - (2/24)) < 1e-6
+        assert abs(days - (2 / 24)) < 1e-6
 
     def test_diff_stats_between_revs(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
-        commits = list(repo.repo.iter_commits('master', max_count=2))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test diff_stats_between_revs")
         rev1, rev2 = commits[1].hexsha, commits[0].hexsha
         stats = repo.diff_stats_between_revs(rev1, rev2)
         assert isinstance(stats, dict)
-        assert set(stats.keys()) == {'insertions', 'deletions', 'net', 'files_changed', 'files'}
-        assert stats['files_changed'] >= 0
-        assert isinstance(stats['files'], list)
+        assert set(stats.keys()) == {"insertions", "deletions", "net", "files_changed", "files"}
+        assert stats["files_changed"] >= 0
+        assert isinstance(stats["files"], list)
 
     def test_committers_between_revs(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
-        commits = list(repo.repo.iter_commits('master', max_count=2))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test committers_between_revs")
         rev1, rev2 = commits[1].hexsha, commits[0].hexsha
         info = repo.committers_between_revs(rev1, rev2)
         assert isinstance(info, dict)
-        assert 'committers' in info and 'authors' in info
-        assert isinstance(info['committers'], list)
-        assert isinstance(info['authors'], list)
+        assert "committers" in info and "authors" in info
+        assert isinstance(info["committers"], list)
+        assert isinstance(info["authors"], list)
         # Should include 'Test User' in our fixture
-        assert 'Test User' in info['committers']
-        assert 'Test User' in info['authors']
+        assert "Test User" in info["committers"]
+        assert "Test User" in info["authors"]
 
     def test_files_changed_between_revs(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
-        commits = list(repo.repo.iter_commits('master', max_count=2))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test files_changed_between_revs")
         rev1, rev2 = commits[1].hexsha, commits[0].hexsha
         files = repo.files_changed_between_revs(rev1, rev2)
         assert isinstance(files, list)
         # Should include at least one file
-        assert any(f.endswith('.py') or f.endswith('.md') for f in files)
+        assert any(f.endswith(".py") or f.endswith(".md") for f in files)
 
     def test_release_tag_summary(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
@@ -433,34 +433,34 @@ class TestRepositoryAdvanced:
             f.write("\nSecond version!")
         repo.repo.index.add(["README.md"])
         # Use a new commit date 1 hour after the last commit
-        last_commit = list(repo.repo.iter_commits('master', max_count=1))[0]
+        last_commit = list(repo.repo.iter_commits("master", max_count=1))[0]
         last_time = datetime.datetime.utcfromtimestamp(last_commit.committed_date).replace(tzinfo=datetime.timezone.utc)
         new_time = last_time + datetime.timedelta(hours=1)
         repo.repo.index.commit("Second version commit", commit_date=f"{int(new_time.timestamp())} +0000")
         # Now tag the new commit
-        repo.repo.git.tag('-a', 'v0.2.0', '-m', 'Second version')
-        df = repo.release_tag_summary(tag_glob='v*')
+        repo.repo.git.tag("-a", "v0.2.0", "-m", "Second version")
+        df = repo.release_tag_summary(tag_glob="v*")
         assert isinstance(df, pd.DataFrame)
-        assert 'tag' in df.columns
-        assert 'tag_date' in df.columns
-        assert 'commit_sha' in df.columns
-        assert 'time_since_prev' in df.columns
-        assert 'insertions' in df.columns
-        assert 'deletions' in df.columns
-        assert 'net' in df.columns
-        assert 'files_changed' in df.columns
-        assert 'committers' in df.columns
-        assert 'authors' in df.columns
-        assert 'files' in df.columns
+        assert "tag" in df.columns
+        assert "tag_date" in df.columns
+        assert "commit_sha" in df.columns
+        assert "time_since_prev" in df.columns
+        assert "insertions" in df.columns
+        assert "deletions" in df.columns
+        assert "net" in df.columns
+        assert "files_changed" in df.columns
+        assert "committers" in df.columns
+        assert "authors" in df.columns
+        assert "files" in df.columns
         # Should have at least two rows (two tags)
         assert len(df) >= 2
         # First row should have NaN for time_since_prev
-        assert pd.isna(df.iloc[0]['time_since_prev'])
+        assert pd.isna(df.iloc[0]["time_since_prev"])
         # Committers/authors should include 'Test User'
-        assert 'Test User' in df.iloc[1]['committers']
-        assert 'Test User' in df.iloc[1]['authors']
+        assert "Test User" in df.iloc[1]["committers"]
+        assert "Test User" in df.iloc[1]["authors"]
         # Files should be a list
-        assert isinstance(df.iloc[1]['files'], list)
+        assert isinstance(df.iloc[1]["files"], list)
         # Test glob filtering (should return only v* tags)
-        only_v_tags = df['tag'].str.startswith('v').all()
+        only_v_tags = df["tag"].str.startswith("v").all()
         assert only_v_tags

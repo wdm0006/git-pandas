@@ -48,7 +48,10 @@ def multicache(key_prefix, key_list, skip_if=None):
 
             # Explicitly log force refresh bypass of cache read
             if force_refresh:
-                logging.info(f"Force refresh active (propagated: {is_propagated_force}, explicit: {explicit_force_refresh}) for key: {key}, bypassing cache read.")
+                logging.info(
+                    f"Force refresh active (propagated: {is_propagated_force}, explicit: {explicit_force_refresh}) "
+                    f"for key: {key}, bypassing cache read."
+                )
 
             cache_hit = False
             # Try retrieving from cache if not forcing refresh
@@ -74,7 +77,7 @@ def multicache(key_prefix, key_list, skip_if=None):
                 # Set the temporary flag *before* calling the function if we are forcing refresh
                 set_force_flag = force_refresh and not is_propagated_force
                 if set_force_flag:
-                    setattr(self, "_is_forcing_refresh", True)
+                    self._is_forcing_refresh = True
                     logging.debug(f"Setting _is_forcing_refresh flag for nested calls originating from {key_prefix}")
 
                 try:
@@ -101,7 +104,7 @@ def multicache(key_prefix, key_list, skip_if=None):
             # This should only be reached if cache_hit was True and force_refresh was False
             # The earlier return inside the cache hit block handles this case.
             # Adding an explicit return here for clarity, although theoretically unreachable.
-            return ret # Should have already returned if cache_hit was True
+            return ret  # Should have already returned if cache_hit was True
 
         return deco
 

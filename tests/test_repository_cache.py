@@ -61,33 +61,35 @@ class TestRepositoryCache:
         cache = DiskCache(filepath=temp_cache_file)
 
         # Mock the cache get and set methods to track calls
-        with mock.patch.object(cache, "get", wraps=cache.get) as mock_get:
-            with mock.patch.object(cache, "set", wraps=cache.set) as mock_set:
-                repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
+        with (
+            mock.patch.object(cache, "get", wraps=cache.get) as mock_get,
+            mock.patch.object(cache, "set", wraps=cache.set) as mock_set,
+        ):
+            repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
 
-                # First call - should set cache but not get from it
-                result1 = repo.list_files()
-                assert mock_set.call_count > 0, "Cache set should be called"
-                assert mock_get.call_count > 0, "Cache get should be called (but returns miss)"
-                mock_set.reset_mock()
-                mock_get.reset_mock()
+            # First call - should set cache but not get from it
+            result1 = repo.list_files()
+            assert mock_set.call_count > 0, "Cache set should be called"
+            assert mock_get.call_count > 0, "Cache get should be called (but returns miss)"
+            mock_set.reset_mock()
+            mock_get.reset_mock()
 
-                # Second call - should get from cache
-                result2 = repo.list_files()
-                assert mock_get.call_count > 0, "Cache get should be called"
-                assert mock_set.call_count == 0, "Cache set should not be called"
+            # Second call - should get from cache
+            result2 = repo.list_files()
+            assert mock_get.call_count > 0, "Cache get should be called"
+            assert mock_set.call_count == 0, "Cache set should not be called"
 
-                # Results should be identical
-                assert result1.equals(result2), "Results should be identical when using cache"
+            # Results should be identical
+            assert result1.equals(result2), "Results should be identical when using cache"
 
-                # Force refresh - should set cache again
-                mock_set.reset_mock()
-                mock_get.reset_mock()
-                result3 = repo.list_files(force_refresh=True)
-                assert mock_set.call_count > 0, "Cache set should be called with force_refresh"
+            # Force refresh - should set cache again
+            mock_set.reset_mock()
+            mock_get.reset_mock()
+            result3 = repo.list_files(force_refresh=True)
+            assert mock_set.call_count > 0, "Cache set should be called with force_refresh"
 
-                # Results should match (unchanged repo)
-                assert result1.equals(result3), "Results should match even with force_refresh"
+            # Results should match (unchanged repo)
+            assert result1.equals(result3), "Results should match even with force_refresh"
 
     def test_repository_cache_with_different_params(self, temp_git_repo, temp_cache_file):
         """Test caching with different parameters."""
@@ -124,17 +126,19 @@ class TestRepositoryCache:
         cache2 = DiskCache(filepath=temp_cache_file)
 
         # Mock the get method to verify it's called
-        with mock.patch.object(cache2, "get", wraps=cache2.get) as mock_get:
-            with mock.patch.object(cache2, "set", wraps=cache2.set) as mock_set:
-                repo2 = Repository(working_dir=temp_git_repo, cache_backend=cache2)
+        with (
+            mock.patch.object(cache2, "get", wraps=cache2.get) as mock_get,
+            mock.patch.object(cache2, "set", wraps=cache2.set) as mock_set,
+        ):
+            repo2 = Repository(working_dir=temp_git_repo, cache_backend=cache2)
 
-                # Call same method - should use cache
-                result2 = repo2.list_files()
-                assert mock_get.call_count > 0, "Cache get should be called"
-                assert mock_set.call_count == 0, "Cache set should not be called"
+            # Call same method - should use cache
+            result2 = repo2.list_files()
+            assert mock_get.call_count > 0, "Cache get should be called"
+            assert mock_set.call_count == 0, "Cache set should not be called"
 
-                # Results should match
-                assert result1.equals(result2), "Results should match between repository instances"
+            # Results should match
+            assert result1.equals(result2), "Results should match between repository instances"
 
     def test_multiple_repository_methods_cache(self, temp_git_repo, temp_cache_file):
         """Test caching behavior across different repository methods."""
