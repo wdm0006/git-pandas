@@ -2435,6 +2435,228 @@ class Repository:
         logger.info(f"Finished fetching file details for rev '{rev}'. Found details for {len(df)} files.")
         return df
 
+    def time_between_revs(self, rev1, rev2):
+        """Calculates the time difference in days between two revisions.
+
+        Args:
+            rev1 (str): The first revision (commit hash or tag).
+            rev2 (str): The second revision (commit hash or tag).
+
+        Returns:
+            float: The absolute time difference in days between the two revisions.
+
+        Note:
+            The result is always non-negative (absolute value).
+        """
+        c1 = self.repo.commit(rev1)
+        c2 = self.repo.commit(rev2)
+        t1 = pd.to_datetime(c1.committed_date, unit="s", utc=True)
+        t2 = pd.to_datetime(c2.committed_date, unit="s", utc=True)
+        return abs((t2 - t1).total_seconds()) / (60 * 60 * 24)
+
+    def diff_stats_between_revs(self, rev1, rev2, ignore_globs=None, include_globs=None):
+        """Computes diff statistics between two revisions.
+
+        Calculates the total insertions, deletions, net line change, and number of files changed
+        between two arbitrary revisions (commits or tags). Optionally filters files using glob patterns.
+
+        Args:
+            rev1 (str): The base revision (commit hash or tag).
+            rev2 (str): The target revision (commit hash or tag).
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore.
+            include_globs (Optional[List[str]]): List of glob patterns for files to include.
+
+        Returns:
+            dict: A dictionary with keys:
+                - 'insertions' (int): Total lines inserted.
+                - 'deletions' (int): Total lines deleted.
+                - 'net' (int): Net lines changed (insertions - deletions).
+                - 'files_changed' (int): Number of files changed.
+                - 'files' (List[str]): List of changed file paths.
+
+        Note:
+            Binary files or files that cannot be parsed are skipped.
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
+        """
+        diff = self.repo.git.diff(rev1, rev2, '--numstat', '--no-renames')
+        insertions = deletions = files_changed = 0
+        files = set()
+        for line in diff.splitlines():
+            parts = line.strip().split('\t')
+            if len(parts) == 3:
+                ins, dels, fname = parts
+                if ins == '-' or dels == '-':
+                    continue  # binary or unparseable
+                if not self.__check_extension({fname: None}, ignore_globs, include_globs):
+                    continue
+                insertions += int(ins)
+                deletions += int(dels)
+                files_changed += 1
+                files.add(fname)
+        return {
+            'insertions': insertions,
+            'deletions': deletions,
+            'net': insertions - deletions,
+            'files_changed': files_changed,
+            'files': list(files),
+        }
+
+    def committers_between_revs(self, rev1, rev2, ignore_globs=None, include_globs=None):
+        """Finds unique committers and authors between two revisions.
+
+        Iterates through all commits between two revisions (exclusive of rev1, inclusive of rev2)
+        and returns the unique committers and authors who contributed, filtered by file globs if provided.
+
+        Args:
+            rev1 (str): The base revision (commit hash or tag).
+            rev2 (str): The target revision (commit hash or tag).
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore.
+            include_globs (Optional[List[str]]): List of glob patterns for files to include.
+
+        Returns:
+            dict: A dictionary with keys:
+                - 'committers' (List[str]): Sorted list of unique committer names.
+                - 'authors' (List[str]): Sorted list of unique author names.
+
+        Note:
+            Only commits that touch files matching the glob filters are considered.
+            The range is interpreted as Git does: rev1..rev2 means commits reachable from rev2 but not rev1.
+        """
+        commits = list(self.repo.iter_commits(f"{rev1}..{rev2}"))
+        committers = set()
+        authors = set()
+        for c in commits:
+            # Check if any file in commit matches globs
+            files = self.__check_extension(c.stats.files, ignore_globs, include_globs)
+            if not files:
+                continue
+            if hasattr(c.committer, 'name'):
+                committers.add(c.committer.name)
+            if hasattr(c.author, 'name'):
+                authors.add(c.author.name)
+        return {'committers': sorted(committers), 'authors': sorted(authors)}
+
+    def files_changed_between_revs(self, rev1, rev2, ignore_globs=None, include_globs=None):
+        """Lists files changed between two revisions.
+
+        Returns a sorted list of all files changed between two arbitrary revisions (commits or tags),
+        optionally filtered by glob patterns.
+
+        Args:
+            rev1 (str): The base revision (commit hash or tag).
+            rev2 (str): The target revision (commit hash or tag).
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore.
+            include_globs (Optional[List[str]]): List of glob patterns for files to include.
+
+        Returns:
+            List[str]: Sorted list of file paths changed between the two revisions.
+
+        Note:
+            If both ignore_globs and include_globs are provided, files must match an include pattern
+            and not match any ignore patterns to be included.
+        """
+        diff = self.repo.git.diff(rev1, rev2, '--name-only', '--no-renames')
+        files = set()
+        for fname in diff.splitlines():
+            if not fname.strip():
+                continue
+            if not self.__check_extension({fname: None}, ignore_globs, include_globs):
+                continue
+            files.add(fname)
+        return sorted(files)
+
+    @multicache(key_prefix="release_tag_summary", key_list=["tag_glob", "include_globs", "ignore_globs"])
+    def release_tag_summary(self, tag_glob=None, ignore_globs=None, include_globs=None):
+        """Summarizes repository activity between release tags.
+
+        For each tag (filtered by glob), computes the time since the previous tag, diff statistics,
+        committers/authors involved, and files changed between tags. Returns a DataFrame with one row
+        per tag and columns for all computed metrics.
+
+        Args:
+            tag_glob (Optional[Union[str, List[str]]]): Glob pattern(s) to filter tags (e.g., 'v*' or ['v*', 'release-*']).
+                If None, all tags are included.
+            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore in diff/commit analysis.
+            include_globs (Optional[List[str]]): List of glob patterns for files to include in diff/commit analysis.
+
+        Returns:
+            pandas.DataFrame: DataFrame with columns:
+                - tag (str): Tag name
+                - tag_date (datetime): Tag creation date
+                - commit_sha (str): SHA of the tagged commit
+                - time_since_prev (float): Days since previous tag
+                - insertions (int): Lines inserted since previous tag
+                - deletions (int): Lines deleted since previous tag
+                - net (int): Net lines changed since previous tag
+                - files_changed (int): Number of files changed since previous tag
+                - committers (List[str]): Committers between previous and current tag
+                - authors (List[str]): Authors between previous and current tag
+                - files (List[str]): Files changed between previous and current tag
+
+        Note:
+            The first tag in the sorted list will have NaN for time_since_prev and empty diff/commit info.
+            Tag filtering uses fnmatch and supports multiple globs.
+        """
+        tags_df = self.tags().reset_index()
+        if tags_df.empty:
+            return pd.DataFrame(columns=[
+                'tag', 'tag_date', 'commit_sha', 'time_since_prev',
+                'insertions', 'deletions', 'net', 'files_changed',
+                'committers', 'authors', 'files',
+            ])
+
+        # Filter tags by glob
+        if tag_glob is not None:
+            if isinstance(tag_glob, str):
+                tag_glob = [tag_glob]
+            tags_df = tags_df[tags_df['tag'].apply(
+                lambda t: any(fnmatch.fnmatch(t, g) for g in tag_glob)
+            )]
+        if tags_df.empty:
+            return pd.DataFrame(columns=[
+                'tag', 'tag_date', 'commit_sha', 'time_since_prev',
+                'insertions', 'deletions', 'net', 'files_changed',
+                'committers', 'authors', 'files',
+            ])
+
+        # Sort by tag_date ascending
+        tags_df = tags_df.sort_values('tag_date').reset_index(drop=True)
+
+        rows = []
+        prev_sha = None
+        prev_date = None
+        for idx, row in tags_df.iterrows():
+            tag = row['tag']
+            tag_date = row['tag_date']
+            commit_sha = row['commit_sha']
+            if prev_sha is not None:
+                time_since_prev = self.time_between_revs(prev_sha, commit_sha)
+                diff_stats = self.diff_stats_between_revs(prev_sha, commit_sha, ignore_globs, include_globs)
+                commit_info = self.committers_between_revs(prev_sha, commit_sha, ignore_globs, include_globs)
+                files = self.files_changed_between_revs(prev_sha, commit_sha, ignore_globs, include_globs)
+            else:
+                time_since_prev = float('nan')
+                diff_stats = {'insertions': 0, 'deletions': 0, 'net': 0, 'files_changed': 0, 'files': []}
+                commit_info = {'committers': [], 'authors': []}
+                files = []
+            rows.append({
+                'tag': tag,
+                'tag_date': tag_date,
+                'commit_sha': commit_sha,
+                'time_since_prev': time_since_prev,
+                'insertions': diff_stats['insertions'],
+                'deletions': diff_stats['deletions'],
+                'net': diff_stats['net'],
+                'files_changed': diff_stats['files_changed'],
+                'committers': commit_info['committers'],
+                'authors': commit_info['authors'],
+                'files': files,
+            })
+            prev_sha = commit_sha
+            prev_date = tag_date
+        return pd.DataFrame(rows)
+
 
 class GitFlowRepository(Repository):
     """

@@ -1,3 +1,10 @@
+v2.4.0
+======
+
+ * Significant caching bugfixes and updates
+ * Added a DiskCache that persists across runs
+ * Added release analytics 
+
 v2.3.0
 ======
 

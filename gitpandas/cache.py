@@ -22,6 +22,7 @@ def multicache(key_prefix, key_list, skip_if=None):
 
     The decorated method can accept an optional `force_refresh=True` argument
     to bypass the cache read but still update the cache with the new result.
+    This force_refresh state propagates to nested calls on the same object instance.
     """
 
     def multicache_nest(func):
@@ -35,18 +36,19 @@ def multicache(key_prefix, key_list, skip_if=None):
                 logging.debug(f"Cache skipped entirely for {key_prefix} due to skip_if condition.")
                 return func(self, *args, **kwargs)
 
-            # Check for force_refresh argument to bypass cache read but still write, and remove it from kwargs
-            force_refresh = kwargs.pop("force_refresh", False)
+            # Check for propagation flag first, then explicit force_refresh argument
+            is_propagated_force = getattr(self, "_is_forcing_refresh", False)
+            explicit_force_refresh = kwargs.pop("force_refresh", False)
+            force_refresh = is_propagated_force or explicit_force_refresh
 
             # Generate the cache key (ensure force_refresh itself is not part of the key)
-            # Assumes 'force_refresh' is not included in key_list by the caller
             key_parts = [str(kwargs.get(k)) for k in key_list]
-            # Fix: Add underscore separator between key_prefix, repo_name and key parts
             key = f"{key_prefix}_{self.repo_name}_{'_'.join(key_parts)}"
             logging.debug(f"Cache key generated for {key_prefix}: {key}")
+
             # Explicitly log force refresh bypass of cache read
             if force_refresh:
-                logging.info(f"Force refresh requested, bypassing cache read for key: {key}")
+                logging.info(f"Force refresh active (propagated: {is_propagated_force}, explicit: {explicit_force_refresh}) for key: {key}, bypassing cache read.")
 
             cache_hit = False
             # Try retrieving from cache if not forcing refresh
@@ -60,35 +62,46 @@ def multicache(key_prefix, key_list, skip_if=None):
                         return ret
                     else:
                         logging.warning(f"Cannot get from cache; unknown backend type: {type(self.cache_backend)}")
-                        # Fall through to execute function if backend is unknown
 
                 except CacheMissError:
                     logging.debug(f"Cache miss for key: {key}")
                     pass  # Proceed to execute the function
                 except Exception as e:
                     logging.error(f"Error getting cache for key {key}: {e}", exc_info=True)
-                    # Proceed to execute function on cache read error
 
             # Execute the function if cache missed, force_refresh is True, or cache read failed
             if not cache_hit:
-                logging.debug(f"Executing function for key: {key} (Force Refresh: {force_refresh})")
-                ret = func(self, *args, **kwargs)
+                # Set the temporary flag *before* calling the function if we are forcing refresh
+                set_force_flag = force_refresh and not is_propagated_force
+                if set_force_flag:
+                    setattr(self, "_is_forcing_refresh", True)
+                    logging.debug(f"Setting _is_forcing_refresh flag for nested calls originating from {key_prefix}")
 
-                # Store the result in the cache (always happens after function execution)
                 try:
-                    if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
-                        self.cache_backend.set(key, ret)
-                        logging.debug(f"Cache set for key: {key}")
-                    else:
-                        logging.warning(f"Cannot set cache; unknown backend type: {type(self.cache_backend)}")
-                except Exception as e:
-                    logging.error(f"Failed to set cache for key {key}: {e}", exc_info=True)
-                    # Return the computed result even if caching fails
+                    logging.debug(f"Executing function for key: {key} (Force Refresh: {force_refresh})")
+                    ret = func(self, *args, **kwargs)
 
-                return ret
-            # This part should not be reachable if cache_hit was True earlier
-            # If cache_hit was True, the function returned inside the 'if not force_refresh' block
-            # If cache_hit was False, the function returned after the 'set' operation above.
+                    # Store the result in the cache (always happens after function execution)
+                    try:
+                        if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
+                            self.cache_backend.set(key, ret)
+                            logging.debug(f"Cache set for key: {key}")
+                        else:
+                            logging.warning(f"Cannot set cache; unknown backend type: {type(self.cache_backend)}")
+                    except Exception as e:
+                        logging.error(f"Failed to set cache for key {key}: {e}", exc_info=True)
+
+                    return ret
+                finally:
+                    # Always remove the flag after the function call completes or errors
+                    if set_force_flag:
+                        delattr(self, "_is_forcing_refresh")
+                        logging.debug(f"Removed _is_forcing_refresh flag after call to {key_prefix}")
+
+            # This should only be reached if cache_hit was True and force_refresh was False
+            # The earlier return inside the cache hit block handles this case.
+            # Adding an explicit return here for clarity, although theoretically unreachable.
+            return ret # Should have already returned if cache_hit was True
 
         return deco
 

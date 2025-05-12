@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "BSD"}
 authors = [
-    {name = "Will McGinnis"},
+    {name = "Will McGinnis", email = "will@mcginniscommawill.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

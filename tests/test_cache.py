@@ -465,7 +465,7 @@ class TestDiskCache:
         with mock.patch("gitpandas.cache.logging.info") as mock_info:
             result2 = repo.test_method(param1="val1", param2="val2", force_refresh=True)
             # Check for force refresh message
-            assert any("Force refresh requested" in call[0][0] for call in mock_info.call_args_list)
+            assert any("Force refresh active" in call[0][0] for call in mock_info.call_args_list)
 
         # Call count should increase
         assert repo.call_count == 2
