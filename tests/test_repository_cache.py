@@ -17,6 +17,8 @@ def temp_git_repo():
 
     # Initialize git repo
     repo = Repo.init(temp_dir)
+    # Explicitly create and checkout 'main' branch
+    repo.git.checkout(b="main")
 
     # Create a test file
     test_file_path = os.path.join(temp_dir, "test_file.txt")
