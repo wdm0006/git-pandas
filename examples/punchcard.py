@@ -1,6 +1,7 @@
 """ """
 
 import matplotlib
+import sys
 
 matplotlib.use("Agg")  # Set the backend to Agg before importing pyplot
 
@@ -13,4 +14,9 @@ g = ProjectDirectory(working_dir=[str(GIT_PANDAS_DIR)], verbose=True)
 
 by = None
 punchcard = g.punchcard(branch="master", include_globs=["*.py"], by=by, normalize=2500)
+
+if punchcard.empty:
+    print("No commit data available for punchcard analysis.")
+    sys.exit(0)
+
 plot_punchcard(punchcard, metric="lines", title="punchcard", by=by)
