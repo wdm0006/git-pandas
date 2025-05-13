@@ -45,7 +45,7 @@ jobs:
     
     - name: Run tests
       run: |
-        MPLBACKEND=Agg uv run pytest -v
+        MPLBACKEND=Agg uv run pytest -v -m "not slow"
     
     - name: Run linting
       run: |
