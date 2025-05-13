@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "BSD"}
 authors = [
-    {name = "Will McGinnis"},
+    {name = "Will McGinnis", email = "will@mcginniscommawill.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -45,7 +45,8 @@ dev = [
     "sphinx-rtd-theme>=1.0.0",
     "ruff>=0.1.0",
     "matplotlib",
-    "joblib"
+    "joblib",
+    "pytest-mock"
 ]
 all = [
     "matplotlib",

@@ -15,7 +15,9 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
       
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -25,7 +27,12 @@ jobs:
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Add uv to PATH
+      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Check uv version
+      run: uv --version
     
     - name: Install dependencies
       run: |
@@ -38,8 +45,8 @@ jobs:
     
     - name: Run tests
       run: |
-        make test
+        MPLBACKEND=Agg uv run pytest -v -m "not slow"
     
     - name: Run linting
       run: |
-        make lint
+        uv run ruff check .

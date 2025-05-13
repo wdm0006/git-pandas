@@ -1,4 +1,4 @@
-.PHONY: setup test test-all lint format clean docs build run-example test-single
+.PHONY: setup test test-all lint format clean docs build run-example test-single mcp gitnoc
 
 # Use uv for all Python operations
 PYTHON = python
@@ -20,10 +20,10 @@ setup-examples:
 setup-all:
 	$(UV) pip install -e ".[all]"
 
-test:
+test: setup-all
 	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing -m "not slow"
 
-test-single:
+test-single: setup-all
 	@if [ "$(test)" = "" ]; then \
 		echo "Error: Please specify a test using test=<path_to_test>"; \
 		echo "Example: make test-single test=tests/test_Repository/test_advanced.py::TestRepositoryAdvanced::test_parallel_cumulative_blame"; \
@@ -32,15 +32,14 @@ test-single:
 	MPLBACKEND=Agg $(UV) run pytest $(test) -v
 
 test-all:
-	MPLBACKEND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing
+	MPLBACKEmND=Agg $(UV) run pytest $(TESTS_DIR) --cov=$(PACKAGE_NAME) --cov-report=term-missing
 
 lint:
-	$(UV) run ruff check .
+	$(UV) run ruff check --fix --unsafe-fixes .
 
 format:
 	$(UV) run ruff format .
-	$(UV) run ruff check --fix --unsafe-fixes .
-
+	
 docs:
 	$(MAKE) -C $(DOCS_DIR) html
 
@@ -78,11 +77,18 @@ run-example:
 	fi
 	MPLBACKEND=Agg $(UV) run python $(EXAMPLES_DIR)/$(example).py
 
+mcp:
+	$(UV) run python mcp_server/server.py
+
+gitnoc:
+	$(UV) run python gitnoc/app.py
+
 help:
 	@echo "Available commands:"
 	@echo "  setup         Install the package in development mode"
 	@echo "  setup-examples Install the package with examples dependencies"
 	@echo "  setup-all     Install the package with all dependencies"
+	@echo "  setup-gitnoc   Install GitNOC dependencies"
 	@echo "  test          Run tests with pytest (excluding slow tests)"
 	@echo "  test-single   Run a single test (usage: make test-single test=<path_to_test>)"
 	@echo "  test-all      Run all tests including slow tests"
@@ -94,4 +100,6 @@ help:
 	@echo "  build         Build distribution packages"
 	@echo "  publish       Publish package to PyPI"
 	@echo "  env-export    Export dependencies to requirements.txt"
-	@echo "  run-example   Run a specific example (usage: make run-example example=<name>)" 
+	@echo "  run-example   Run a specific example (usage: make run-example example=<name>)"
+	@echo "  mcp           Run the MCP server"
+	@echo "  gitnoc        Run the GitNOC Streamlit app" 

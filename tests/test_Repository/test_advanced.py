@@ -1,9 +1,10 @@
 import datetime
+import os  # Added for setting environment variables
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from git import Repo
+from git import Actor, Repo
 
 from gitpandas import Repository
 
@@ -25,7 +26,11 @@ def local_repo(tmp_path):
     # Create an initial commit
     (repo_path / "README.md").write_text("# Advanced Test Repository")
     repo.index.add(["README.md"])
-    repo.index.commit("Initial commit")
+    # Define commit times explicitly to make assertions easier
+    initial_commit_time = datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
+    # Format date as Unix timestamp with offset
+    commit_timestamp_1 = int(initial_commit_time.timestamp())
+    repo.index.commit("Initial commit", commit_date=f"{commit_timestamp_1} +0000")
 
     # Create some test files across multiple directories
     (repo_path / "src").mkdir()
@@ -37,22 +42,33 @@ def local_repo(tmp_path):
 
     # Add files and commit
     repo.index.add(["src/main.py", "src/utils.py", "docs/index.md"])
-    repo.index.commit("Add initial code structure")
+    commit_time_2 = datetime.datetime(2023, 1, 1, 11, 0, 0, tzinfo=datetime.timezone.utc)
+    commit_timestamp_2 = int(commit_time_2.timestamp())
+    repo.index.commit("Add initial code structure", commit_date=f"{commit_timestamp_2} +0000")
 
     # Create a feature branch and make changes
     repo.git.checkout("-b", "feature")
     (repo_path / "src" / "feature.py").write_text("def feature():\n    return 'new feature'")
     repo.index.add(["src/feature.py"])
-    repo.index.commit("Add feature")
+    commit_time_3 = datetime.datetime(2023, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    commit_timestamp_3 = int(commit_time_3.timestamp())
+    repo.index.commit("Add feature", commit_date=f"{commit_timestamp_3} +0000")
 
     # Go back to master and make different changes
     repo.git.checkout("master")
-    (repo_path / "src" / "main.py").write_text("def main():\n    print('Hello')\n    return True")
+    (repo_path / "src" / "main.py").write_text(
+        "def main():\n    print('Hello')\n    return True"
+    )  # Modify one line, add one line
     repo.index.add(["src/main.py"])
-    repo.index.commit("Update main function")
+    commit_time_4 = datetime.datetime(2023, 1, 1, 13, 0, 0, tzinfo=datetime.timezone.utc)
+    commit_timestamp_4 = int(commit_time_4.timestamp())
+    repo.index.commit("Update main function", commit_date=f"{commit_timestamp_4} +0000")
 
     # Create a tag
-    repo.create_tag("v0.1.0", message="First version")
+    tag_time = datetime.datetime(2023, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc)
+    int(tag_time.timestamp())
+    # Create an annotated tag using git.tag directly instead of tagger/tag_date params
+    repo.git.tag("-a", "v0.1.0", "-m", "First version")
 
     return repo_path
 
@@ -116,6 +132,85 @@ class TestRepositoryAdvanced:
         assert "name" in owner_info
         assert owner_info["name"] == "Test User"
 
+    def test_cumulative_blame_multi_author(self, tmp_path):
+        """Test cumulative_blame with multiple authors and changing blame."""
+        repo_path = tmp_path / "blame_repo"
+        repo_path.mkdir()
+        repo = Repo.init(repo_path)
+        # Create main branch explicitly to match the branch name used later
+        repo.git.checkout(b="main")
+        test_file = repo_path / "test_file.txt"
+
+        # Define authors
+        author1 = Actor("Author One", "author1@example.com")
+        author2 = Actor("Author Two", "author2@example.com")
+
+        # Use specific commit dates for reliable ordering and index checking
+        commit_date_1 = datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc)
+        commit_date_2 = datetime.datetime(2023, 1, 1, 11, 0, 0, tzinfo=datetime.timezone.utc)
+        commit_date_3 = datetime.datetime(2023, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+
+        # Format dates as Unix timestamps (what GitPython expects)
+        timestamp_1 = int(commit_date_1.timestamp())
+        timestamp_2 = int(commit_date_2.timestamp())
+        timestamp_3 = int(commit_date_3.timestamp())
+
+        # Commit 1: Author One adds 3 lines
+        test_file.write_text("Line 1\nLine 2\nLine 3")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 1", author=author1, committer=author1, commit_date=f"{timestamp_1} +0000")
+
+        # Commit 2: Author Two adds 2 lines and modifies Line 2
+        test_file.write_text("Line 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 2", author=author2, committer=author2, commit_date=f"{timestamp_2} +0000")
+
+        # Commit 3: Author One adds 1 line at the beginning
+        test_file.write_text("Line 0 - A1\nLine 1\nModified Line 2 by Author Two\nLine 3\nLine 4 - A2\nLine 5 - A2")
+        repo.index.add(["test_file.txt"])
+        repo.index.commit("Commit 3", author=author1, committer=author1, commit_date=f"{timestamp_3} +0000")
+
+        # Instantiate Repository and get cumulative blame
+        repo_obj = Repository(working_dir=str(repo_path))
+        # Use committer=False to test author blame
+        blame_df = repo_obj.cumulative_blame(branch="main", committer=False)
+
+        # Assertions
+        assert isinstance(blame_df, pd.DataFrame)
+        assert blame_df.index.name == "date"
+
+        # Check for author columns, ignoring the repository column and column order
+        author_columns = [col for col in blame_df.columns if col != "repository"]
+        assert sorted(author_columns) == sorted(["Author One", "Author Two"])
+
+        assert len(blame_df) == 3  # 3 commits
+
+        # Check index values (timestamps) - allow for minor differences if needed
+        expected_index = pd.to_datetime([commit_date_1, commit_date_2, commit_date_3], utc=True)
+
+        # Sort both DataFrames by index to ensure consistent order for comparison
+        blame_df_sorted = blame_df.sort_index()
+
+        # Check that all expected dates are present (regardless of order)
+        assert set(blame_df.index) == set(expected_index)
+
+        # Only do detailed assertions on the sorted DataFrame
+        blame_df = blame_df_sorted
+
+        # Check blame values at each commit
+        # Commit 1: Author One = 3, Author Two = 0
+        assert blame_df.loc[commit_date_1, "Author One"] == 3.0
+        assert blame_df.loc[commit_date_1, "Author Two"] == 0.0
+
+        # Commit 2: Author One = 1 (Lost Line 2), Author Two = 4 (Modified Line 2, Added Lines 4, 5)
+        # Blame logic: git blame attributes the *modified* line to the modifier.
+        assert blame_df.loc[commit_date_2, "Author One"] == 1.0
+        assert blame_df.loc[commit_date_2, "Author Two"] == 4.0
+
+        # Commit 3: Author One = 2 (Added Line 0), Author Two = 4
+        assert blame_df.loc[commit_date_3, "Author One"] == 2.0
+        assert blame_df.loc[commit_date_3, "Author Two"] == 4.0
+
     def test_parallel_cumulative_blame(self, local_repo):
         """Test parallel cumulative blame calculation."""
         repo = Repository(working_dir=str(local_repo))
@@ -155,7 +250,7 @@ class TestRepositoryAdvanced:
             mock_parallel_instance.side_effect = side_effect
 
             # Call the function
-            result = repo.parallel_cumulative_blame(branch="master", workers=2)
+            result = repo.parallel_cumulative_blame(branch="main", workers=2)
 
             # Verify the result
             assert isinstance(result, pd.DataFrame)
@@ -192,20 +287,20 @@ class TestRepositoryAdvanced:
         repo.commit_history = MagicMock(return_value=mock_history)
 
         # Test basic punchcard
-        punchcard = repo.punchcard(branch="master")
+        punchcard = repo.punchcard(branch="main")
         assert isinstance(punchcard, pd.DataFrame)
         assert "hour_of_day" in punchcard.columns
         assert "day_of_week" in punchcard.columns
         assert "lines" in punchcard.columns
 
         # Test punchcard with 'by' parameter
-        punchcard_by = repo.punchcard(branch="master", by="committer")
+        punchcard_by = repo.punchcard(branch="main", by="committer")
         assert isinstance(punchcard_by, pd.DataFrame)
         assert "committer" in punchcard_by.columns  # Check for actual column name instead of 'by'
         assert len(punchcard_by["committer"].unique()) == 2  # Two different committers
 
         # Test punchcard with normalization
-        punchcard_norm = repo.punchcard(branch="master", normalize=100)  # Normalize to 100
+        punchcard_norm = repo.punchcard(branch="main", normalize=100)  # Normalize to 100
         assert isinstance(punchcard_norm, pd.DataFrame)
         # Normalized values should be between 0 and 100
         assert punchcard_norm["lines"].max() <= 100.0
@@ -215,21 +310,11 @@ class TestRepositoryAdvanced:
         repo_obj = Repository(working_dir=str(local_repo))
 
         # Test a file that exists
-        last_edit = repo_obj._file_last_edit("src/main.py")
-        assert isinstance(last_edit, str)
-        assert "Date:" not in last_edit  # The implementation strips this out
-
-        # Try to parse the date string to verify it's a valid date
-        from datetime import datetime
-
-        try:
-            # Git date format is like: Thu Apr 7 22:13:13 2005 +0200
-            datetime.strptime(last_edit, "%a %b %d %H:%M:%S %Y %z")
-        except ValueError as e:
-            pytest.fail(f"Last edit date string '{last_edit}' is not in expected git format: {e}")
+        last_edit = repo_obj._get_last_edit_date("src/main.py")
+        assert isinstance(last_edit, pd.Timestamp)
 
         # Test a file that doesn't exist
-        assert repo_obj._file_last_edit("nonexistent_file.txt") is None
+        assert pd.isna(repo_obj._get_last_edit_date("nonexistent_file.txt"))
 
     def test_file_detail_with_cache(self, local_repo):
         """Test that file_detail properly uses caching."""
@@ -256,3 +341,126 @@ class TestRepositoryAdvanced:
         # Verify that calling with HEAD doesn't use cache
         result3 = repo.file_detail(rev="HEAD")
         assert isinstance(result3, pd.DataFrame)
+
+    def test_blame_deleted_file(self, tmp_path):
+        """Test blame on a revision where a file existed but was later deleted."""
+        repo_path = tmp_path / "blame_test_repo"
+        repo_path.mkdir()
+        repo = Repo.init(repo_path)
+
+        # Create test file and commit it
+        test_file = repo_path / "temp_file.txt"
+        test_file.write_text("Line 1\nLine 2\nLine 3")
+        repo.index.add(["temp_file.txt"])
+
+        # Use Unix timestamp format for dates
+        commit_date = int(datetime.datetime(2023, 1, 1, 10, 0, 0, tzinfo=datetime.timezone.utc).timestamp())
+        author = Actor("Test User", "test@example.com")
+        commit = repo.index.commit("Add file", author=author, committer=author, commit_date=f"{commit_date} +0000")
+
+        # Delete the file and commit deletion
+        os.unlink(test_file)
+        repo.index.remove(["temp_file.txt"])
+        delete_date = int(datetime.datetime(2023, 1, 2, 10, 0, 0, tzinfo=datetime.timezone.utc).timestamp())
+        repo.index.commit("Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000")
+
+        # Create Repository object
+        repo_obj = Repository(working_dir=str(repo_path))
+
+        # Test blame on previous revision where file existed
+        blame_result = repo_obj.blame(rev=commit.hexsha)
+        assert isinstance(blame_result, pd.DataFrame)
+
+        # Test blame on HEAD where file is deleted - should handle gracefully
+        blame_head = repo_obj.blame(rev="HEAD")
+        assert isinstance(blame_head, pd.DataFrame)  # Should return empty DataFrame
+
+    def test_time_between_revs(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
+        if len(commits) < 2:
+            pytest.skip("Not enough commits to test time_between_revs")
+        rev1, rev2 = commits[1].hexsha, commits[0].hexsha  # older, newer
+        days = repo.time_between_revs(rev1, rev2)
+        assert isinstance(days, float)
+        assert days >= 0
+        # Should be 2 hours = 2/24 days in our fixture
+        assert abs(days - (2 / 24)) < 1e-6
+
+    def test_diff_stats_between_revs(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
+        if len(commits) < 2:
+            pytest.skip("Not enough commits to test diff_stats_between_revs")
+        rev1, rev2 = commits[1].hexsha, commits[0].hexsha
+        stats = repo.diff_stats_between_revs(rev1, rev2)
+        assert isinstance(stats, dict)
+        assert set(stats.keys()) == {"insertions", "deletions", "net", "files_changed", "files"}
+        assert stats["files_changed"] >= 0
+        assert isinstance(stats["files"], list)
+
+    def test_committers_between_revs(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
+        if len(commits) < 2:
+            pytest.skip("Not enough commits to test committers_between_revs")
+        rev1, rev2 = commits[1].hexsha, commits[0].hexsha
+        info = repo.committers_between_revs(rev1, rev2)
+        assert isinstance(info, dict)
+        assert "committers" in info and "authors" in info
+        assert isinstance(info["committers"], list)
+        assert isinstance(info["authors"], list)
+        # Should include 'Test User' in our fixture
+        assert "Test User" in info["committers"]
+        assert "Test User" in info["authors"]
+
+    def test_files_changed_between_revs(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        commits = list(repo.repo.iter_commits("master", max_count=2))
+        if len(commits) < 2:
+            pytest.skip("Not enough commits to test files_changed_between_revs")
+        rev1, rev2 = commits[1].hexsha, commits[0].hexsha
+        files = repo.files_changed_between_revs(rev1, rev2)
+        assert isinstance(files, list)
+        # Should include at least one file
+        assert any(f.endswith(".py") or f.endswith(".md") for f in files)
+
+    def test_release_tag_summary(self, local_repo):
+        repo = Repository(working_dir=str(local_repo))
+        repo_path = local_repo
+        # Add a new commit before the second tag to ensure there are commits between tags
+        with open(os.path.join(repo_path, "README.md"), "a") as f:
+            f.write("\nSecond version!")
+        repo.repo.index.add(["README.md"])
+        # Use a new commit date 1 hour after the last commit
+        last_commit = list(repo.repo.iter_commits("master", max_count=1))[0]
+        last_time = datetime.datetime.utcfromtimestamp(last_commit.committed_date).replace(tzinfo=datetime.timezone.utc)
+        new_time = last_time + datetime.timedelta(hours=1)
+        repo.repo.index.commit("Second version commit", commit_date=f"{int(new_time.timestamp())} +0000")
+        # Now tag the new commit
+        repo.repo.git.tag("-a", "v0.2.0", "-m", "Second version")
+        df = repo.release_tag_summary(tag_glob="v*")
+        assert isinstance(df, pd.DataFrame)
+        assert "tag" in df.columns
+        assert "tag_date" in df.columns
+        assert "commit_sha" in df.columns
+        assert "time_since_prev" in df.columns
+        assert "insertions" in df.columns
+        assert "deletions" in df.columns
+        assert "net" in df.columns
+        assert "files_changed" in df.columns
+        assert "committers" in df.columns
+        assert "authors" in df.columns
+        assert "files" in df.columns
+        # Should have at least two rows (two tags)
+        assert len(df) >= 2
+        # First row should have NaN for time_since_prev
+        assert pd.isna(df.iloc[0]["time_since_prev"])
+        # Committers/authors should include 'Test User'
+        assert "Test User" in df.iloc[1]["committers"]
+        assert "Test User" in df.iloc[1]["authors"]
+        # Files should be a list
+        assert isinstance(df.iloc[1]["files"], list)
+        # Test glob filtering (should return only v* tags)
+        only_v_tags = df["tag"].str.startswith("v").all()
+        assert only_v_tags
