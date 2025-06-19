@@ -375,8 +375,10 @@ class ProjectDirectory:
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
                 )
-                ch["repository"] = repo.repo_name
-                df = pd.concat([df, ch])
+                if not ch.empty:
+                    ch = ch.copy()  # Avoid SettingWithCopyWarning
+                    ch["repository"] = repo.repo_name
+                    df = pd.concat([df, ch], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")

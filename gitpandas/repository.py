@@ -1065,7 +1065,10 @@ class Repository:
                     blames.append((commit, lines, file))
             except GitCommandError as e:
                 logger.warning(f"Failed to get blame for file: {file} at rev: {rev}. Error: {e}")
-                pass
+                continue
+            except UnicodeDecodeError as e:
+                logger.warning(f"Skipping binary file that cannot be decoded: {file} at rev: {rev}. Error: {e}")
+                continue
 
         if committer:
             if by == "repository":
@@ -1851,8 +1854,8 @@ class Repository:
 
         df = DataFrame(tags_meta, columns=cols)
 
-        df["tag_date"] = to_datetime(df["tag_date"], unit="s", utc=True)
-        df["commit_date"] = to_datetime(df["commit_date"], unit="s", utc=True)
+        df["tag_date"] = to_datetime(pd.to_numeric(df["tag_date"], errors='coerce'), unit="s", utc=True)
+        df["commit_date"] = to_datetime(pd.to_numeric(df["commit_date"], errors='coerce'), unit="s", utc=True)
         df = self._add_labels_to_df(df)
 
         df = df.set_index(keys=["tag_date", "commit_date"], drop=True)

@@ -26,6 +26,7 @@ dependencies = [
     "requests",
     "redis",
     "coverage>=5.0.0",
+    "importlib-metadata>=1.0; python_version<'3.8'",
 ]
 
 [project.urls]

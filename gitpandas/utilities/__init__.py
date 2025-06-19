@@ -9,7 +9,7 @@
 """
 
 __author__ = "willmcginnis"
-__version__ = "2.1.0"
+# Version is now managed centrally in gitpandas.__init__
 
 try:
     import joblib  # noqa: F401
