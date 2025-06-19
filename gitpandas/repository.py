@@ -261,8 +261,17 @@ class Repository:
 
             return df
 
+        except FileNotFoundError as e:
+            logger.warning(f"Coverage file not found: {e}")
+            return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
+        except PermissionError as e:
+            logger.error(f"Permission denied accessing coverage file: {e}")
+            return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
+        except (ValueError, KeyError) as e:
+            logger.error(f"Invalid coverage data format: {e}")
+            return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
         except Exception as e:
-            logger.error(f"Failed to analyze coverage data: {e}", exc_info=True)
+            logger.error(f"Unexpected error analyzing coverage data: {e}", exc_info=True)
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
     @multicache(
@@ -947,8 +956,38 @@ class Repository:
                     ]
                 )
 
+        except MemoryError as e:
+            logger.error(f"Out of memory calculating file change rates. Try reducing limit or using days filter: {e}")
+            return pd.DataFrame(
+                columns=[
+                    "file",
+                    "unique_committers", 
+                    "abs_rate_of_change",
+                    "net_rate_of_change",
+                    "net_change",
+                    "abs_change",
+                    "edit_rate",
+                    "lines",
+                    "repository",
+                ]
+            )
+        except git.exc.GitCommandError as e:
+            logger.error(f"Git command failed while calculating file change rates: {e}")
+            return pd.DataFrame(
+                columns=[
+                    "file",
+                    "unique_committers",
+                    "abs_rate_of_change", 
+                    "net_rate_of_change",
+                    "net_change",
+                    "abs_change",
+                    "edit_rate",
+                    "lines",
+                    "repository",
+                ]
+            )
         except Exception as e:
-            logger.error(f"Failed to calculate file change rates: {e}")
+            logger.error(f"Unexpected error calculating file change rates: {e}", exc_info=True)
             return pd.DataFrame(
                 columns=[
                     "file",

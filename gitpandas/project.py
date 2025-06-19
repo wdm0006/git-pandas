@@ -236,9 +236,10 @@ class ProjectDirectory:
         for repo in self.repos:
             try:
                 cov = repo.coverage()
-                cov["repository"] = repo.repo_name
                 if not cov.empty:
-                    df = pd.concat([df, cov])
+                    cov = cov.copy()  # Avoid SettingWithCopyWarning
+                    cov["repository"] = repo.repo_name
+                    df = pd.concat([df, cov], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have coverage")
@@ -306,8 +307,9 @@ class ProjectDirectory:
                     include_globs=include_globs,
                 )
                 if not fcr.empty:
+                    fcr = fcr.copy()  # Avoid SettingWithCopyWarning
                     fcr["repository"] = repo.repo_name
-                    df = fcr if df is None else pd.concat([df, fcr], sort=True)
+                    df = fcr if df is None else pd.concat([df, fcr], ignore_index=True, sort=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
@@ -378,7 +380,11 @@ class ProjectDirectory:
                 if not ch.empty:
                     ch = ch.copy()  # Avoid SettingWithCopyWarning
                     ch["repository"] = repo.repo_name
-                    df = pd.concat([df, ch], ignore_index=True)
+                    # Only concatenate if df is not empty, otherwise use ch directly
+                    if df is None or df.empty:
+                        df = ch
+                    else:
+                        df = pd.concat([df, ch], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
@@ -520,6 +526,7 @@ class ProjectDirectory:
                     include_globs=include_globs,
                 )
                 if not ch.empty:
+                    ch = ch.copy()  # Avoid SettingWithCopyWarning
                     ch["repository"] = repo.repo_name
                     # Reset the index to make date a regular column before concatenation
                     # Use reset_index with a unique name to avoid duplicate column error
@@ -529,7 +536,7 @@ class ProjectDirectory:
                     else:
                         # Otherwise, reset the index and rename the resulting column
                         ch = ch.reset_index().rename(columns={"index": "date"})
-                    df = ch if df is None else pd.concat([df, ch], sort=True)
+                    df = ch if df is None else pd.concat([df, ch], ignore_index=True, sort=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
@@ -622,14 +629,23 @@ class ProjectDirectory:
                         include_globs=include_globs,
                     )
                     if not blame_df.empty:
-                        df = pd.concat([df, blame_df])
+                        df = pd.concat([df, blame_df], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldnt be blamed")
                 pass
 
-        # Reset all index levels
+        # Reset index to convert committer/author from index to column
         df = df.reset_index()
+
+        # Fix column naming after reset_index - the grouped column becomes 'index'
+        groupby_column = "committer" if committer else "author"
+        if "index" in df.columns and groupby_column not in df.columns:
+            df = df.rename(columns={"index": groupby_column})
+        elif groupby_column not in df.columns:
+            logger.warning(f"Expected column '{groupby_column}' not found in blame data. Available columns: {df.columns.tolist()}")
+            # Return empty DataFrame with proper structure if column is missing
+            return pd.DataFrame(columns=[groupby_column, "loc"])
 
         if committer:
             if by == "repository":
@@ -693,9 +709,10 @@ class ProjectDirectory:
                         committer=committer,
                         rev=rev,
                     )
-                    chunk["repository"] = repo.repo_name
                     if not chunk.empty:
-                        df = pd.concat([df, chunk])
+                        chunk = chunk.copy()  # Avoid SettingWithCopyWarning
+                        chunk["repository"] = repo.repo_name
+                        df = pd.concat([df, chunk], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldnt be inspected")
@@ -724,13 +741,13 @@ class ProjectDirectory:
             ds = Parallel(n_jobs=-1, backend="threading", verbose=0)(delayed(_branches_func)(x) for x in self.repos)
             for d in ds:
                 if not d.empty:
-                    df = pd.concat([df, d])
+                    df = pd.concat([df, d], ignore_index=True)
         else:
             for repo in self.repos:
                 try:
                     branches_df = _branches_func(repo)
                     if not branches_df.empty:
-                        df = pd.concat([df, branches_df])
+                        df = pd.concat([df, branches_df], ignore_index=True)
                 except GitCommandError:
                     # Use logger instead of print
                     logger.warning(f"Repo: {repo} couldn't be inspected")
@@ -770,7 +787,7 @@ class ProjectDirectory:
             )
             for d in ds:
                 if not d.empty:
-                    df = pd.concat([df, d])
+                    df = pd.concat([df, d], ignore_index=True)
         else:
             for repo in self.repos:
                 try:
@@ -780,9 +797,10 @@ class ProjectDirectory:
                         skip=skip,
                         num_datapoints=num_datapoints,
                     )
-                    revs["repository"] = repo.repo_name
                     if not revs.empty:
-                        df = pd.concat([df, revs])
+                        revs = revs.copy()  # Avoid SettingWithCopyWarning
+                        revs["repository"] = repo.repo_name
+                        df = pd.concat([df, revs], ignore_index=True)
                 except GitCommandError:
                     # Use logger instead of print
                     logger.warning(f"Repo: {repo} couldn't be inspected")
@@ -1065,7 +1083,7 @@ class ProjectDirectory:
                 try:
                     bf_df = repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)
                     if not bf_df.empty:
-                        df = pd.concat([df, bf_df])
+                        df = pd.concat([df, bf_df], ignore_index=True)
                 except GitCommandError:
                     # Use logger instead of print
                     logger.warning(f"Repo: {repo} couldn't be inspected")
@@ -1118,9 +1136,10 @@ class ProjectDirectory:
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
                 )
-                chunk["repository"] = repo.repo_name
                 if not chunk.empty:
-                    df = pd.concat([df, chunk])
+                    chunk = chunk.copy()  # Avoid SettingWithCopyWarning
+                    chunk["repository"] = repo.repo_name
+                    df = pd.concat([df, chunk], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldn't be inspected")
