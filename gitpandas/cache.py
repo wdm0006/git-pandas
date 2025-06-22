@@ -2,6 +2,7 @@ import gzip
 import logging
 import os
 import pickle
+import threading
 
 try:
     import redis
@@ -177,6 +178,7 @@ class DiskCache(EphemeralCache):
     An in-memory cache that can be persisted to disk using pickle.
 
     Inherits LRU eviction logic from EphemeralCache.
+    Thread-safe for concurrent access.
     """
 
     def __init__(self, filepath, max_keys=1000):
@@ -189,108 +191,146 @@ class DiskCache(EphemeralCache):
         """
         super().__init__(max_keys=max_keys)
         self.filepath = filepath
+        self._lock = threading.RLock()  # Reentrant lock for thread safety
         self.load()  # Attempt to load existing cache on initialization
+
+    def set(self, k, v):
+        """
+        Thread-safe set operation that prevents nested save calls.
+        """
+        with self._lock:
+            # Temporarily disable automatic save during parent set() to prevent nested calls
+            original_save = getattr(self, 'save', None)
+            self.save = lambda: None  # Temporarily disable save
+            try:
+                # Call parent set without triggering save
+                super().set(k, v)
+            finally:
+                # Restore original save method
+                if original_save:
+                    self.save = original_save
+                # Now save once, safely under lock
+                self.save()
+
+    def get(self, k):
+        """
+        Thread-safe get operation with disk loading capability.
+        """
+        with self._lock:
+            # Initial check in memory
+            if k in self._cache:
+                # Move the key to the end of the list (most recently used)
+                try:
+                    idx = self._key_list.index(k)
+                    self._key_list.pop(idx)
+                    self._key_list.append(k)
+                except ValueError:
+                    # Should not happen if k is in _cache, but handle defensively
+                    # If key is in cache but not list, add it to the list (end)
+                    self._key_list.append(k)
+                    # If list exceeds max keys due to this, handle it (though ideally cache and list are always synced)
+                    if len(self._key_list) > self._max_keys:
+                        self.evict(len(self._key_list) - self._max_keys)
+                return self._cache[k]
+            else:
+                # Key not in memory, try loading from disk
+                logging.debug(f"Key '{k}' not in memory cache, attempting disk load.")
+                self.load()
+                # Check again after loading
+                if k in self._cache:
+                    logging.debug(f"Key '{k}' found in cache after disk load.")
+                    # Update LRU list as it was just accessed
+                    try:
+                        idx = self._key_list.index(k)
+                        self._key_list.pop(idx)
+                        self._key_list.append(k)
+                    except ValueError:
+                        # Add to list if somehow missing after load
+                        self._key_list.append(k)
+                        if len(self._key_list) > self._max_keys:
+                            self.evict(len(self._key_list) - self._max_keys)
+                    return self._cache[k]
+                else:
+                    # Key not found even after loading from disk
+                    logging.debug(f"Key '{k}' not found after attempting disk load.")
+                    raise CacheMissError(k)
+
+    def exists(self, k):
+        """
+        Thread-safe exists check.
+        """
+        with self._lock:
+            return super().exists(k)
+
+    def evict(self, n=1):
+        """
+        Thread-safe eviction.
+        """
+        with self._lock:
+            super().evict(n)
 
     def load(self):
         """
         Loads the cache state (_cache dictionary and _key_list) from the
         specified filepath using pickle. Handles file not found and
         deserialization errors.
+        Thread-safe operation.
         """
-        if not os.path.exists(self.filepath) or os.path.getsize(self.filepath) == 0:
-            logging.info(f"Cache file not found or empty, starting fresh: {self.filepath}")
-            return  # Start with an empty cache
+        with self._lock:
+            if not os.path.exists(self.filepath) or os.path.getsize(self.filepath) == 0:
+                logging.info(f"Cache file not found or empty, starting fresh: {self.filepath}")
+                return  # Start with an empty cache
 
-        try:
-            with gzip.open(self.filepath, "rb") as f:  # Use binary mode 'rb' for pickle
-                loaded_data = pickle.load(f)
+            try:
+                with gzip.open(self.filepath, "rb") as f:  # Use binary mode 'rb' for pickle
+                    loaded_data = pickle.load(f)
 
-            if not isinstance(loaded_data, dict) or "_cache" not in loaded_data or "_key_list" not in loaded_data:
-                logging.warning(f"Invalid cache file format found: {self.filepath}. Starting fresh.")
+                if not isinstance(loaded_data, dict) or "_cache" not in loaded_data or "_key_list" not in loaded_data:
+                    logging.warning(f"Invalid cache file format found: {self.filepath}. Starting fresh.")
+                    self._cache = {}
+                    self._key_list = []
+                    return
+
+                # Directly assign loaded data as pickle handles complex objects
+                self._cache = loaded_data["_cache"]
+                self._key_list = loaded_data["_key_list"]
+
+                # Ensure consistency after loading (LRU eviction)
+                if len(self._key_list) > self._max_keys:
+                    self.evict(len(self._key_list) - self._max_keys)
+                logging.info(f"Cache loaded successfully from {self.filepath} using pickle.")
+
+            except (gzip.BadGzipFile, pickle.UnpicklingError, EOFError, TypeError, Exception) as e:  # Catch pickle errors
+                logging.error(f"Error loading cache file {self.filepath} (pickle/Gzip): {e}. Starting fresh.")
                 self._cache = {}
                 self._key_list = []
-                return
-
-            # Directly assign loaded data as pickle handles complex objects
-            self._cache = loaded_data["_cache"]
-            self._key_list = loaded_data["_key_list"]
-
-            # Ensure consistency after loading (LRU eviction)
-            if len(self._key_list) > self._max_keys:
-                self.evict(len(self._key_list) - self._max_keys)
-            logging.info(f"Cache loaded successfully from {self.filepath} using pickle.")
-
-        except (gzip.BadGzipFile, pickle.UnpicklingError, EOFError, TypeError, Exception) as e:  # Catch pickle errors
-            logging.error(f"Error loading cache file {self.filepath} (pickle/Gzip): {e}. Starting fresh.")
-            self._cache = {}
-            self._key_list = []
-        except OSError as e:
-            logging.error(f"OS error loading cache file {self.filepath}: {e}. Starting fresh.")
-            self._cache = {}
-            self._key_list = []
+            except OSError as e:
+                logging.error(f"OS error loading cache file {self.filepath}: {e}. Starting fresh.")
+                self._cache = {}
+                self._key_list = []
 
     def save(self):
         """
         Saves the current cache state (_cache dictionary and _key_list) to the
         specified filepath using pickle. Creates parent directories if needed.
+        Thread-safe operation.
         """
-        try:
-            # Ensure parent directory exists
-            parent_dir = os.path.dirname(self.filepath)
-            if parent_dir:
-                os.makedirs(parent_dir, exist_ok=True)
-
-            # Save cache and key list to gzipped pickle file
-            data_to_save = {"_cache": self._cache, "_key_list": self._key_list}
-            with gzip.open(self.filepath, "wb") as f:  # Use binary mode 'wb' for pickle
-                pickle.dump(data_to_save, f, protocol=pickle.HIGHEST_PROTOCOL)  # Use highest protocol
-
-            logging.info(f"Cache saved successfully to {self.filepath} using pickle.")
-
-        except (OSError, pickle.PicklingError, Exception) as e:  # Catch pickle errors
-            logging.error(f"Error saving cache file {self.filepath}: {e}")
-
-    def get(self, k):
-        # Initial check in memory
-        if k in self._cache:
-            # Move the key to the end of the list (most recently used)
+        with self._lock:
             try:
-                idx = self._key_list.index(k)
-                self._key_list.pop(idx)
-                self._key_list.append(k)
-            except ValueError:
-                # Should not happen if k is in _cache, but handle defensively
-                # If key is in cache but not list, add it to the list (end)
-                self._key_list.append(k)
-                # If list exceeds max keys due to this, handle it (though ideally cache and list are always synced)
-                if len(self._key_list) > self._max_keys:
-                    self.evict(len(self._key_list) - self._max_keys)
-            return self._cache[k]
-        else:
-            # Key not in memory, try loading from disk
-            logging.debug(f"Key '{k}' not in memory cache, attempting disk load.")
-            self.load()
-            # Check again after loading
-            if k in self._cache:
-                logging.debug(f"Key '{k}' found in cache after disk load.")
-                # Update LRU list as it was just accessed
-                try:
-                    idx = self._key_list.index(k)
-                    self._key_list.pop(idx)
-                    self._key_list.append(k)
-                except ValueError:
-                    # Add to list if somehow missing after load
-                    self._key_list.append(k)
-                    if len(self._key_list) > self._max_keys:
-                        self.evict(len(self._key_list) - self._max_keys)
-                return self._cache[k]
-            else:
-                # Key not found even after loading from disk
-                logging.debug(f"Key '{k}' not found after attempting disk load.")
-                raise CacheMissError(k)
+                # Ensure parent directory exists
+                parent_dir = os.path.dirname(self.filepath)
+                if parent_dir:
+                    os.makedirs(parent_dir, exist_ok=True)
 
-    def exists(self, k):
-        return k in self._cache
+                # Save cache and key list to gzipped pickle file
+                data_to_save = {"_cache": self._cache, "_key_list": self._key_list}
+                with gzip.open(self.filepath, "wb") as f:  # Use binary mode 'wb' for pickle
+                    pickle.dump(data_to_save, f, protocol=pickle.HIGHEST_PROTOCOL)  # Use highest protocol
+
+                logging.info(f"Cache saved successfully to {self.filepath} using pickle.")
+
+            except (OSError, pickle.PicklingError, Exception) as e:  # Catch pickle errors
+                logging.error(f"Error saving cache file {self.filepath}: {e}")
 
 
 class RedisDFCache:
