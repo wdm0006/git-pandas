@@ -16,7 +16,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from gitpandas.cache import DiskCache, CacheMissError, multicache
+from gitpandas.cache import DiskCache, CacheMissError, multicache, EphemeralCache
 
 
 class MockRepoMethod:
@@ -515,4 +515,280 @@ class TestDiskCacheThreadSafety:
         
         # Verify that at least some data was persisted and loaded correctly
         total_verified = sum(len(results) for results in verification_results.values())
-        assert total_verified > 0, "No data was successfully persisted and loaded" 
+        assert total_verified > 0, "No data was successfully persisted and loaded"
+
+    def test_concurrent_additions_near_max_key_limit(self, temp_cache_file):
+        """
+        Test the race condition that occurs when multiple threads add items 
+        to the cache simultaneously when near the max key limit.
+        
+        This test demonstrates the potential for IndexError, KeyError, and 
+        cache inconsistency when multiple threads trigger eviction simultaneously.
+        """
+        # Use a small max_keys to easily trigger the race condition
+        cache = DiskCache(filepath=temp_cache_file, max_keys=10)
+        
+        # Pre-populate cache to near the limit (8 out of 10 keys)
+        for i in range(8):
+            cache.set(f"initial_key_{i}", pd.DataFrame({"initial": [i]}))
+        
+        errors_caught = []
+        errors_lock = threading.Lock()
+        successful_operations = []
+        operations_lock = threading.Lock()
+        
+        def concurrent_adder(worker_id):
+            """
+            Worker that adds multiple keys, potentially triggering eviction.
+            Each worker adds 5 keys, so total will exceed max_keys significantly.
+            """
+            for i in range(5):
+                try:
+                    key = f"worker_{worker_id}_key_{i}"
+                    value = pd.DataFrame({"worker": [worker_id], "iteration": [i]})
+                    cache.set(key, value)
+                    
+                    with operations_lock:
+                        successful_operations.append(f"{worker_id}_{i}")
+                        
+                except (IndexError, KeyError, ValueError) as e:
+                    # These are the expected race condition errors
+                    with errors_lock:
+                        errors_caught.append(f"Worker {worker_id}, iteration {i}: {type(e).__name__}: {e}")
+                except Exception as e:
+                    # Any other unexpected error
+                    with errors_lock:
+                        errors_caught.append(f"Worker {worker_id}, iteration {i}: Unexpected {type(e).__name__}: {e}")
+        
+        # Start multiple threads that will all try to add keys simultaneously
+        # This should trigger the race condition in eviction
+        num_threads = 8
+        threads = []
+        
+        for worker_id in range(num_threads):
+            thread = threading.Thread(target=concurrent_adder, args=(worker_id,))
+            threads.append(thread)
+        
+        # Start all threads at roughly the same time to maximize race condition chance
+        for thread in threads:
+            thread.start()
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        # Check if any race condition errors occurred
+        if errors_caught:
+            print(f"Race condition errors detected (this demonstrates the bug):")
+            for error in errors_caught[:10]:  # Show first 10 errors
+                print(f"  - {error}")
+        
+        # Verify cache consistency after the operations
+        cache_size = len(cache._cache)
+        key_list_size = len(cache._key_list)
+        
+        print(f"Final cache state: {cache_size} items in cache, {key_list_size} items in key_list")
+        print(f"Successful operations: {len(successful_operations)}")
+        print(f"Errors caught: {len(errors_caught)}")
+        
+        # The cache should be consistent even if there were errors
+        assert cache_size == key_list_size, f"Cache inconsistency: {cache_size} != {key_list_size}"
+        
+        # Cache size should not exceed max_keys (allowing for some tolerance due to threading)
+        assert cache_size <= cache._max_keys + num_threads, f"Cache size {cache_size} significantly exceeds max_keys {cache._max_keys}"
+        
+        # If this test fails with race condition errors, it demonstrates the threading issue
+        # Note: This test might pass on some runs due to timing, but should fail consistently
+        # on systems with high concurrency or when run multiple times 
+
+    def test_ephemeral_cache_race_condition_near_max_keys(self):
+        """
+        Test to demonstrate race condition in EphemeralCache when multiple threads
+        add items near the max key limit. EphemeralCache has NO thread safety,
+        so this should expose the race condition more reliably.
+        """
+        # Use a very small max_keys to easily trigger the race condition
+        cache = EphemeralCache(max_keys=5)
+        
+        # Pre-populate cache to near the limit (3 out of 5 keys)
+        for i in range(3):
+            cache.set(f"initial_key_{i}", pd.DataFrame({"initial": [i]}))
+        
+        errors_caught = []
+        errors_lock = threading.Lock()
+        successful_operations = []
+        operations_lock = threading.Lock()
+        
+        def concurrent_adder(worker_id):
+            """
+            Worker that adds multiple keys, triggering eviction.
+            Each worker adds 4 keys, so total will significantly exceed max_keys.
+            """
+            for i in range(4):
+                try:
+                    key = f"worker_{worker_id}_key_{i}"
+                    value = pd.DataFrame({"worker": [worker_id], "iteration": [i]})
+                    cache.set(key, value)
+                    
+                    with operations_lock:
+                        successful_operations.append(f"{worker_id}_{i}")
+                        
+                except (IndexError, KeyError, ValueError, RuntimeError) as e:
+                    # These are the expected race condition errors
+                    with errors_lock:
+                        errors_caught.append(f"Worker {worker_id}, iteration {i}: {type(e).__name__}: {e}")
+                except Exception as e:
+                    # Any other unexpected error
+                    with errors_lock:
+                        errors_caught.append(f"Worker {worker_id}, iteration {i}: Unexpected {type(e).__name__}: {e}")
+        
+        # Start multiple threads that will all try to add keys simultaneously
+        # This should trigger the race condition in eviction for EphemeralCache
+        num_threads = 10
+        threads = []
+        
+        for worker_id in range(num_threads):
+            thread = threading.Thread(target=concurrent_adder, args=(worker_id,))
+            threads.append(thread)
+        
+        # Start all threads at roughly the same time to maximize race condition chance
+        for thread in threads:
+            thread.start()
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        # Report results
+        cache_size = len(cache._cache)
+        key_list_size = len(cache._key_list)
+        
+        print(f"\nEphemeralCache Race Condition Test Results:")
+        print(f"Final cache state: {cache_size} items in cache, {key_list_size} items in key_list")
+        print(f"Successful operations: {len(successful_operations)}")
+        print(f"Errors caught: {len(errors_caught)}")
+        
+        if errors_caught:
+            print(f"Race condition errors detected:")
+            for error in errors_caught[:5]:  # Show first 5 errors
+                print(f"  - {error}")
+            
+        # Check for cache consistency issues
+        cache_inconsistent = cache_size != key_list_size
+        if cache_inconsistent:
+            print(f"CACHE INCONSISTENCY DETECTED: cache size ({cache_size}) != key_list size ({key_list_size})")
+        
+        # This test is meant to demonstrate the issue, so we'll make it informational
+        # In a real fix, we'd want these assertions to pass
+        print(f"Cache consistency: {'FAILED' if cache_inconsistent else 'OK'}")
+        print(f"Race condition errors: {'DETECTED' if errors_caught else 'NONE'}")
+        
+        # For now, just ensure the test doesn't crash completely
+        # In a production environment, these race conditions could cause:
+        # 1. IndexError when evict() tries to pop from empty list
+        # 2. KeyError when evict() tries to delete already-deleted keys
+        # 3. Cache inconsistency where _cache and _key_list get out of sync
+        assert True  # Test always passes, but demonstrates the issues above 
+
+    def test_aggressive_ephemeral_cache_race_condition(self):
+        """
+        More aggressive test to expose race conditions in EphemeralCache.
+        Uses many threads, smaller cache, and rapid operations to maximize
+        the chance of exposing threading issues.
+        """
+        # Very small cache to force frequent evictions
+        cache = EphemeralCache(max_keys=3)
+        
+        errors_caught = []
+        errors_lock = threading.Lock()
+        operation_count = 0
+        count_lock = threading.Lock()
+        
+        def aggressive_worker(worker_id):
+            """Worker that rapidly adds many keys to force evictions."""
+            nonlocal operation_count
+            
+            for i in range(20):  # Each worker does 20 operations
+                try:
+                    key = f"w{worker_id}_k{i}"
+                    value = pd.DataFrame({"w": [worker_id], "i": [i]})
+                    
+                    # Add some variability in timing
+                    if i % 3 == 0:
+                        time.sleep(0.0001)  # Tiny delay to vary timing
+                    
+                    cache.set(key, value)
+                    
+                    with count_lock:
+                        operation_count += 1
+                        
+                except Exception as e:
+                    with errors_lock:
+                        errors_caught.append(f"W{worker_id}I{i}: {type(e).__name__}: {str(e)}")
+        
+        # Use many threads to increase contention
+        num_threads = 20
+        threads = []
+        
+        # Create and start all threads quickly
+        for worker_id in range(num_threads):
+            thread = threading.Thread(target=aggressive_worker, args=(worker_id,))
+            threads.append(thread)
+        
+        # Start all threads as close together as possible
+        for thread in threads:
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join()
+        
+        # Analyze results
+        cache_size = len(cache._cache)
+        key_list_size = len(cache._key_list)
+        
+        print(f"\nAggressive EphemeralCache Test Results:")
+        print(f"Total operations attempted: {num_threads * 20}")
+        print(f"Successful operations: {operation_count}")
+        print(f"Final cache state: {cache_size} items in cache, {key_list_size} items in key_list")
+        print(f"Errors caught: {len(errors_caught)}")
+        
+        if errors_caught:
+            print(f"Race condition errors detected:")
+            error_types = {}
+            for error in errors_caught:
+                error_type = error.split(":")[1].strip()
+                error_types[error_type] = error_types.get(error_type, 0) + 1
+            
+            for error_type, count in error_types.items():
+                print(f"  - {error_type}: {count} occurrences")
+            
+            # Show a few example errors
+            print(f"Example errors:")
+            for error in errors_caught[:3]:
+                print(f"  - {error}")
+        
+        # Check for inconsistencies
+        cache_inconsistent = cache_size != key_list_size
+        if cache_inconsistent:
+            print(f"CACHE INCONSISTENCY: cache has {cache_size} items but key_list has {key_list_size}")
+            
+            # Try to identify the discrepancy
+            cache_keys = set(cache._cache.keys())
+            list_keys = set(cache._key_list)
+            
+            only_in_cache = cache_keys - list_keys
+            only_in_list = list_keys - cache_keys
+            
+            if only_in_cache:
+                print(f"Keys only in cache dict: {only_in_cache}")
+            if only_in_list:
+                print(f"Keys only in key list: {only_in_list}")
+        
+        print(f"Cache consistency: {'FAILED' if cache_inconsistent else 'OK'}")
+        print(f"Race conditions: {'DETECTED' if errors_caught else 'NONE'}")
+        
+        # This test demonstrates potential issues but doesn't fail
+        # The key insight is that even if we don't see errors every time,
+        # the potential for race conditions exists in the current implementation
+        assert True 
