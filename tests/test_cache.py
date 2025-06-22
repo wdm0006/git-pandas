@@ -571,9 +571,9 @@ class TestDiskCache:
         assert len(captured_keys) == 1
         key = captured_keys[0]
 
-        # Key should have proper separators
+        # Key should have proper separators (new format uses ||)
         assert key.startswith("test_method_")
-        assert "_test/repo_" in key
+        assert "||test/repo||" in key
 
         # Key should contain parameter values
         assert "val1" in key

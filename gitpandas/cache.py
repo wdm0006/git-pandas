@@ -83,8 +83,9 @@ def multicache(key_prefix, key_list, skip_if=None):
             force_refresh = is_propagated_force or explicit_force_refresh
 
             # Generate the cache key (ensure force_refresh itself is not part of the key)
+            # Use || as delimiter to avoid conflicts with repository names containing underscores
             key_parts = [str(kwargs.get(k)) for k in key_list]
-            key = f"{key_prefix}_{self.repo_name}_{'_'.join(key_parts)}"
+            key = f"{key_prefix}||{self.repo_name}||{'_'.join(key_parts)}"
             logging.debug(f"Cache key generated for {key_prefix}: {key}")
 
             # Explicitly log force refresh bypass of cache read

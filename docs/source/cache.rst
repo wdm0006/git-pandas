@@ -173,6 +173,93 @@ The cache timestamp functionality is fully backward compatible:
 * No changes to Repository or ProjectDirectory APIs
 * All existing code continues to work unchanged
 
+Best Practices
+--------------
+
+Shared Cache Usage
+~~~~~~~~~~~~~~~~~~
+
+.. warning::
+   **Recommendation: Use Separate Cache Instances**
+   
+   While it's technically possible to share the same cache object across multiple Repository instances, 
+   we **strongly recommend using separate cache instances** for each repository for the following reasons:
+
+**Recommended Approach - Separate Caches:**
+
+.. code-block:: python
+
+    from gitpandas import Repository
+    from gitpandas.cache import DiskCache
+    
+    # Create separate cache instances for each repository
+    cache1 = DiskCache(filepath='repo1_cache.gz')
+    cache2 = DiskCache(filepath='repo2_cache.gz')
+    
+    repo1 = Repository('/path/to/repo1', cache_backend=cache1)
+    repo2 = Repository('/path/to/repo2', cache_backend=cache2)
+
+**Benefits of Separate Caches:**
+
+* **Complete Isolation**: No risk of cache eviction conflicts between repositories
+* **Predictable Memory Usage**: Each repository has its own memory budget
+* **Easier Debugging**: Cache issues are isolated to specific repositories  
+* **Better Performance**: No lock contention in multi-threaded scenarios
+* **Clear Cache Management**: You can clear or manage each repository's cache independently
+
+**If You Must Share Caches:**
+
+If you need to share a cache object across multiple repositories (e.g., for memory constraints), 
+the system is designed to handle this safely:
+
+.. code-block:: python
+
+    from gitpandas import Repository
+    from gitpandas.cache import EphemeralCache
+    
+    # Shared cache (not recommended but supported)
+    shared_cache = EphemeralCache(max_keys=1000)
+    
+    repo1 = Repository('/path/to/repo1', cache_backend=shared_cache)
+    repo2 = Repository('/path/to/repo2', cache_backend=shared_cache)
+    
+    # Each repository gets separate cache entries
+    files1 = repo1.list_files()  # Creates cache key: list_files||repo1||None
+    files2 = repo2.list_files()  # Creates cache key: list_files||repo2||None
+
+**Shared Cache Considerations:**
+
+* Repository names are included in cache keys to prevent collisions
+* Cache eviction affects all repositories sharing the cache
+* Memory usage is shared across all repositories
+* Very active repositories may evict cache entries from less active ones
+
+Cache Size Planning
+~~~~~~~~~~~~~~~~~~~
+
+When planning cache sizes, consider:
+
+* **Repository Size**: Larger repositories generate more cache entries
+* **Operation Types**: Some operations (like ``cumulative_blame``) create many cache entries
+* **Memory Constraints**: Balance cache size with available system memory
+* **Analysis Patterns**: Frequently repeated analyses benefit from larger caches
+
+**Recommended Cache Sizes:**
+
+.. code-block:: python
+
+    # Small repositories (< 1000 commits)
+    cache = EphemeralCache(max_keys=100)
+    
+    # Medium repositories (1000-10000 commits)  
+    cache = EphemeralCache(max_keys=500)
+    
+    # Large repositories (> 10000 commits)
+    cache = EphemeralCache(max_keys=1000)
+    
+    # For disk/Redis caches, you can use larger sizes
+    cache = DiskCache(filepath='cache.gz', max_keys=5000)
+
 API Reference
 -------------
 

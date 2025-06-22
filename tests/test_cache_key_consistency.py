@@ -136,8 +136,8 @@ class TestCacheKeyConsistency:
 
         # Keys should be different because repo_name is different
         assert key1 != key2
-        assert "/path/to/repo_" in key1
-        assert "/path/to/repo/_" in key2
+        assert "||/path/to/repo||" in key1
+        assert "||/path/to/repo/||" in key2
 
     def test_complex_key_generation(self, temp_cache_path):
         """Test key generation with complex parameters"""
@@ -159,10 +159,10 @@ class TestCacheKeyConsistency:
 
         # Check key format
         key = captured_keys[0]
-        assert key.startswith("complex_method_")
-        assert "_value1_" in key
-        assert "_value2_" in key
-        assert "_value3" in key
+        assert key.startswith("complex_method||")
+        assert "value1_" in key
+        assert "value2_" in key
+        assert "value3" in key
 
         # Call again with different order of parameters in the call
         # Python should normalize kwargs, so the key should be the same
