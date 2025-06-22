@@ -3,6 +3,8 @@ import logging
 import os
 import pickle
 import threading
+import time
+from datetime import datetime, timezone
 
 try:
     import redis
@@ -10,6 +12,44 @@ try:
     _HAS_REDIS = True
 except ImportError:
     _HAS_REDIS = False
+
+
+class CacheEntry:
+    """Wrapper for cached values that includes metadata."""
+    
+    def __init__(self, data, cache_key=None):
+        self.data = data
+        self.cached_at = datetime.now(timezone.utc)
+        self.cache_key = cache_key
+        
+    def to_dict(self):
+        """Convert to dictionary for serialization."""
+        return {
+            'data': self.data,
+            'cached_at': self.cached_at.isoformat(),
+            'cache_key': self.cache_key
+        }
+    
+    @classmethod
+    def from_dict(cls, d):
+        """Create CacheEntry from dictionary."""
+        entry = cls.__new__(cls)
+        entry.data = d['data']
+        entry.cached_at = datetime.fromisoformat(d['cached_at'])
+        entry.cache_key = d.get('cache_key')
+        return entry
+    
+    def age_seconds(self):
+        """Return age of cache entry in seconds."""
+        return (datetime.now(timezone.utc) - self.cached_at).total_seconds()
+    
+    def age_minutes(self):
+        """Return age of cache entry in minutes."""
+        return self.age_seconds() / 60
+    
+    def age_hours(self):
+        """Return age of cache entry in hours."""
+        return self.age_minutes() / 60
 
 
 def multicache(key_prefix, key_list, skip_if=None):
@@ -55,15 +95,24 @@ def multicache(key_prefix, key_list, skip_if=None):
                 )
 
             cache_hit = False
+            cache_entry = None
             # Try retrieving from cache if not forcing refresh
             if not force_refresh:
                 try:
                     # Include DiskCache in the type check
                     if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
-                        ret = self.cache_backend.get(key)
-                        logging.debug(f"Cache hit for key: {key}")
+                        # Use internal method to get CacheEntry for timestamp tracking
+                        if hasattr(self.cache_backend, '_get_entry'):
+                            cache_entry = self.cache_backend._get_entry(key)
+                        else:
+                            # Fallback for cache backends that don't have _get_entry
+                            cache_entry = self.cache_backend.get(key)
+                            if not isinstance(cache_entry, CacheEntry):
+                                cache_entry = CacheEntry(cache_entry, cache_key=key)
+                        
+                        logging.debug(f"Cache hit for key: {key}, cached at: {cache_entry.cached_at}")
                         cache_hit = True
-                        return ret
+                        return cache_entry.data
                     else:
                         logging.warning(f"Cannot get from cache; unknown backend type: {type(self.cache_backend)}")
 
@@ -88,8 +137,9 @@ def multicache(key_prefix, key_list, skip_if=None):
                     # Store the result in the cache (always happens after function execution)
                     try:
                         if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
-                            self.cache_backend.set(key, ret)
-                            logging.debug(f"Cache set for key: {key}")
+                            cache_entry = CacheEntry(ret, cache_key=key)
+                            self.cache_backend.set(key, cache_entry)
+                            logging.debug(f"Cache set for key: {key} at: {cache_entry.cached_at}")
                         else:
                             logging.warning(f"Cannot set cache; unknown backend type: {type(self.cache_backend)}")
                     except Exception as e:
@@ -105,7 +155,7 @@ def multicache(key_prefix, key_list, skip_if=None):
             # This should only be reached if cache_hit was True and force_refresh was False
             # The earlier return inside the cache hit block handles this case.
             # Adding an explicit return here for clarity, although theoretically unreachable.
-            return ret  # Should have already returned if cache_hit was True
+            return cache_entry.data if cache_entry else None
 
         return deco
 
@@ -145,6 +195,10 @@ class EphemeralCache:
         except ValueError:
             self._key_list.append(k)
 
+        # Ensure we're storing a CacheEntry
+        if not isinstance(v, CacheEntry):
+            v = CacheEntry(v, cache_key=k)
+        
         self._cache[k] = v
 
         if len(self._key_list) > self._max_keys:
@@ -160,12 +214,63 @@ class EphemeralCache:
             idx = self._key_list.index(k)
             self._key_list.pop(idx)
             self._key_list.append(k)
-            return self._cache[k]
+            entry = self._cache[k]
+            # For backward compatibility, return raw data for direct cache access
+            # The multicache decorator will handle CacheEntry objects separately
+            if isinstance(entry, CacheEntry):
+                return entry.data
+            else:
+                return entry
+        else:
+            raise CacheMissError(k)
+    
+    def _get_entry(self, k):
+        """Internal method that returns the CacheEntry object."""
+        if self.exists(k):
+            # Move the key to the end of the list (most recently used)
+            idx = self._key_list.index(k)
+            self._key_list.pop(idx)
+            self._key_list.append(k)
+            entry = self._cache[k]
+            # Ensure we return a CacheEntry
+            if isinstance(entry, CacheEntry):
+                return entry
+            else:
+                return CacheEntry(entry, cache_key=k)
         else:
             raise CacheMissError(k)
 
     def exists(self, k):
         return k in self._cache
+    
+    def get_cache_info(self, k):
+        """Get cache entry metadata for a key."""
+        if self.exists(k):
+            entry = self._cache[k]
+            if isinstance(entry, CacheEntry):
+                return {
+                    'cached_at': entry.cached_at,
+                    'age_seconds': entry.age_seconds(),
+                    'age_minutes': entry.age_minutes(),
+                    'age_hours': entry.age_hours(),
+                    'cache_key': entry.cache_key
+                }
+        return None
+    
+    def list_cached_keys(self):
+        """List all cached keys with their metadata."""
+        result = []
+        for key in self._key_list:
+            if key in self._cache:
+                entry = self._cache[key]
+                if isinstance(entry, CacheEntry):
+                    result.append({
+                        'key': key,
+                        'cached_at': entry.cached_at,
+                        'age_seconds': entry.age_seconds(),
+                        'cache_key': entry.cache_key
+                    })
+        return result
 
     # Add empty save method for compatibility with DiskCache
     def save(self):
@@ -231,7 +336,12 @@ class DiskCache(EphemeralCache):
                     # If list exceeds max keys due to this, handle it (though ideally cache and list are always synced)
                     if len(self._key_list) > self._max_keys:
                         self.evict(len(self._key_list) - self._max_keys)
-                return self._cache[k]
+                entry = self._cache[k]
+                # For backward compatibility, return raw data
+                if isinstance(entry, CacheEntry):
+                    return entry.data
+                else:
+                    return entry
             else:
                 # Key not in memory, try loading from disk
                 logging.debug(f"Key '{k}' not in memory cache, attempting disk load.")
@@ -249,10 +359,58 @@ class DiskCache(EphemeralCache):
                         self._key_list.append(k)
                         if len(self._key_list) > self._max_keys:
                             self.evict(len(self._key_list) - self._max_keys)
-                    return self._cache[k]
+                    entry = self._cache[k]
+                    # For backward compatibility, return raw data
+                    if isinstance(entry, CacheEntry):
+                        return entry.data
+                    else:
+                        return entry
                 else:
                     # Key not found even after loading from disk
                     logging.debug(f"Key '{k}' not found after attempting disk load.")
+                    raise CacheMissError(k)
+    
+    def _get_entry(self, k):
+        """Internal method that returns the CacheEntry object."""
+        with self._lock:
+            # Initial check in memory
+            if k in self._cache:
+                # Move the key to the end of the list (most recently used)
+                try:
+                    idx = self._key_list.index(k)
+                    self._key_list.pop(idx)
+                    self._key_list.append(k)
+                except ValueError:
+                    self._key_list.append(k)
+                    if len(self._key_list) > self._max_keys:
+                        self.evict(len(self._key_list) - self._max_keys)
+                entry = self._cache[k]
+                # Ensure we return a CacheEntry
+                if isinstance(entry, CacheEntry):
+                    return entry
+                else:
+                    return CacheEntry(entry, cache_key=k)
+            else:
+                # Key not in memory, try loading from disk
+                self.load()
+                # Check again after loading
+                if k in self._cache:
+                    entry = self._cache[k]
+                    # Update LRU list
+                    try:
+                        idx = self._key_list.index(k)
+                        self._key_list.pop(idx)
+                        self._key_list.append(k)
+                    except ValueError:
+                        self._key_list.append(k)
+                        if len(self._key_list) > self._max_keys:
+                            self.evict(len(self._key_list) - self._max_keys)
+                    # Ensure we return a CacheEntry
+                    if isinstance(entry, CacheEntry):
+                        return entry
+                    else:
+                        return CacheEntry(entry, cache_key=k)
+                else:
                     raise CacheMissError(k)
 
     def exists(self, k):
@@ -291,8 +449,15 @@ class DiskCache(EphemeralCache):
                     self._key_list = []
                     return
 
+                # Handle backward compatibility with old cache format
+                cache_data = loaded_data["_cache"]
+                for key, value in cache_data.items():
+                    if not isinstance(value, CacheEntry):
+                        # Convert old cache entries to new format
+                        cache_data[key] = CacheEntry(value, cache_key=key)
+
                 # Directly assign loaded data as pickle handles complex objects
-                self._cache = loaded_data["_cache"]
+                self._cache = cache_data
                 self._key_list = loaded_data["_key_list"]
 
                 # Ensure consistency after loading (LRU eviction)
@@ -371,6 +536,10 @@ class RedisDFCache:
         except ValueError:
             self._key_list.append(k)
 
+        # Ensure we're storing a CacheEntry
+        if not isinstance(v, CacheEntry):
+            v = CacheEntry(v, cache_key=orik)
+
         # Use pickle instead of msgpack for DataFrame serialization
         self._cache.set(k, pickle.dumps(v), ex=self.ttl)
 
@@ -385,7 +554,38 @@ class RedisDFCache:
             self._key_list.pop(idx)
             self._key_list.append(k)
             # Use pickle instead of msgpack for DataFrame deserialization
-            return pickle.loads(self._cache.get(k))
+            cached_value = pickle.loads(self._cache.get(k))
+            
+            # Handle backward compatibility with old cache format
+            if not isinstance(cached_value, CacheEntry):
+                cached_value = CacheEntry(cached_value, cache_key=orik)
+            
+            # For backward compatibility, return raw data
+            return cached_value.data
+        else:
+            try:
+                idx = self._key_list.index(k)
+                self._key_list.pop(idx)
+            except ValueError:
+                pass
+            raise CacheMissError(k)
+    
+    def _get_entry(self, orik):
+        """Internal method that returns the CacheEntry object."""
+        k = self.prefix + orik
+        if self.exists(orik):
+            # Move the key to the end of the list (most recently used)
+            idx = self._key_list.index(k)
+            self._key_list.pop(idx)
+            self._key_list.append(k)
+            # Use pickle instead of msgpack for DataFrame deserialization
+            cached_value = pickle.loads(self._cache.get(k))
+            
+            # Handle backward compatibility with old cache format
+            if not isinstance(cached_value, CacheEntry):
+                cached_value = CacheEntry(cached_value, cache_key=orik)
+                
+            return cached_value
         else:
             try:
                 idx = self._key_list.index(k)
@@ -404,6 +604,43 @@ class RedisDFCache:
         :return: None
         """
         self._key_list = [x.decode("utf-8") for x in self._cache.keys(self.prefix + "*")]
+
+    def get_cache_info(self, orik):
+        """Get cache entry metadata for a key."""
+        k = self.prefix + orik
+        if self.exists(orik):
+            try:
+                cached_value = pickle.loads(self._cache.get(k))
+                if isinstance(cached_value, CacheEntry):
+                    return {
+                        'cached_at': cached_value.cached_at,
+                        'age_seconds': cached_value.age_seconds(),
+                        'age_minutes': cached_value.age_minutes(),
+                        'age_hours': cached_value.age_hours(),
+                        'cache_key': cached_value.cache_key
+                    }
+            except Exception:
+                pass
+        return None
+    
+    def list_cached_keys(self):
+        """List all cached keys with their metadata."""
+        result = []
+        for key in self._key_list:
+            if key.startswith(self.prefix):
+                orik = key[len(self.prefix):]
+                try:
+                    cached_value = pickle.loads(self._cache.get(key))
+                    if isinstance(cached_value, CacheEntry):
+                        result.append({
+                            'key': orik,
+                            'cached_at': cached_value.cached_at,
+                            'age_seconds': cached_value.age_seconds(),
+                            'cache_key': cached_value.cache_key
+                        })
+                except Exception:
+                    continue
+        return result
 
     def purge(self):
         for key in self._cache.scan_iter(f"{self.prefix}*"):
