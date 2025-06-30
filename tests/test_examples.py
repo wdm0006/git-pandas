@@ -26,6 +26,7 @@ EXAMPLE_SCRIPTS = [
     "project_blame.py",
     "punchcard.py",
     "repo_file_detail.py",
+    "release_analytics.py",  # Added new example
 ]
 
 
