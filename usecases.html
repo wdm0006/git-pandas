@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Use Cases and Examples &mdash; git-pandas 2.2.1 documentation</title>
+  <title>Use Cases and Examples &mdash; git-pandas 2.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
@@ -24,7 +24,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=341fb650"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=1e3cc387"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
       <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
@@ -33,7 +33,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Contributing to Git-Pandas" href="contributors.html" />
-    <link rel="prev" title="Remote Operations and Cache Warming" href="remote_operations.html" /> 
+    <link rel="prev" title="Performance Guide" href="performance.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -147,6 +147,42 @@
 <li class="toctree-l2"><a class="reference internal" href="remote_operations.html#return-value-reference">Return Value Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#caching-system">Caching System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-backends">Cache Backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-configuration">Cache Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-warming">Cache Warming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-management">Cache Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#performance-benchmarks">Performance Benchmarks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#data-filtering-and-limits">Data Filtering and Limits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#glob-patterns">Glob Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#limits-and-time-windows">Limits and Time Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#branch-specific-analysis">Branch-Specific Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#parallelization">Parallelization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#parallel-operations">Parallel Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#memory-management">Memory Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#dataframe-memory-usage">DataFrame Memory Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#chunked-processing">Chunked Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#large-repository-strategies">Large Repository Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#repository-size-guidelines">Repository Size Guidelines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#configuration-for-large-repositories">Configuration for Large Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#monitoring-performance">Monitoring Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#performance-anti-patterns">Performance Anti-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#best-practices-summary">Best Practices Summary</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Use Cases and Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-repository-analysis">Basic Repository Analysis</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#repository-attributes">Repository Attributes</a></li>
@@ -164,6 +200,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#performance-optimization">Performance Optimization</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#using-caching">Using Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cache-management-new-in-v2-5-0">Cache Management (New in v2.5.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
@@ -185,6 +222,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#recently-completed-v2-5-0">Recently Completed (v2.5.0)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
 </ul>
 </li>
@@ -319,6 +357,9 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate bus factor for repository</span>
 <span class="n">bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
 
+<span class="c1"># Calculate file-wise bus factor (new in v2.5.0)</span>
+<span class="n">file_bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+
 <span class="c1"># Get detailed blame information</span>
 <span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>  <span class="c1"># Get file-level blame details</span>
 
@@ -334,13 +375,17 @@
 <h3>Using Caching<a class="headerlink" href="#using-caching" title="Permalink to this heading"></a></h3>
 <p>Optimize performance with caching:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span><span class="p">,</span> <span class="n">RedisDFCache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span><span class="p">,</span> <span class="n">DiskCache</span><span class="p">,</span> <span class="n">RedisDFCache</span>
 
 <span class="c1"># Use in-memory caching</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">()</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
-<span class="c1"># Or use Redis for persistent caching</span>
+<span class="c1"># Use persistent disk caching (new in v2.5.0)</span>
+<span class="n">disk_cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/gitpandas_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">disk_cache</span><span class="p">)</span>
+
+<span class="c1"># Or use Redis for distributed caching</span>
 <span class="n">redis_cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span>
     <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
     <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
@@ -348,6 +393,25 @@
     <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span>  <span class="c1"># Cache entries expire after 1 hour</span>
 <span class="p">)</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">redis_cache</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-management-new-in-v2-5-0">
+<h3>Cache Management (New in v2.5.0)<a class="headerlink" href="#cache-management-new-in-v2-5-0" title="Permalink to this heading"></a></h3>
+<p>Manage cache performance and contents:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache usage: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">][</span><span class="s1">&#39;cache_usage_percent&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+
+<span class="c1"># Invalidate specific cache entries</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">])</span>
+
+<span class="c1"># Clear all cache for this repository</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">()</span>
+
+<span class="c1"># Warm cache for better performance</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -403,7 +467,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="remote_operations.html" class="btn btn-neutral float-left" title="Remote Operations and Cache Warming" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="performance.html" class="btn btn-neutral float-left" title="Performance Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="contributors.html" class="btn btn-neutral float-right" title="Contributing to Git-Pandas" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Guide &mdash; git-pandas 2.5.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=1e3cc387"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use Cases and Examples" href="usecases.html" />
+    <link rel="prev" title="Remote Operations and Cache Warming" href="remote_operations.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            git-pandas
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#core-analysis">Core Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#repository-information">Repository Information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-parameters">Common Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#core-analysis">Core Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-parameters">Common Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#disk-cache-diskcache">Disk Cache (DiskCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#cache-timestamp-information">Cache Timestamp Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-information-methods">Cache Information Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#backward-compatibility">Backward Compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#shared-cache-usage">Shared Cache Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-size-planning">Cache Size Planning</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#safe-remote-fetch">Safe Remote Fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-safe-fetch-remote">Repository.safe_fetch_remote()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-options">Advanced Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#safety-features">Safety Features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#cache-warming">Cache Warming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-warm-cache">Repository.warm_cache()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id1">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#custom-cache-warming">Custom Cache Warming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#available-methods">Available Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#performance-benefits">Performance Benefits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#bulk-operations">Bulk Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#projectdirectory-bulk-fetch-and-warm">ProjectDirectory.bulk_fetch_and_warm()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id2">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-bulk-operations">Advanced Bulk Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#parallel-processing">Parallel Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#error-handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#return-value-reference">Return Value Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Performance Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#caching-system">Caching System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cache-backends">Cache Backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cache-configuration">Cache Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cache-warming">Cache Warming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cache-management">Cache Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performance-benchmarks">Performance Benchmarks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-filtering-and-limits">Data Filtering and Limits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#glob-patterns">Glob Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#limits-and-time-windows">Limits and Time Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#branch-specific-analysis">Branch-Specific Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#parallelization">Parallelization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-operations">Parallel Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#memory-management">Memory Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataframe-memory-usage">DataFrame Memory Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chunked-processing">Chunked Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#large-repository-strategies">Large Repository Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-size-guidelines">Repository Size Guidelines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-for-large-repositories">Configuration for Large Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#monitoring-performance">Monitoring Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-anti-patterns">Performance Anti-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices-summary">Best Practices Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cache-management-new-in-v2-5-0">Cache Management (New in v2.5.0)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#recently-completed-v2-5-0">Recently Completed (v2.5.0)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">git-pandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Performance Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/performance.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="performance-guide">
+<h1>Performance Guide<a class="headerlink" href="#performance-guide" title="Permalink to this heading"></a></h1>
+<p>This guide covers performance optimization strategies and best practices for using git-pandas effectively with large repositories and datasets.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h2>
+<p>Git-pandas provides several mechanisms to optimize performance:</p>
+<ul class="simple">
+<li><p><strong>Caching</strong>: Multiple cache backends for reusing expensive computations</p></li>
+<li><p><strong>Parallelization</strong>: Multi-threading support for repository operations</p></li>
+<li><p><strong>Data Filtering</strong>: Glob patterns and limits to reduce dataset size</p></li>
+<li><p><strong>Memory Management</strong>: Efficient data structures and memory usage patterns</p></li>
+</ul>
+</section>
+<section id="caching-system">
+<h2>Caching System<a class="headerlink" href="#caching-system" title="Permalink to this heading"></a></h2>
+<p>The caching system is the most important performance optimization in git-pandas. It stores the results of expensive Git operations and analysis computations.</p>
+<section id="cache-backends">
+<h3>Cache Backends<a class="headerlink" href="#cache-backends" title="Permalink to this heading"></a></h3>
+<p>git-pandas supports three cache backends:</p>
+<dl class="simple">
+<dt><strong>EphemeralCache</strong> (In-Memory)</dt><dd><ul class="simple">
+<li><p>Best for: Single-session analysis, development, testing</p></li>
+<li><p>Pros: Fast access, no disk I/O, automatic cleanup</p></li>
+<li><p>Cons: Data lost when process ends, limited by available RAM</p></li>
+<li><p>Use case: Interactive analysis, Jupyter notebooks</p></li>
+</ul>
+</dd>
+<dt><strong>DiskCache</strong> (Persistent)</dt><dd><ul class="simple">
+<li><p>Best for: Multi-session analysis, CI/CD pipelines, long-running processes</p></li>
+<li><p>Pros: Survives process restarts, configurable size limits, compression</p></li>
+<li><p>Cons: Slower than memory cache, disk space usage</p></li>
+<li><p>Use case: Regular analysis workflows, automated reporting</p></li>
+</ul>
+</dd>
+<dt><strong>RedisDFCache</strong> (Distributed)</dt><dd><ul class="simple">
+<li><p>Best for: Multi-user environments, distributed analysis, shared cache</p></li>
+<li><p>Pros: Shared across processes/machines, TTL support, Redis features</p></li>
+<li><p>Cons: Requires Redis server, network latency, additional complexity</p></li>
+<li><p>Use case: Team environments, production deployments</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="cache-configuration">
+<h3>Cache Configuration<a class="headerlink" href="#cache-configuration" title="Permalink to this heading"></a></h3>
+<p>Basic cache setup:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span><span class="p">,</span> <span class="n">DiskCache</span><span class="p">,</span> <span class="n">RedisDFCache</span>
+
+<span class="c1"># In-memory cache (fastest for single session)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Persistent cache (best for repeated analysis)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/gitpandas_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Redis cache (best for shared environments)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-warming">
+<h3>Cache Warming<a class="headerlink" href="#cache-warming" title="Permalink to this heading"></a></h3>
+<p>Pre-populate cache for better performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warm cache with commonly used methods</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span>
+    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;branches&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">,</span> <span class="s1">&#39;file_detail&#39;</span><span class="p">],</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># Reasonable limit for cache warming</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">,</span> <span class="s1">&#39;*.tmp&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache entries created: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution time: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-management">
+<h3>Cache Management<a class="headerlink" href="#cache-management" title="Permalink to this heading"></a></h3>
+<p>Monitor and manage cache performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repository entries: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;repository_entries&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">]:</span>
+    <span class="n">global_stats</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache usage: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">&#39;cache_usage_percent&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average entry age: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">&#39;average_entry_age_hours&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> hours&quot;</span><span class="p">)</span>
+
+<span class="c1"># Invalidate specific cache entries</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">])</span>
+
+<span class="c1"># Clear old cache entries by pattern</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;blame*&#39;</span><span class="p">)</span>
+
+<span class="c1"># Clear all cache for repository</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-benchmarks">
+<h3>Performance Benchmarks<a class="headerlink" href="#performance-benchmarks" title="Permalink to this heading"></a></h3>
+<p>Typical performance improvements with caching:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>No Cache</p></th>
+<th class="head"><p>With Cache</p></th>
+<th class="head"><p>Speedup</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>commit_history</p></td>
+<td><p>2.5s</p></td>
+<td><p>0.05s</p></td>
+<td><p>50x</p></td>
+</tr>
+<tr class="row-odd"><td><p>blame</p></td>
+<td><p>4.2s</p></td>
+<td><p>0.08s</p></td>
+<td><p>52x</p></td>
+</tr>
+<tr class="row-even"><td><p>file_detail</p></td>
+<td><p>1.8s</p></td>
+<td><p>0.03s</p></td>
+<td><p>60x</p></td>
+</tr>
+<tr class="row-odd"><td><p>branches/tags</p></td>
+<td><p>0.3s</p></td>
+<td><p>0.01s</p></td>
+<td><p>30x</p></td>
+</tr>
+<tr class="row-even"><td><p>bus_factor</p></td>
+<td><p>3.1s</p></td>
+<td><p>0.06s</p></td>
+<td><p>51x</p></td>
+</tr>
+</tbody>
+</table>
+<p><em>Benchmarks based on medium-sized repository (~5000 commits, 500 files)</em></p>
+</section>
+</section>
+<section id="data-filtering-and-limits">
+<h2>Data Filtering and Limits<a class="headerlink" href="#data-filtering-and-limits" title="Permalink to this heading"></a></h2>
+<p>Reduce dataset size to improve performance:</p>
+<section id="glob-patterns">
+<h3>Glob Patterns<a class="headerlink" href="#glob-patterns" title="Permalink to this heading"></a></h3>
+<p>Use glob patterns to focus analysis on relevant files:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Analyze only Python files</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">])</span>
+
+<span class="c1"># Exclude test and build files</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;test_*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;build/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*.pyc&#39;</span><span class="p">])</span>
+
+<span class="c1"># Multiple patterns</span>
+<span class="n">rates</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">(</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">,</span> <span class="s1">&#39;*.html&#39;</span><span class="p">],</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/tests/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/node_modules/*&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="limits-and-time-windows">
+<h3>Limits and Time Windows<a class="headerlink" href="#limits-and-time-windows" title="Permalink to this heading"></a></h3>
+<p>Limit analysis scope for faster results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Limit to recent commits</span>
+<span class="n">recent_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Analyze last 90 days only</span>
+<span class="n">recent_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+
+<span class="c1"># Combine limits with filtering</span>
+<span class="n">python_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="branch-specific-analysis">
+<h3>Branch-Specific Analysis<a class="headerlink" href="#branch-specific-analysis" title="Permalink to this heading"></a></h3>
+<p>Analyze specific branches for better performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Analyze main development branch only</span>
+<span class="n">main_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">)</span>
+
+<span class="c1"># Compare specific branches</span>
+<span class="n">feature_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">&#39;feature/new-ui&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parallelization">
+<h2>Parallelization<a class="headerlink" href="#parallelization" title="Permalink to this heading"></a></h2>
+<p>git-pandas uses parallel processing when joblib is available:</p>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>joblib
+</pre></div>
+</div>
+</section>
+<section id="parallel-operations">
+<h3>Parallel Operations<a class="headerlink" href="#parallel-operations" title="Permalink to this heading"></a></h3>
+<p>Several operations automatically use parallelization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+
+<span class="c1"># Parallel analysis across repositories</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">&#39;/path/to/projects&#39;</span><span class="p">)</span>
+
+<span class="c1"># These operations run in parallel when joblib is available:</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>  <span class="c1"># Parallel across repos</span>
+<span class="n">branches</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">branches</span><span class="p">()</span>       <span class="c1"># Parallel across repos</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">cumulative_blame</span><span class="p">()</span>  <span class="c1"># Parallel across commits</span>
+
+<span class="c1"># Control parallelization</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">parallel_cumulative_blame</span><span class="p">(</span>
+    <span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># Number of parallel workers</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span>   <span class="c1"># Limit for better performance</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Permalink to this heading"></a></h2>
+<p>Optimize memory usage for large repositories:</p>
+<section id="dataframe-memory-usage">
+<h3>DataFrame Memory Usage<a class="headerlink" href="#dataframe-memory-usage" title="Permalink to this heading"></a></h3>
+<p>Monitor and optimize DataFrame memory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># Check memory usage</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory usage: </span><span class="si">{</span><span class="n">commits</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+
+<span class="c1"># Optimize data types</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;deletions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;deletions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+
+<span class="c1"># Use categorical for repeated strings</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;committer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="chunked-processing">
+<h3>Chunked Processing<a class="headerlink" href="#chunked-processing" title="Permalink to this heading"></a></h3>
+<p>Process large datasets in chunks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">analyze_in_chunks</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Analyze repository in chunks to manage memory.&quot;&quot;&quot;</span>
+    <span class="n">all_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Get chunk of commits</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="c1"># Process chunk</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">process_chunk</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">all_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">chunk_size</span>
+
+        <span class="c1"># Optional: Clear cache periodically</span>
+        <span class="k">if</span> <span class="n">offset</span> <span class="o">%</span> <span class="mi">10000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;commit_history*&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_results</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="large-repository-strategies">
+<h2>Large Repository Strategies<a class="headerlink" href="#large-repository-strategies" title="Permalink to this heading"></a></h2>
+<p>Special considerations for large repositories:</p>
+<section id="repository-size-guidelines">
+<h3>Repository Size Guidelines<a class="headerlink" href="#repository-size-guidelines" title="Permalink to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Size</p></th>
+<th class="head"><p>Commits/Files</p></th>
+<th class="head"><p>Recommended Strategy</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Small</p></td>
+<td><p>&lt;1K commits</p></td>
+<td><p>Any cache, no limits</p></td>
+</tr>
+<tr class="row-odd"><td><p>Medium</p></td>
+<td><p>1K-10K commits</p></td>
+<td><p>DiskCache, reasonable limits</p></td>
+</tr>
+<tr class="row-even"><td><p>Large</p></td>
+<td><p>10K-100K commits</p></td>
+<td><p>DiskCache + filtering</p></td>
+</tr>
+<tr class="row-odd"><td><p>Very Large</p></td>
+<td><p>&gt;100K commits</p></td>
+<td><p>Redis + chunking + limits</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="configuration-for-large-repositories">
+<h3>Configuration for Large Repositories<a class="headerlink" href="#configuration-for-large-repositories" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Large repository configuration</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/fast/disk/cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
+    <span class="s1">&#39;/path/to/large/repo&#39;</span><span class="p">,</span>
+    <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># Use aggressive filtering</span>
+<span class="n">analysis</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>  <span class="c1"># Reasonable limit</span>
+    <span class="n">days</span><span class="o">=</span><span class="mi">365</span><span class="p">,</span>    <span class="c1"># Last year only</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">],</span>  <span class="c1"># Core files only</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/tests/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/vendor/*&#39;</span><span class="p">]</span>  <span class="c1"># Exclude bulk dirs</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="monitoring-performance">
+<h3>Monitoring Performance<a class="headerlink" href="#monitoring-performance" title="Permalink to this heading"></a></h3>
+<p>Track performance metrics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">benchmark_operation</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Benchmark any git-pandas operation.&quot;&quot;&quot;</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_memory</span> <span class="o">=</span> <span class="n">get_memory_usage</span><span class="p">()</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">end_memory</span> <span class="o">=</span> <span class="n">get_memory_usage</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution time: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory delta: </span><span class="si">{</span><span class="n">end_memory</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_memory</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">MB&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="c1"># Example usage</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">benchmark_operation</span><span class="p">(</span>
+    <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">,</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-anti-patterns">
+<h2>Performance Anti-Patterns<a class="headerlink" href="#performance-anti-patterns" title="Permalink to this heading"></a></h2>
+<p>Avoid these common performance issues:</p>
+<p>❌ <strong>No Caching</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Slow: No cache means repeated expensive Git operations</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>  <span class="c1"># No cache_backend</span>
+<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;develop&#39;</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">]:</span>
+    <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>  <span class="c1"># Repeated work</span>
+</pre></div>
+</div>
+<p>✅ <strong>With Caching</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fast: Cache reuses expensive operations</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/analysis_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;develop&#39;</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">]:</span>
+    <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>  <span class="c1"># Cached after first</span>
+</pre></div>
+</div>
+<p>❌ <strong>No Filtering</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Slow: Processes all files including irrelevant ones</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">()</span>  <span class="c1"># Includes build files, logs, etc.</span>
+</pre></div>
+</div>
+<p>✅ <strong>With Filtering</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fast: Only analyzes relevant source files</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">,</span> <span class="s1">&#39;*.html&#39;</span><span class="p">],</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/build/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/logs/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*.pyc&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>❌ <strong>Unlimited Analysis</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Slow: Processes entire repository history</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>  <span class="c1"># Could be millions of commits</span>
+</pre></div>
+</div>
+<p>✅ <strong>Limited Analysis</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fast: Focuses on recent, relevant commits</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>  <span class="c1"># Last 1000 commits</span>
+    <span class="n">days</span><span class="o">=</span><span class="mi">90</span>       <span class="c1"># Last 90 days</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>❌ <strong>Memory Leaks</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Memory issues: Large DataFrames accumulating</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">commits</span><span class="p">)</span>  <span class="c1"># Accumulating large DataFrames</span>
+</pre></div>
+</div>
+<p>✅ <strong>Memory Management</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Memory efficient: Process and aggregate</span>
+<span class="n">total_commits</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Smaller chunks</span>
+    <span class="n">total_commits</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">commits</span><span class="p">)</span>
+    <span class="c1"># Don&#39;t accumulate DataFrames</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total commits processed: </span><span class="si">{</span><span class="n">total_commits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices-summary">
+<h2>Best Practices Summary<a class="headerlink" href="#best-practices-summary" title="Permalink to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Always use caching</strong> for any analysis beyond one-off queries</p></li>
+<li><p><strong>Choose the right cache backend</strong> for your use case:
+- EphemeralCache: Development, interactive analysis
+- DiskCache: Regular workflows, CI/CD
+- RedisDFCache: Team environments, production</p></li>
+<li><p><strong>Warm your cache</strong> before intensive analysis sessions</p></li>
+<li><p><strong>Use glob patterns</strong> to filter relevant files only</p></li>
+<li><p><strong>Set reasonable limits</strong> on commit history and time windows</p></li>
+<li><p><strong>Monitor cache performance</strong> and invalidate when needed</p></li>
+<li><p><strong>Profile memory usage</strong> for large repositories</p></li>
+<li><p><strong>Process in chunks</strong> when dealing with very large datasets</p></li>
+<li><p><strong>Use parallelization</strong> with ProjectDirectory for multiple repositories</p></li>
+<li><p><strong>Avoid anti-patterns</strong> that lead to repeated expensive operations</p></li>
+</ol>
+<p>For more detailed examples, see the performance examples in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/cache_management.py</span></code> - Cache management and monitoring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/remote_fetch_and_cache_warming.py</span></code> - Cache warming strategies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/parallel_blame.py</span></code> - Parallel processing examples</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="remote_operations.html" class="btn btn-neutral float-left" title="Remote Operations and Cache Warming" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usecases.html" class="btn btn-neutral float-right" title="Use Cases and Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

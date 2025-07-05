@@ -112,6 +112,7 @@ For detailed information about the components and their usage, see:
    project
    cache
    remote_operations
+   performance
    usecases
    contributors
 

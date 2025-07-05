@@ -8,11 +8,12 @@ Overview
 
 The caching system provides:
 * In-memory caching for temporary results
-* Redis-based caching for persistent storage
-* Configurable cache durations
-* Automatic cache invalidation
+* Disk-based caching for persistent storage across sessions
+* Redis-based caching for distributed storage
+* Cache management and invalidation methods
 * Decorator-based caching for expensive operations
 * **Cache timestamp tracking** - know when cache entries were populated
+* **Cache statistics and monitoring** - track cache performance and usage
 
 Available Cache Backends
 ------------------------

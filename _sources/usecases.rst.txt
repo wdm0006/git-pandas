@@ -114,6 +114,9 @@ Analyze project sustainability:
     # Calculate bus factor for repository
     bus_factor = repo.bus_factor()
     
+    # Calculate file-wise bus factor (new in v2.5.0)
+    file_bus_factor = repo.bus_factor(by='file')
+    
     # Get detailed blame information
     blame_df = repo.blame(by='file')  # Get file-level blame details
     
@@ -131,13 +134,17 @@ Optimize performance with caching:
 .. code-block:: python
 
     from gitpandas import Repository
-    from gitpandas.cache import EphemeralCache, RedisDFCache
+    from gitpandas.cache import EphemeralCache, DiskCache, RedisDFCache
     
     # Use in-memory caching
-    cache = EphemeralCache()
+    cache = EphemeralCache(max_keys=1000)
     repo = Repository('/path/to/repo', cache_backend=cache)
     
-    # Or use Redis for persistent caching
+    # Use persistent disk caching (new in v2.5.0)
+    disk_cache = DiskCache('/tmp/gitpandas_cache.gz', max_keys=500)
+    repo = Repository('/path/to/repo', cache_backend=disk_cache)
+    
+    # Or use Redis for distributed caching
     redis_cache = RedisDFCache(
         host='localhost',
         port=6379,
@@ -145,6 +152,27 @@ Optimize performance with caching:
         ttl=3600  # Cache entries expire after 1 hour
     )
     repo = Repository('/path/to/repo', cache_backend=redis_cache)
+
+Cache Management (New in v2.5.0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Manage cache performance and contents:
+
+.. code-block:: python
+
+    # Get cache statistics
+    stats = repo.get_cache_stats()
+    print(f"Cache usage: {stats['global_cache_stats']['cache_usage_percent']:.1f}%")
+    
+    # Invalidate specific cache entries
+    repo.invalidate_cache(keys=['commit_history'])
+    
+    # Clear all cache for this repository
+    repo.invalidate_cache()
+    
+    # Warm cache for better performance
+    result = repo.warm_cache(methods=['commit_history', 'blame'], limit=100)
+    print(f"Created {result['cache_entries_created']} cache entries")
 
 Visualization Examples
 ----------------------

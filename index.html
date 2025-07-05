@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Git-Pandas Documentation &mdash; git-pandas 2.2.1 documentation</title>
+  <title>Welcome to Git-Pandas Documentation &mdash; git-pandas 2.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
@@ -24,7 +24,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=341fb650"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=1e3cc387"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
       <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
@@ -146,6 +146,42 @@
 <li class="toctree-l2"><a class="reference internal" href="remote_operations.html#return-value-reference">Return Value Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#caching-system">Caching System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-backends">Cache Backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-configuration">Cache Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-warming">Cache Warming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-management">Cache Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#performance-benchmarks">Performance Benchmarks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#data-filtering-and-limits">Data Filtering and Limits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#glob-patterns">Glob Patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#limits-and-time-windows">Limits and Time Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#branch-specific-analysis">Branch-Specific Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#parallelization">Parallelization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#parallel-operations">Parallel Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#memory-management">Memory Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#dataframe-memory-usage">DataFrame Memory Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#chunked-processing">Chunked Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#large-repository-strategies">Large Repository Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#repository-size-guidelines">Repository Size Guidelines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#configuration-for-large-repositories">Configuration for Large Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="performance.html#monitoring-performance">Monitoring Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#performance-anti-patterns">Performance Anti-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#best-practices-summary">Best Practices Summary</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
@@ -163,6 +199,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cache-management-new-in-v2-5-0">Cache Management (New in v2.5.0)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
@@ -184,6 +221,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#recently-completed-v2-5-0">Recently Completed (v2.5.0)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
 </ul>
 </li>
@@ -314,6 +352,7 @@
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a></li>
 </ul>

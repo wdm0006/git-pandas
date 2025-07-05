@@ -76,14 +76,23 @@ High Priority
 * Enhance documentation with more examples and visualizations
 * Streamline documentation deployment
 
+Recently Completed (v2.5.0)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ✅ File-wise bus factor analysis (completed)
+* ✅ Cache management methods (invalidate_cache, get_cache_stats)
+* ✅ Performance documentation and optimization guide
+* ✅ Remote operations (safe_fetch_remote, warm_cache, bulk operations)
+* ✅ Enhanced caching system with timestamps and metadata
+
 Feature Ideas
 ~~~~~~~~~~~~~
 
-* File-level history tracking
 * Cross-branch analytics
 * Enhanced verbose logging
-* Hierarchical bus factor analysis
 * Language analytics and insights
+* Code complexity metrics
+* Contributor network analysis
 
 Development Setup
 -----------------

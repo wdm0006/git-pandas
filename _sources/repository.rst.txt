@@ -88,7 +88,7 @@ Core Analysis
 
     # Bus factor analysis
     repo.bus_factor(
-        by="repository",     # How to group results
+        by="repository",     # How to group results ('repository' or 'file')
         ignore_globs=None,
         include_globs=None
     )
