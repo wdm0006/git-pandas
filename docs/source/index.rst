@@ -59,7 +59,10 @@ Key Features
 * **Repository Analysis**: Extract commit history, file changes, and blame information
 * **Project Insights**: Calculate bus factor and analyze repository metrics
 * **Multi-Repository Support**: Analyze multiple repositories together
-* **Performance Optimization**: Basic caching support and glob-based filtering
+* **Remote Operations**: Safely fetch changes from remote repositories
+* **Cache Warming**: Pre-populate caches for improved performance
+* **Bulk Operations**: Efficiently process multiple repositories in parallel
+* **Performance Optimization**: Advanced caching support and glob-based filtering
 
 Core Components
 ---------------
@@ -108,6 +111,7 @@ For detailed information about the components and their usage, see:
    repository
    project
    cache
+   remote_operations
    usecases
    contributors
 

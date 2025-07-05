@@ -2717,6 +2717,233 @@ class Repository:
             prev_sha = commit_sha
         return pd.DataFrame(rows)
 
+    def safe_fetch_remote(self, remote_name='origin', prune=False, dry_run=False):
+        """Safely fetch changes from remote repository.
+
+        Fetches the latest changes from a remote repository without modifying the working directory.
+        This is a read-only operation that only updates remote-tracking branches.
+
+        Args:
+            remote_name (str, optional): Name of remote to fetch from. Defaults to 'origin'.
+            prune (bool, optional): Remove remote-tracking branches that no longer exist on remote.
+                Defaults to False.
+            dry_run (bool, optional): Show what would be fetched without actually fetching.
+                Defaults to False.
+
+        Returns:
+            dict: Fetch results with keys:
+                - success (bool): Whether the fetch was successful
+                - message (str): Status message or error description
+                - remote_exists (bool): Whether the specified remote exists
+                - changes_available (bool): Whether new changes were fetched
+                - error (Optional[str]): Error message if fetch failed
+
+        Note:
+            This method is safe as it only fetches remote changes and never modifies
+            the working directory or current branch. It will not perform any merges,
+            rebases, or checkouts.
+        """
+        logger.info(f"Attempting to safely fetch from remote '{remote_name}' (dry_run={dry_run})")
+        
+        result = {
+            'success': False,
+            'message': '',
+            'remote_exists': False,
+            'changes_available': False,
+            'error': None
+        }
+        
+        try:
+            # Check if we have any remotes
+            if not self.repo.remotes:
+                result['message'] = 'No remotes configured for this repository'
+                logger.warning(f"No remotes configured for repository '{self.repo_name}'")
+                return result
+            
+            # Check if the specified remote exists
+            remote_names = [remote.name for remote in self.repo.remotes]
+            if remote_name not in remote_names:
+                result['message'] = f"Remote '{remote_name}' not found. Available remotes: {remote_names}"
+                logger.warning(f"Remote '{remote_name}' not found in repository '{self.repo_name}'")
+                return result
+            
+            result['remote_exists'] = True
+            remote = self.repo.remote(remote_name)
+            
+            # Perform dry run if requested
+            if dry_run:
+                try:
+                    # Get remote refs to see what's available
+                    remote_refs = list(remote.refs)
+                    result['message'] = f"Dry run: Would fetch from {remote.url}. Remote has {len(remote_refs)} refs."
+                    result['success'] = True
+                    logger.info(f"Dry run completed for remote '{remote_name}' in repository '{self.repo_name}'")
+                    return result
+                except Exception as e:
+                    result['error'] = f"Dry run failed: {str(e)}"
+                    logger.error(f"Dry run failed for remote '{remote_name}' in repository '{self.repo_name}': {e}")
+                    return result
+            
+            # Perform the actual fetch
+            try:
+                logger.info(f"Fetching from remote '{remote_name}' in repository '{self.repo_name}'")
+                fetch_info = remote.fetch(prune=prune)
+                
+                # Check if any changes were fetched
+                changes_available = len(fetch_info) > 0
+                result['changes_available'] = changes_available
+                
+                if changes_available:
+                    fetched_refs = [info.ref.name for info in fetch_info if info.ref]
+                    result['message'] = f"Successfully fetched {len(fetch_info)} updates. Updated refs: {fetched_refs}"
+                    logger.info(f"Fetch completed with {len(fetch_info)} updates from '{remote_name}' in repository '{self.repo_name}'")
+                else:
+                    result['message'] = f"Fetch completed - repository is up to date with '{remote_name}'"
+                    logger.info(f"Repository '{self.repo_name}' is up to date with remote '{remote_name}'")
+                
+                result['success'] = True
+                
+            except Exception as e:
+                result['error'] = f"Fetch failed: {str(e)}"
+                logger.error(f"Fetch failed for remote '{remote_name}' in repository '{self.repo_name}': {e}")
+                
+        except Exception as e:
+            result['error'] = f"Unexpected error: {str(e)}"
+            logger.error(f"Unexpected error during fetch from remote '{remote_name}' in repository '{self.repo_name}': {e}")
+        
+        return result
+
+    def warm_cache(self, methods=None, **kwargs):
+        """Pre-populate cache with commonly used data.
+
+        Executes a set of commonly used repository analysis methods to populate the cache,
+        improving performance for subsequent calls. Only methods that support caching
+        will be executed.
+
+        Args:
+            methods (Optional[List[str]]): List of method names to pre-warm. If None,
+                uses a default set of commonly used methods. Available methods:
+                - 'commit_history': Load commit history
+                - 'branches': Load branch information
+                - 'tags': Load tag information
+                - 'blame': Load blame information
+                - 'file_detail': Load file details
+                - 'list_files': Load file listing
+                - 'file_change_rates': Load file change statistics
+            **kwargs: Additional keyword arguments to pass to the methods.
+                Common arguments include:
+                - branch: Branch to analyze (default: repository's default branch)
+                - limit: Limit number of commits to analyze
+                - ignore_globs: List of glob patterns to ignore
+                - include_globs: List of glob patterns to include
+
+        Returns:
+            dict: Results of cache warming operations with keys:
+                - success (bool): Whether cache warming was successful
+                - methods_executed (List[str]): List of methods that were executed
+                - methods_failed (List[str]): List of methods that failed
+                - cache_entries_created (int): Number of cache entries created
+                - execution_time (float): Total execution time in seconds
+                - errors (List[str]): List of error messages for failed methods
+
+        Note:
+            This method will only execute methods if a cache backend is configured.
+            If no cache backend is available, it will return immediately with a
+            success status but no methods executed.
+        """
+        logger.info(f"Starting cache warming for repository '{self.repo_name}'")
+        
+        result = {
+            'success': False,
+            'methods_executed': [],
+            'methods_failed': [],
+            'cache_entries_created': 0,
+            'execution_time': 0.0,
+            'errors': []
+        }
+        
+        import time
+        start_time = time.time()
+        
+        # Check if caching is enabled
+        if self.cache_backend is None:
+            result['success'] = True
+            result['execution_time'] = time.time() - start_time
+            logger.info(f"No cache backend configured for repository '{self.repo_name}' - skipping cache warming")
+            return result
+        
+        # Default methods to warm if none specified
+        if methods is None:
+            methods = [
+                'commit_history',
+                'branches', 
+                'tags',
+                'blame',
+                'file_detail',
+                'list_files'
+            ]
+        
+        # Get initial cache size
+        initial_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, '_cache') else 0
+        
+        # Execute each method to warm the cache
+        for method_name in methods:
+            try:
+                if not hasattr(self, method_name):
+                    result['methods_failed'].append(method_name)
+                    result['errors'].append(f"Method '{method_name}' not found")
+                    logger.warning(f"Method '{method_name}' not found in repository '{self.repo_name}'")
+                    continue
+                
+                method = getattr(self, method_name)
+                
+                # Execute method with provided kwargs
+                logger.debug(f"Executing method '{method_name}' for cache warming in repository '{self.repo_name}'")
+                
+                # Handle special cases for method arguments
+                method_kwargs = kwargs.copy()
+                
+                # For methods that might need specific arguments
+                if method_name in ['commit_history', 'file_change_rates']:
+                    # Set reasonable defaults if not provided
+                    if 'limit' not in method_kwargs:
+                        method_kwargs['limit'] = 100  # Reasonable default for cache warming
+                elif method_name == 'list_files':
+                    # list_files doesn't accept limit parameter, remove it if present
+                    method_kwargs.pop('limit', None)
+                
+                # Execute the method
+                _ = method(**method_kwargs)
+                result['methods_executed'].append(method_name)
+                logger.debug(f"Successfully executed method '{method_name}' for cache warming in repository '{self.repo_name}'")
+                
+            except Exception as e:
+                result['methods_failed'].append(method_name)
+                error_msg = f"Method '{method_name}' failed: {str(e)}"
+                result['errors'].append(error_msg)
+                logger.error(f"Cache warming failed for method '{method_name}' in repository '{self.repo_name}': {e}")
+        
+        # Calculate cache entries created
+        final_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, '_cache') else 0
+        result['cache_entries_created'] = final_cache_size - initial_cache_size
+        
+        # Calculate execution time
+        result['execution_time'] = time.time() - start_time
+        
+        # Determine overall success
+        result['success'] = len(result['methods_executed']) > 0
+        
+        if result['success']:
+            logger.info(f"Cache warming completed for repository '{self.repo_name}'. "
+                       f"Executed {len(result['methods_executed'])} methods, "
+                       f"created {result['cache_entries_created']} cache entries "
+                       f"in {result['execution_time']:.2f} seconds")
+        else:
+            logger.warning(f"Cache warming failed for repository '{self.repo_name}'. "
+                          f"No methods executed successfully. Errors: {result['errors']}")
+        
+        return result
+
 
 class GitFlowRepository(Repository):
     """

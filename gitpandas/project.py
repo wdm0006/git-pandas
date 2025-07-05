@@ -1225,6 +1225,195 @@ class ProjectDirectory:
         logger.debug(f"Determined repository name: '{name}'")
         return name
 
+    def bulk_fetch_and_warm(self, fetch_remote=False, warm_cache=False, parallel=True, 
+                           remote_name='origin', prune=False, dry_run=False, 
+                           cache_methods=None, **kwargs):
+        """Safely fetch remote changes and pre-warm cache for all repositories.
+
+        Performs bulk operations across all repositories in the project directory,
+        optionally fetching from remote repositories and pre-warming caches to
+        improve subsequent analysis performance.
+
+        Args:
+            fetch_remote (bool, optional): Whether to fetch from remote repositories.
+                Defaults to False.
+            warm_cache (bool, optional): Whether to pre-warm repository caches.
+                Defaults to False.
+            parallel (bool, optional): Use parallel processing when available (joblib).
+                Defaults to True.
+            remote_name (str, optional): Name of remote to fetch from. Defaults to 'origin'.
+            prune (bool, optional): Remove remote-tracking branches that no longer exist.
+                Defaults to False.
+            dry_run (bool, optional): Show what would be fetched without actually fetching.
+                Defaults to False.
+            cache_methods (Optional[List[str]]): List of methods to use for cache warming.
+                If None, uses default methods. See Repository.warm_cache for available methods.
+            **kwargs: Additional keyword arguments to pass to cache warming methods.
+
+        Returns:
+            dict: Results with keys:
+                - success (bool): Whether the overall operation was successful
+                - repositories_processed (int): Number of repositories processed
+                - fetch_results (dict): Per-repository fetch results (if fetch_remote=True)
+                - cache_results (dict): Per-repository cache warming results (if warm_cache=True)
+                - execution_time (float): Total execution time in seconds
+                - summary (dict): Summary statistics of the operation
+
+        Note:
+            This method safely handles errors at the repository level, ensuring that
+            failures in one repository don't affect processing of others. All operations
+            are read-only and will not modify working directories or current branches.
+        """
+        logger.info(f"Starting bulk operations for {len(self.repos)} repositories "
+                   f"(fetch_remote={fetch_remote}, warm_cache={warm_cache}, parallel={parallel})")
+        
+        import time
+        start_time = time.time()
+        
+        result = {
+            'success': False,
+            'repositories_processed': 0,
+            'fetch_results': {},
+            'cache_results': {},
+            'execution_time': 0.0,
+            'summary': {
+                'fetch_successful': 0,
+                'fetch_failed': 0,
+                'cache_successful': 0,
+                'cache_failed': 0,
+                'repositories_with_remotes': 0,
+                'total_cache_entries_created': 0
+            }
+        }
+        
+        if not self.repos:
+            result['success'] = True
+            result['execution_time'] = time.time() - start_time
+            logger.info("No repositories to process")
+            return result
+        
+        # Define the worker function for individual repository processing
+        def process_repository(repo):
+            """Process a single repository for fetch and/or cache warming."""
+            repo_result = {
+                'repo_name': repo.repo_name,
+                'fetch_result': None,
+                'cache_result': None,
+                'success': True,
+                'error': None
+            }
+            
+            try:
+                # Perform fetch if requested
+                if fetch_remote:
+                    logger.debug(f"Fetching remote for repository '{repo.repo_name}'")
+                    fetch_result = repo.safe_fetch_remote(
+                        remote_name=remote_name,
+                        prune=prune,
+                        dry_run=dry_run
+                    )
+                    repo_result['fetch_result'] = fetch_result
+                    
+                    if not fetch_result['success'] and fetch_result.get('remote_exists', False):
+                        # Only count as failure if remote exists but fetch failed
+                        # Missing remotes are not considered failures
+                        repo_result['success'] = False
+                        repo_result['error'] = fetch_result.get('error', 'Fetch failed')
+                
+                # Perform cache warming if requested
+                if warm_cache:
+                    logger.debug(f"Warming cache for repository '{repo.repo_name}'")
+                    cache_result = repo.warm_cache(methods=cache_methods, **kwargs)
+                    repo_result['cache_result'] = cache_result
+                    
+                    if not cache_result['success']:
+                        repo_result['success'] = False
+                        if repo_result['error']:
+                            repo_result['error'] += f"; Cache warming failed"
+                        else:
+                            repo_result['error'] = "Cache warming failed"
+                
+                logger.debug(f"Completed processing repository '{repo.repo_name}' "
+                           f"(success={repo_result['success']})")
+                
+            except Exception as e:
+                repo_result['success'] = False
+                repo_result['error'] = f"Unexpected error: {str(e)}"
+                logger.error(f"Unexpected error processing repository '{repo.repo_name}': {e}")
+            
+            return repo_result
+        
+        # Process repositories (with or without parallel execution)
+        if parallel and _has_joblib and len(self.repos) > 1:
+            logger.info(f"Processing {len(self.repos)} repositories in parallel")
+            try:
+                from joblib import Parallel, delayed
+                repo_results = Parallel(n_jobs=-1, backend="threading", verbose=0)(
+                    delayed(process_repository)(repo) for repo in self.repos
+                )
+            except Exception as e:
+                logger.warning(f"Parallel processing failed, falling back to sequential: {e}")
+                repo_results = [process_repository(repo) for repo in self.repos]
+        else:
+            logger.info(f"Processing {len(self.repos)} repositories sequentially")
+            repo_results = [process_repository(repo) for repo in self.repos]
+        
+        # Process results and build summary
+        for repo_result in repo_results:
+            repo_name = repo_result['repo_name']
+            result['repositories_processed'] += 1
+            
+            # Store individual results
+            if fetch_remote and repo_result['fetch_result']:
+                result['fetch_results'][repo_name] = repo_result['fetch_result']
+                
+                # Update fetch summary
+                if repo_result['fetch_result']['success']:
+                    result['summary']['fetch_successful'] += 1
+                else:
+                    result['summary']['fetch_failed'] += 1
+                
+                if repo_result['fetch_result']['remote_exists']:
+                    result['summary']['repositories_with_remotes'] += 1
+            
+            if warm_cache and repo_result['cache_result']:
+                result['cache_results'][repo_name] = repo_result['cache_result']
+                
+                # Update cache summary
+                if repo_result['cache_result']['success']:
+                    result['summary']['cache_successful'] += 1
+                    result['summary']['total_cache_entries_created'] += repo_result['cache_result']['cache_entries_created']
+                else:
+                    result['summary']['cache_failed'] += 1
+        
+        # Calculate execution time and overall success
+        result['execution_time'] = time.time() - start_time
+        
+        # Consider operation successful if at least one repository was processed successfully
+        successful_repos = sum(1 for repo_result in repo_results if repo_result['success'])
+        result['success'] = successful_repos > 0
+        
+        # Log summary
+        if result['success']:
+            logger.info(f"Bulk operations completed successfully in {result['execution_time']:.2f} seconds. "
+                       f"Processed {result['repositories_processed']} repositories, "
+                       f"{successful_repos} successful, {len(repo_results) - successful_repos} failed.")
+            
+            if fetch_remote:
+                logger.info(f"Fetch summary: {result['summary']['fetch_successful']} successful, "
+                           f"{result['summary']['fetch_failed']} failed, "
+                           f"{result['summary']['repositories_with_remotes']} have remotes")
+            
+            if warm_cache:
+                logger.info(f"Cache warming summary: {result['summary']['cache_successful']} successful, "
+                           f"{result['summary']['cache_failed']} failed, "
+                           f"{result['summary']['total_cache_entries_created']} total cache entries created")
+        else:
+            logger.warning(f"Bulk operations completed with errors in {result['execution_time']:.2f} seconds. "
+                          f"No repositories processed successfully.")
+        
+        return result
+
 
 class GitHubProfile(ProjectDirectory):
     """A specialized ProjectDirectory for analyzing a GitHub user's repositories.
