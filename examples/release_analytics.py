@@ -41,9 +41,7 @@ if repo:
             print("Release summary retrieved successfully:")
             # Display the DataFrame. Pandas default display might be wide,
             # but for an example, direct print is usually fine.
-            # For better display in production, consider options like:
-            # pd.set_option('display.max_columns', None)
-            # pd.set_option('display.width', 1000)
+            # For better display in production, consider setting pandas display options
             print(release_summary_df)
 
             # Example of how to access specific information:
@@ -104,11 +102,14 @@ if repo:
                 print(commit_content_df.head())
             elif commit_content_df is not None:  # Empty DataFrame
                 print(
-                    f"No content changes (e.g. diffs) found for commit {target_commit_sha}. This can be normal for merge commits with no textual changes, or if the commit only modified tree structure."
+                    f"No content changes (e.g. diffs) found for commit {target_commit_sha}. "
+                    f"This can be normal for merge commits with no textual changes, "
+                    f"or if the commit only modified tree structure."
                 )
             else:  # None was returned
                 print(
-                    f"Failed to get content for commit {target_commit_sha} (method returned None). Could be an invalid SHA or repository issue."
+                    f"Failed to get content for commit {target_commit_sha} (method returned None). "
+                    f"Could be an invalid SHA or repository issue."
                 )
         except Exception as e:
             print(f"Error calling get_commit_content for {target_commit_sha}: {e}")

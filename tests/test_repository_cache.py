@@ -62,9 +62,9 @@ class TestRepositoryCache:
         # Create cache and repository
         cache = DiskCache(filepath=temp_cache_file)
 
-        # Mock the cache get and set methods to track calls
+        # Mock the cache _get_entry and set methods to track calls
         with (
-            mock.patch.object(cache, "get", wraps=cache.get) as mock_get,
+            mock.patch.object(cache, "_get_entry", wraps=cache._get_entry) as mock_get_entry,
             mock.patch.object(cache, "set", wraps=cache.set) as mock_set,
         ):
             repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
@@ -72,13 +72,13 @@ class TestRepositoryCache:
             # First call - should set cache but not get from it
             result1 = repo.list_files()
             assert mock_set.call_count > 0, "Cache set should be called"
-            assert mock_get.call_count > 0, "Cache get should be called (but returns miss)"
+            assert mock_get_entry.call_count > 0, "Cache _get_entry should be called (but returns miss)"
             mock_set.reset_mock()
-            mock_get.reset_mock()
+            mock_get_entry.reset_mock()
 
             # Second call - should get from cache
             result2 = repo.list_files()
-            assert mock_get.call_count > 0, "Cache get should be called"
+            assert mock_get_entry.call_count > 0, "Cache _get_entry should be called"
             assert mock_set.call_count == 0, "Cache set should not be called"
 
             # Results should be identical
@@ -86,7 +86,7 @@ class TestRepositoryCache:
 
             # Force refresh - should set cache again
             mock_set.reset_mock()
-            mock_get.reset_mock()
+            mock_get_entry.reset_mock()
             result3 = repo.list_files(force_refresh=True)
             assert mock_set.call_count > 0, "Cache set should be called with force_refresh"
 
@@ -127,16 +127,16 @@ class TestRepositoryCache:
         # Create second repository with same cache file
         cache2 = DiskCache(filepath=temp_cache_file)
 
-        # Mock the get method to verify it's called
+        # Mock the _get_entry method to verify it's called
         with (
-            mock.patch.object(cache2, "get", wraps=cache2.get) as mock_get,
+            mock.patch.object(cache2, "_get_entry", wraps=cache2._get_entry) as mock_get_entry,
             mock.patch.object(cache2, "set", wraps=cache2.set) as mock_set,
         ):
             repo2 = Repository(working_dir=temp_git_repo, cache_backend=cache2)
 
             # Call same method - should use cache
             result2 = repo2.list_files()
-            assert mock_get.call_count > 0, "Cache get should be called"
+            assert mock_get_entry.call_count > 0, "Cache _get_entry should be called"
             assert mock_set.call_count == 0, "Cache set should not be called"
 
             # Results should match
@@ -154,8 +154,8 @@ class TestRepositoryCache:
         results["commits"] = repo.commit_history()
         results["files"] = repo.list_files()
 
-        # Mock the cache get method to track calls
-        with mock.patch.object(cache, "get", wraps=cache.get) as mock_get:
+        # Mock the cache _get_entry method to track calls
+        with mock.patch.object(cache, "_get_entry", wraps=cache._get_entry) as mock_get_entry:
             # Second calls - should use cache
             commits2 = repo.commit_history()
             files2 = repo.list_files()
@@ -164,18 +164,18 @@ class TestRepositoryCache:
             assert commits2.equals(results["commits"]), "Commit results should match"
             assert files2.equals(results["files"]), "File results should match"
 
-            # Verify get was called for both
-            assert mock_get.call_count >= 2, "Cache get should be called for both methods"
+            # Verify _get_entry was called for both
+            assert mock_get_entry.call_count >= 2, "Cache _get_entry should be called for both methods"
 
             # Force refresh one method
-            mock_get.reset_mock()
+            mock_get_entry.reset_mock()
             with mock.patch.object(cache, "set", wraps=cache.set) as mock_set:
                 commits3 = repo.commit_history(force_refresh=True)
                 assert commits3.equals(results["commits"]), "Results should still match after force refresh"
                 assert mock_set.call_count > 0, "Cache set should be called for force refresh"
 
                 # Other method should still use cache
-                mock_get.reset_mock()
+                mock_get_entry.reset_mock()
                 files3 = repo.list_files()
                 assert files3.equals(results["files"]), "Files should still match"
-                assert mock_get.call_count > 0, "Cache get should be called for unchanged method"
+                assert mock_get_entry.call_count > 0, "Cache _get_entry should be called for unchanged method"

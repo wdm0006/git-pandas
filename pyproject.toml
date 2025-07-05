@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "git-pandas"
-version = "2.4.0"
+version = "2.5.0"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
 requires-python = ">=3.8"

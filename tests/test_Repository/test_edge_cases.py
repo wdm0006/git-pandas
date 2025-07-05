@@ -516,11 +516,10 @@ class TestRepositoryDataValidation:
         repo = Repository(working_dir=validation_repo)
         revs = repo.revs()
 
-        if not revs.empty and len(revs) > 1:
+        if not revs.empty and len(revs) > 1 and "date" in revs.columns:
             # Check that dates are in descending order (most recent first)
-            if "date" in revs.columns:
-                # Convert to datetime if not already
-                dates = pd.to_datetime(revs["date"])
-                is_descending = dates.is_monotonic_decreasing
-                # Allow for equal dates (commits at same time)
-                assert is_descending or dates.nunique() == 1, "Revs should be in descending date order"
+            # Convert to datetime if not already
+            dates = pd.to_datetime(revs["date"])
+            is_descending = dates.is_monotonic_decreasing
+            # Allow for equal dates (commits at same time)
+            assert is_descending or dates.nunique() == 1, "Revs should be in descending date order"

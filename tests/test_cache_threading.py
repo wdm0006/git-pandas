@@ -309,9 +309,8 @@ class TestDiskCacheThreadSafety:
 
         # For debugging: show inconsistencies but don't fail the test if threading is working
         if inconsistencies:
-            print(
-                f"Cache inconsistencies detected: {len(inconsistencies)} out of {len([item for sublist in results.values() for item in sublist])} total operations"
-            )
+            total_operations = len([item for sublist in results.values() for item in sublist])
+            print(f"Cache inconsistencies detected: {len(inconsistencies)} out of {total_operations} total operations")
             print(f"Total unique parameter combinations: {len(param_results)}")
             print(f"Call count: {repo.call_count}")
             # This indicates the cache might have race conditions, but the main goal is no crashes
@@ -464,7 +463,7 @@ class TestDiskCacheThreadSafety:
             for i in range(10):
                 key = f"persist_{worker_id}_{i}"
                 value = pd.DataFrame({"worker": [worker_id], "data": [i]})
-                cache1.set(key, value)
+                cache1.set(key, value)  # noqa: F821
 
         threads = []
         for i in range(5):

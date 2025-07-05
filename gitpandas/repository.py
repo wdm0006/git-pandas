@@ -2827,7 +2827,8 @@ class Repository:
                     fetched_refs = [info.ref.name for info in fetch_info if info.ref]
                     result["message"] = f"Successfully fetched {len(fetch_info)} updates. Updated refs: {fetched_refs}"
                     logger.info(
-                        f"Fetch completed with {len(fetch_info)} updates from '{remote_name}' in repository '{self.repo_name}'"
+                        f"Fetch completed with {len(fetch_info)} updates from '{remote_name}' "
+                        f"in repository '{self.repo_name}'"
                     )
                 else:
                     result["message"] = f"Fetch completed - repository is up to date with '{remote_name}'"
