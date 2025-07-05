@@ -167,7 +167,7 @@ class TestBusFactor:
 
         # Check that we have results for the expected files
         file_list = bus_factor_df["file"].tolist()
-        
+
         # We should have Python files from our test fixture
         python_files = [f for f in file_list if f.endswith(".py")]
         assert len(python_files) > 0, "Should have Python files in results"
@@ -180,7 +180,7 @@ class TestBusFactor:
         # Get bus factor for only Python files
         bus_factor_py = multi_committer_repo.bus_factor(by="file", include_globs=["*.py"])
 
-        # Get bus factor excluding Python files  
+        # Get bus factor excluding Python files
         bus_factor_no_py = multi_committer_repo.bus_factor(by="file", ignore_globs=["*.py"])
 
         # Python-only results should be a subset of all results
@@ -209,15 +209,19 @@ class TestBusFactor:
         # Verify the bus factor calculation for a single-committer file
         if len(single_committer_files) > 0:
             sample_file = single_committer_files.iloc[0]["file"]
-            
+
             # Get blame data for this specific file
             blame = multi_committer_repo.blame(by="file")
             if isinstance(blame.index, pd.MultiIndex):
                 blame = blame.reset_index()
-            
+
             file_blame = blame[blame["file"] == sample_file]
-            unique_committers = file_blame["committer"].nunique() if "committer" in file_blame.columns else file_blame["author"].nunique()
-            
+            unique_committers = (
+                file_blame["committer"].nunique()
+                if "committer" in file_blame.columns
+                else file_blame["author"].nunique()
+            )
+
             # A file with bus factor 1 should have contributions that are >=50% from one person
             # But due to rounding and the nature of our test data, we'll just verify it's reasonable
             assert unique_committers >= 1

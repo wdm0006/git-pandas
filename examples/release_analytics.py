@@ -5,6 +5,7 @@ This example shows how to use gitpandas to analyze changes between release tags.
 """
 
 import pandas as pd
+
 from gitpandas import Repository
 
 # --- Instantiate Repository ---
@@ -22,7 +23,7 @@ try:
     print(f"Cloned to temporary directory: {repo.git_dir}")
 except Exception as e:
     print(f"Error instantiating repository: {e}")
-    repo = None # Ensure repo is None if instantiation fails
+    repo = None  # Ensure repo is None if instantiation fails
 
 # --- Call release_tag_summary ---
 if repo:
@@ -46,20 +47,20 @@ if repo:
             print(release_summary_df)
 
             # Example of how to access specific information:
-            if 'tag' in release_summary_df.columns and len(release_summary_df) > 1:
+            if "tag" in release_summary_df.columns and len(release_summary_df) > 1:
                 # Show files changed between the first two listed tags (if available)
                 # Note: The first tag in the summary won't have "previous tag" data.
-                second_tag_entry = release_summary_df.iloc[1] # Second tag in the sorted list
+                second_tag_entry = release_summary_df.iloc[1]  # Second tag in the sorted list
                 print(f"\nExample: Files changed for tag '{second_tag_entry['tag']}' (since previous tag):")
-                if isinstance(second_tag_entry['files'], list) and second_tag_entry['files']:
-                    for file_path in second_tag_entry['files']:
+                if isinstance(second_tag_entry["files"], list) and second_tag_entry["files"]:
+                    for file_path in second_tag_entry["files"]:
                         print(f"  - {file_path}")
                 else:
                     print("  No files listed or files column is not a list.")
 
-        elif release_summary_df is not None: # Empty DataFrame
+        elif release_summary_df is not None:  # Empty DataFrame
             print("No release summary data returned. The repository might not have tags, or no tags match the glob.")
-        else: # None was returned, indicating an issue
+        else:  # None was returned, indicating an issue
             print("Failed to retrieve release summary (method returned None).")
 
     except Exception as e:
@@ -77,34 +78,38 @@ if repo:
     # As this is a brief example, we'll try to pick one from the summary if possible,
     # otherwise, we'll use a placeholder.
     target_commit_sha = None
-    if 'release_summary_df' in locals() and not release_summary_df.empty and 'commit_sha' in release_summary_df.columns:
+    if "release_summary_df" in locals() and not release_summary_df.empty and "commit_sha" in release_summary_df.columns:
         # Let's try to get the commit SHA of the first tag listed (if any)
         # This commit is what the tag points to.
-        potential_sha = release_summary_df['commit_sha'].iloc[0]
-        if pd.notna(potential_sha): # Check if the SHA is not NaN or None
+        potential_sha = release_summary_df["commit_sha"].iloc[0]
+        if pd.notna(potential_sha):  # Check if the SHA is not NaN or None
             target_commit_sha = potential_sha
             print(f"Attempting to get content for commit SHA (from first tag's commit_sha): {target_commit_sha}")
         else:
             print("Could not get a valid commit SHA from the release_summary_df's first entry.")
-            
+
     if not target_commit_sha:
-        target_commit_sha = "PLACEHOLDER_COMMIT_SHA" # Replace with an actual commit SHA from the repo
+        target_commit_sha = "PLACEHOLDER_COMMIT_SHA"  # Replace with an actual commit SHA from the repo
         print(f"Using placeholder commit SHA: {target_commit_sha}. Replace with a real one for actual output.")
 
     if target_commit_sha != "PLACEHOLDER_COMMIT_SHA":
         try:
             # The 'rev' parameter takes the commit SHA.
             commit_content_df = repo.get_commit_content(rev=target_commit_sha)
-            
+
             if commit_content_df is not None and not commit_content_df.empty:
                 print(f"Content changes for commit {target_commit_sha} (showing first 5 lines):")
                 # Displaying only a part of the DataFrame for brevity.
                 # Columns typically include: 'file_path', 'change_type', 'diff', 'old_blob_sha', 'new_blob_sha'
                 print(commit_content_df.head())
-            elif commit_content_df is not None: # Empty DataFrame
-                print(f"No content changes (e.g. diffs) found for commit {target_commit_sha}. This can be normal for merge commits with no textual changes, or if the commit only modified tree structure.")
-            else: # None was returned
-                print(f"Failed to get content for commit {target_commit_sha} (method returned None). Could be an invalid SHA or repository issue.")
+            elif commit_content_df is not None:  # Empty DataFrame
+                print(
+                    f"No content changes (e.g. diffs) found for commit {target_commit_sha}. This can be normal for merge commits with no textual changes, or if the commit only modified tree structure."
+                )
+            else:  # None was returned
+                print(
+                    f"Failed to get content for commit {target_commit_sha} (method returned None). Could be an invalid SHA or repository issue."
+                )
         except Exception as e:
             print(f"Error calling get_commit_content for {target_commit_sha}: {e}")
     else:

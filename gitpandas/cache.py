@@ -3,7 +3,6 @@ import logging
 import os
 import pickle
 import threading
-import time
 from datetime import datetime, timezone
 
 try:
@@ -16,37 +15,33 @@ except ImportError:
 
 class CacheEntry:
     """Wrapper for cached values that includes metadata."""
-    
+
     def __init__(self, data, cache_key=None):
         self.data = data
         self.cached_at = datetime.now(timezone.utc)
         self.cache_key = cache_key
-        
+
     def to_dict(self):
         """Convert to dictionary for serialization."""
-        return {
-            'data': self.data,
-            'cached_at': self.cached_at.isoformat(),
-            'cache_key': self.cache_key
-        }
-    
+        return {"data": self.data, "cached_at": self.cached_at.isoformat(), "cache_key": self.cache_key}
+
     @classmethod
     def from_dict(cls, d):
         """Create CacheEntry from dictionary."""
         entry = cls.__new__(cls)
-        entry.data = d['data']
-        entry.cached_at = datetime.fromisoformat(d['cached_at'])
-        entry.cache_key = d.get('cache_key')
+        entry.data = d["data"]
+        entry.cached_at = datetime.fromisoformat(d["cached_at"])
+        entry.cache_key = d.get("cache_key")
         return entry
-    
+
     def age_seconds(self):
         """Return age of cache entry in seconds."""
         return (datetime.now(timezone.utc) - self.cached_at).total_seconds()
-    
+
     def age_minutes(self):
         """Return age of cache entry in minutes."""
         return self.age_seconds() / 60
-    
+
     def age_hours(self):
         """Return age of cache entry in hours."""
         return self.age_minutes() / 60
@@ -103,14 +98,14 @@ def multicache(key_prefix, key_list, skip_if=None):
                     # Include DiskCache in the type check
                     if isinstance(self.cache_backend, EphemeralCache | RedisDFCache | DiskCache):
                         # Use internal method to get CacheEntry for timestamp tracking
-                        if hasattr(self.cache_backend, '_get_entry'):
+                        if hasattr(self.cache_backend, "_get_entry"):
                             cache_entry = self.cache_backend._get_entry(key)
                         else:
                             # Fallback for cache backends that don't have _get_entry
                             cache_entry = self.cache_backend.get(key)
                             if not isinstance(cache_entry, CacheEntry):
                                 cache_entry = CacheEntry(cache_entry, cache_key=key)
-                        
+
                         logging.debug(f"Cache hit for key: {key}, cached at: {cache_entry.cached_at}")
                         cache_hit = True
                         return cache_entry.data
@@ -199,7 +194,7 @@ class EphemeralCache:
         # Ensure we're storing a CacheEntry
         if not isinstance(v, CacheEntry):
             v = CacheEntry(v, cache_key=k)
-        
+
         self._cache[k] = v
 
         if len(self._key_list) > self._max_keys:
@@ -224,7 +219,7 @@ class EphemeralCache:
                 return entry
         else:
             raise CacheMissError(k)
-    
+
     def _get_entry(self, k):
         """Internal method that returns the CacheEntry object."""
         if self.exists(k):
@@ -243,21 +238,21 @@ class EphemeralCache:
 
     def exists(self, k):
         return k in self._cache
-    
+
     def get_cache_info(self, k):
         """Get cache entry metadata for a key."""
         if self.exists(k):
             entry = self._cache[k]
             if isinstance(entry, CacheEntry):
                 return {
-                    'cached_at': entry.cached_at,
-                    'age_seconds': entry.age_seconds(),
-                    'age_minutes': entry.age_minutes(),
-                    'age_hours': entry.age_hours(),
-                    'cache_key': entry.cache_key
+                    "cached_at": entry.cached_at,
+                    "age_seconds": entry.age_seconds(),
+                    "age_minutes": entry.age_minutes(),
+                    "age_hours": entry.age_hours(),
+                    "cache_key": entry.cache_key,
                 }
         return None
-    
+
     def list_cached_keys(self):
         """List all cached keys with their metadata."""
         result = []
@@ -265,98 +260,100 @@ class EphemeralCache:
             if key in self._cache:
                 entry = self._cache[key]
                 if isinstance(entry, CacheEntry):
-                    result.append({
-                        'key': key,
-                        'cached_at': entry.cached_at,
-                        'age_seconds': entry.age_seconds(),
-                        'cache_key': entry.cache_key
-                    })
+                    result.append(
+                        {
+                            "key": key,
+                            "cached_at": entry.cached_at,
+                            "age_seconds": entry.age_seconds(),
+                            "cache_key": entry.cache_key,
+                        }
+                    )
         return result
 
     def invalidate_cache(self, keys=None, pattern=None):
         """Invalidate specific cache entries or all entries.
-        
+
         Args:
             keys (Optional[List[str]]): List of specific keys to invalidate
             pattern (Optional[str]): Pattern to match keys (supports * wildcard)
-            
+
         Note:
             If both keys and pattern are None, all cache entries are invalidated.
         """
         import fnmatch
-        
+
         if keys is None and pattern is None:
             # Clear all cache entries
             self._cache.clear()
             self._key_list.clear()
             return len(self._cache)
-        
+
         keys_to_remove = []
-        
+
         if keys:
             # Remove specific keys
             for key in keys:
                 if key in self._cache:
                     keys_to_remove.append(key)
-        
+
         if pattern:
             # Remove keys matching pattern
             for key in self._key_list:
                 if fnmatch.fnmatch(key, pattern):
                     keys_to_remove.append(key)
-        
+
         # Remove duplicates
         keys_to_remove = list(set(keys_to_remove))
-        
+
         # Actually remove the keys
         for key in keys_to_remove:
             if key in self._cache:
                 del self._cache[key]
             if key in self._key_list:
                 self._key_list.remove(key)
-        
+
         return len(keys_to_remove)
 
     def get_cache_stats(self):
         """Get comprehensive cache statistics.
-        
+
         Returns:
             dict: Cache statistics including size, hit rates, and age information
         """
         if not self._cache:
             return {
-                'total_entries': 0,
-                'max_entries': self._max_keys,
-                'cache_usage_percent': 0.0,
-                'oldest_entry_age_hours': None,
-                'newest_entry_age_hours': None,
-                'average_entry_age_hours': None
+                "total_entries": 0,
+                "max_entries": self._max_keys,
+                "cache_usage_percent": 0.0,
+                "oldest_entry_age_hours": None,
+                "newest_entry_age_hours": None,
+                "average_entry_age_hours": None,
             }
-        
+
         ages_hours = []
         for entry in self._cache.values():
             if isinstance(entry, CacheEntry):
                 ages_hours.append(entry.age_hours())
-        
+
         stats = {
-            'total_entries': len(self._cache),
-            'max_entries': self._max_keys,
-            'cache_usage_percent': (len(self._cache) / self._max_keys) * 100.0,
+            "total_entries": len(self._cache),
+            "max_entries": self._max_keys,
+            "cache_usage_percent": (len(self._cache) / self._max_keys) * 100.0,
         }
-        
+
         if ages_hours:
-            stats.update({
-                'oldest_entry_age_hours': max(ages_hours),
-                'newest_entry_age_hours': min(ages_hours),
-                'average_entry_age_hours': sum(ages_hours) / len(ages_hours)
-            })
+            stats.update(
+                {
+                    "oldest_entry_age_hours": max(ages_hours),
+                    "newest_entry_age_hours": min(ages_hours),
+                    "average_entry_age_hours": sum(ages_hours) / len(ages_hours),
+                }
+            )
         else:
-            stats.update({
-                'oldest_entry_age_hours': None,
-                'newest_entry_age_hours': None,
-                'average_entry_age_hours': None
-            })
-        
+            stats.update(
+                {"oldest_entry_age_hours": None, "newest_entry_age_hours": None, "average_entry_age_hours": None}
+            )
+
         return stats
 
     # Add empty save method for compatibility with DiskCache
@@ -392,7 +389,7 @@ class DiskCache(EphemeralCache):
         """
         with self._lock:
             # Temporarily disable automatic save during parent set() to prevent nested calls
-            original_save = getattr(self, 'save', None)
+            original_save = getattr(self, "save", None)
             self.save = lambda: None  # Temporarily disable save
             try:
                 # Call parent set without triggering save
@@ -456,7 +453,7 @@ class DiskCache(EphemeralCache):
                     # Key not found even after loading from disk
                     logging.debug(f"Key '{k}' not found after attempting disk load.")
                     raise CacheMissError(k)
-    
+
     def _get_entry(self, k):
         """Internal method that returns the CacheEntry object."""
         with self._lock:
@@ -552,7 +549,13 @@ class DiskCache(EphemeralCache):
                     self.evict(len(self._key_list) - self._max_keys)
                 logging.info(f"Cache loaded successfully from {self.filepath} using pickle.")
 
-            except (gzip.BadGzipFile, pickle.UnpicklingError, EOFError, TypeError, Exception) as e:  # Catch pickle errors
+            except (
+                gzip.BadGzipFile,
+                pickle.UnpicklingError,
+                EOFError,
+                TypeError,
+                Exception,
+            ) as e:  # Catch pickle errors
                 logging.error(f"Error loading cache file {self.filepath} (pickle/Gzip): {e}. Starting fresh.")
                 self._cache = {}
                 self._key_list = []
@@ -642,11 +645,11 @@ class RedisDFCache:
             self._key_list.append(k)
             # Use pickle instead of msgpack for DataFrame deserialization
             cached_value = pickle.loads(self._cache.get(k))
-            
+
             # Handle backward compatibility with old cache format
             if not isinstance(cached_value, CacheEntry):
                 cached_value = CacheEntry(cached_value, cache_key=orik)
-            
+
             # For backward compatibility, return raw data
             return cached_value.data
         else:
@@ -656,7 +659,7 @@ class RedisDFCache:
             except ValueError:
                 pass
             raise CacheMissError(k)
-    
+
     def _get_entry(self, orik):
         """Internal method that returns the CacheEntry object."""
         k = self.prefix + orik
@@ -667,11 +670,11 @@ class RedisDFCache:
             self._key_list.append(k)
             # Use pickle instead of msgpack for DataFrame deserialization
             cached_value = pickle.loads(self._cache.get(k))
-            
+
             # Handle backward compatibility with old cache format
             if not isinstance(cached_value, CacheEntry):
                 cached_value = CacheEntry(cached_value, cache_key=orik)
-                
+
             return cached_value
         else:
             try:
@@ -700,47 +703,49 @@ class RedisDFCache:
                 cached_value = pickle.loads(self._cache.get(k))
                 if isinstance(cached_value, CacheEntry):
                     return {
-                        'cached_at': cached_value.cached_at,
-                        'age_seconds': cached_value.age_seconds(),
-                        'age_minutes': cached_value.age_minutes(),
-                        'age_hours': cached_value.age_hours(),
-                        'cache_key': cached_value.cache_key
+                        "cached_at": cached_value.cached_at,
+                        "age_seconds": cached_value.age_seconds(),
+                        "age_minutes": cached_value.age_minutes(),
+                        "age_hours": cached_value.age_hours(),
+                        "cache_key": cached_value.cache_key,
                     }
             except Exception:
                 pass
         return None
-    
+
     def list_cached_keys(self):
         """List all cached keys with their metadata."""
         result = []
         for key in self._key_list:
             if key.startswith(self.prefix):
-                orik = key[len(self.prefix):]
+                orik = key[len(self.prefix) :]
                 try:
                     cached_value = pickle.loads(self._cache.get(key))
                     if isinstance(cached_value, CacheEntry):
-                        result.append({
-                            'key': orik,
-                            'cached_at': cached_value.cached_at,
-                            'age_seconds': cached_value.age_seconds(),
-                            'cache_key': cached_value.cache_key
-                        })
+                        result.append(
+                            {
+                                "key": orik,
+                                "cached_at": cached_value.cached_at,
+                                "age_seconds": cached_value.age_seconds(),
+                                "cache_key": cached_value.cache_key,
+                            }
+                        )
                 except Exception:
                     continue
         return result
 
     def invalidate_cache(self, keys=None, pattern=None):
         """Invalidate specific cache entries or all entries.
-        
+
         Args:
             keys (Optional[List[str]]): List of specific keys to invalidate (without prefix)
             pattern (Optional[str]): Pattern to match keys (supports * wildcard, without prefix)
-            
+
         Note:
             If both keys and pattern are None, all cache entries are invalidated.
         """
         import fnmatch
-        
+
         if keys is None and pattern is None:
             # Clear all cache entries
             for key in list(self._key_list):
@@ -748,53 +753,53 @@ class RedisDFCache:
                     self._cache.delete(key)
             self._key_list = [k for k in self._key_list if not k.startswith(self.prefix)]
             return
-        
+
         keys_to_remove = []
-        
+
         if keys:
             # Remove specific keys (add prefix)
             for key in keys:
                 prefixed_key = self.prefix + key
                 if prefixed_key in self._key_list:
                     keys_to_remove.append(prefixed_key)
-        
+
         if pattern:
             # Remove keys matching pattern
             for key in self._key_list:
                 if key.startswith(self.prefix):
-                    orik = key[len(self.prefix):]
+                    orik = key[len(self.prefix) :]
                     if fnmatch.fnmatch(orik, pattern):
                         keys_to_remove.append(key)
-        
+
         # Remove duplicates
         keys_to_remove = list(set(keys_to_remove))
-        
+
         # Actually remove the keys
         for key in keys_to_remove:
             self._cache.delete(key)
             if key in self._key_list:
                 self._key_list.remove(key)
-        
+
         return len(keys_to_remove)
 
     def get_cache_stats(self):
         """Get comprehensive cache statistics.
-        
+
         Returns:
             dict: Cache statistics including size, hit rates, and age information
         """
         redis_keys = [k for k in self._key_list if k.startswith(self.prefix)]
-        
+
         if not redis_keys:
             return {
-                'total_entries': 0,
-                'max_entries': self._max_keys,
-                'cache_usage_percent': 0.0,
-                'oldest_entry_age_hours': None,
-                'newest_entry_age_hours': None,
-                'average_entry_age_hours': None
+                "total_entries": 0,
+                "max_entries": self._max_keys,
+                "cache_usage_percent": 0.0,
+                "oldest_entry_age_hours": None,
+                "newest_entry_age_hours": None,
+                "average_entry_age_hours": None,
             }
-        
+
         ages_hours = []
         for key in redis_keys:
             try:
@@ -803,26 +808,26 @@ class RedisDFCache:
                     ages_hours.append(cached_value.age_hours())
             except Exception:
                 continue
-        
+
         stats = {
-            'total_entries': len(redis_keys),
-            'max_entries': self._max_keys,
-            'cache_usage_percent': (len(redis_keys) / self._max_keys) * 100.0,
+            "total_entries": len(redis_keys),
+            "max_entries": self._max_keys,
+            "cache_usage_percent": (len(redis_keys) / self._max_keys) * 100.0,
         }
-        
+
         if ages_hours:
-            stats.update({
-                'oldest_entry_age_hours': max(ages_hours),
-                'newest_entry_age_hours': min(ages_hours),
-                'average_entry_age_hours': sum(ages_hours) / len(ages_hours)
-            })
+            stats.update(
+                {
+                    "oldest_entry_age_hours": max(ages_hours),
+                    "newest_entry_age_hours": min(ages_hours),
+                    "average_entry_age_hours": sum(ages_hours) / len(ages_hours),
+                }
+            )
         else:
-            stats.update({
-                'oldest_entry_age_hours': None,
-                'newest_entry_age_hours': None,
-                'average_entry_age_hours': None
-            })
-        
+            stats.update(
+                {"oldest_entry_age_hours": None, "newest_entry_age_hours": None, "average_entry_age_hours": None}
+            )
+
         return stats
 
     def purge(self):

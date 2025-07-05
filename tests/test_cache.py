@@ -266,7 +266,7 @@ class TestRedisDFCache:
             assert mock_dumps.call_count == 1
             call_args = mock_dumps.call_args[0][0]
             # The argument should be a CacheEntry containing our DataFrame
-            assert hasattr(call_args, 'data')
+            assert hasattr(call_args, "data")
             pd.testing.assert_frame_equal(call_args.data, df)
             mock_redis_instance.set.assert_called_once_with("gitpandas_key1", mock_pickle_data, ex=None)
 

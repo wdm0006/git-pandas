@@ -381,10 +381,7 @@ class ProjectDirectory:
                     ch = ch.copy()  # Avoid SettingWithCopyWarning
                     ch["repository"] = repo.repo_name
                     # Only concatenate if df is not empty, otherwise use ch directly
-                    if df is None or df.empty:
-                        df = ch
-                    else:
-                        df = pd.concat([df, ch], ignore_index=True)
+                    df = ch if df is None or df.empty else pd.concat([df, ch], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
@@ -643,7 +640,9 @@ class ProjectDirectory:
         if "index" in df.columns and groupby_column not in df.columns:
             df = df.rename(columns={"index": groupby_column})
         elif groupby_column not in df.columns:
-            logger.warning(f"Expected column '{groupby_column}' not found in blame data. Available columns: {df.columns.tolist()}")
+            logger.warning(
+                f"Expected column '{groupby_column}' not found in blame data. Available columns: {df.columns.tolist()}"
+            )
             # Return empty DataFrame with proper structure if column is missing
             return pd.DataFrame(columns=[groupby_column, "loc"])
 
@@ -1072,7 +1071,7 @@ class ProjectDirectory:
                 except GitCommandError:
                     logger.warning(f"Repo: {repo} couldn't be inspected for file-wise bus factor")
                     continue
-            
+
             if all_file_bus_factors:
                 result_df = pd.concat(all_file_bus_factors, ignore_index=True)
                 logger.info(f"Calculated file-wise bus factor for {len(result_df)} files across all repositories.")
@@ -1243,9 +1242,17 @@ class ProjectDirectory:
         logger.debug(f"Determined repository name: '{name}'")
         return name
 
-    def bulk_fetch_and_warm(self, fetch_remote=False, warm_cache=False, parallel=True, 
-                           remote_name='origin', prune=False, dry_run=False, 
-                           cache_methods=None, **kwargs):
+    def bulk_fetch_and_warm(
+        self,
+        fetch_remote=False,
+        warm_cache=False,
+        parallel=True,
+        remote_name="origin",
+        prune=False,
+        dry_run=False,
+        cache_methods=None,
+        **kwargs,
+    ):
         """Safely fetch remote changes and pre-warm cache for all repositories.
 
         Performs bulk operations across all repositories in the project directory,
@@ -1282,90 +1289,89 @@ class ProjectDirectory:
             failures in one repository don't affect processing of others. All operations
             are read-only and will not modify working directories or current branches.
         """
-        logger.info(f"Starting bulk operations for {len(self.repos)} repositories "
-                   f"(fetch_remote={fetch_remote}, warm_cache={warm_cache}, parallel={parallel})")
-        
+        logger.info(
+            f"Starting bulk operations for {len(self.repos)} repositories "
+            f"(fetch_remote={fetch_remote}, warm_cache={warm_cache}, parallel={parallel})"
+        )
+
         import time
+
         start_time = time.time()
-        
+
         result = {
-            'success': False,
-            'repositories_processed': 0,
-            'fetch_results': {},
-            'cache_results': {},
-            'execution_time': 0.0,
-            'summary': {
-                'fetch_successful': 0,
-                'fetch_failed': 0,
-                'cache_successful': 0,
-                'cache_failed': 0,
-                'repositories_with_remotes': 0,
-                'total_cache_entries_created': 0
-            }
+            "success": False,
+            "repositories_processed": 0,
+            "fetch_results": {},
+            "cache_results": {},
+            "execution_time": 0.0,
+            "summary": {
+                "fetch_successful": 0,
+                "fetch_failed": 0,
+                "cache_successful": 0,
+                "cache_failed": 0,
+                "repositories_with_remotes": 0,
+                "total_cache_entries_created": 0,
+            },
         }
-        
+
         if not self.repos:
-            result['success'] = True
-            result['execution_time'] = time.time() - start_time
+            result["success"] = True
+            result["execution_time"] = time.time() - start_time
             logger.info("No repositories to process")
             return result
-        
+
         # Define the worker function for individual repository processing
         def process_repository(repo):
             """Process a single repository for fetch and/or cache warming."""
             repo_result = {
-                'repo_name': repo.repo_name,
-                'fetch_result': None,
-                'cache_result': None,
-                'success': True,
-                'error': None
+                "repo_name": repo.repo_name,
+                "fetch_result": None,
+                "cache_result": None,
+                "success": True,
+                "error": None,
             }
-            
+
             try:
                 # Perform fetch if requested
                 if fetch_remote:
                     logger.debug(f"Fetching remote for repository '{repo.repo_name}'")
-                    fetch_result = repo.safe_fetch_remote(
-                        remote_name=remote_name,
-                        prune=prune,
-                        dry_run=dry_run
-                    )
-                    repo_result['fetch_result'] = fetch_result
-                    
-                    if not fetch_result['success'] and fetch_result.get('remote_exists', False):
+                    fetch_result = repo.safe_fetch_remote(remote_name=remote_name, prune=prune, dry_run=dry_run)
+                    repo_result["fetch_result"] = fetch_result
+
+                    if not fetch_result["success"] and fetch_result.get("remote_exists", False):
                         # Only count as failure if remote exists but fetch failed
                         # Missing remotes are not considered failures
-                        repo_result['success'] = False
-                        repo_result['error'] = fetch_result.get('error', 'Fetch failed')
-                
+                        repo_result["success"] = False
+                        repo_result["error"] = fetch_result.get("error", "Fetch failed")
+
                 # Perform cache warming if requested
                 if warm_cache:
                     logger.debug(f"Warming cache for repository '{repo.repo_name}'")
                     cache_result = repo.warm_cache(methods=cache_methods, **kwargs)
-                    repo_result['cache_result'] = cache_result
-                    
-                    if not cache_result['success']:
-                        repo_result['success'] = False
-                        if repo_result['error']:
-                            repo_result['error'] += f"; Cache warming failed"
+                    repo_result["cache_result"] = cache_result
+
+                    if not cache_result["success"]:
+                        repo_result["success"] = False
+                        if repo_result["error"]:
+                            repo_result["error"] += "; Cache warming failed"
                         else:
-                            repo_result['error'] = "Cache warming failed"
-                
-                logger.debug(f"Completed processing repository '{repo.repo_name}' "
-                           f"(success={repo_result['success']})")
-                
+                            repo_result["error"] = "Cache warming failed"
+
+                logger.debug(f"Completed processing repository '{repo.repo_name}' (success={repo_result['success']})")
+
             except Exception as e:
-                repo_result['success'] = False
-                repo_result['error'] = f"Unexpected error: {str(e)}"
+                repo_result["success"] = False
+                repo_result["error"] = f"Unexpected error: {str(e)}"
                 logger.error(f"Unexpected error processing repository '{repo.repo_name}': {e}")
-            
+
             return repo_result
-        
+
         # Process repositories (with or without parallel execution)
         if parallel and _has_joblib and len(self.repos) > 1:
             logger.info(f"Processing {len(self.repos)} repositories in parallel")
             try:
                 from joblib import Parallel, delayed
+
                 repo_results = Parallel(n_jobs=-1, backend="threading", verbose=0)(
                     delayed(process_repository)(repo) for repo in self.repos
                 )
@@ -1375,156 +1381,159 @@ class ProjectDirectory:
         else:
             logger.info(f"Processing {len(self.repos)} repositories sequentially")
             repo_results = [process_repository(repo) for repo in self.repos]
-        
+
         # Process results and build summary
         for repo_result in repo_results:
-            repo_name = repo_result['repo_name']
-            result['repositories_processed'] += 1
-            
+            repo_name = repo_result["repo_name"]
+            result["repositories_processed"] += 1
+
             # Store individual results
-            if fetch_remote and repo_result['fetch_result']:
-                result['fetch_results'][repo_name] = repo_result['fetch_result']
-                
+            if fetch_remote and repo_result["fetch_result"]:
+                result["fetch_results"][repo_name] = repo_result["fetch_result"]
+
                 # Update fetch summary
-                if repo_result['fetch_result']['success']:
-                    result['summary']['fetch_successful'] += 1
+                if repo_result["fetch_result"]["success"]:
+                    result["summary"]["fetch_successful"] += 1
                 else:
-                    result['summary']['fetch_failed'] += 1
-                
-                if repo_result['fetch_result']['remote_exists']:
-                    result['summary']['repositories_with_remotes'] += 1
-            
-            if warm_cache and repo_result['cache_result']:
-                result['cache_results'][repo_name] = repo_result['cache_result']
-                
+                    result["summary"]["fetch_failed"] += 1
+
+                if repo_result["fetch_result"]["remote_exists"]:
+                    result["summary"]["repositories_with_remotes"] += 1
+
+            if warm_cache and repo_result["cache_result"]:
+                result["cache_results"][repo_name] = repo_result["cache_result"]
+
                 # Update cache summary
-                if repo_result['cache_result']['success']:
-                    result['summary']['cache_successful'] += 1
-                    result['summary']['total_cache_entries_created'] += repo_result['cache_result']['cache_entries_created']
+                if repo_result["cache_result"]["success"]:
+                    result["summary"]["cache_successful"] += 1
+                    result["summary"]["total_cache_entries_created"] += repo_result["cache_result"][
+                        "cache_entries_created"
+                    ]
                 else:
-                    result['summary']['cache_failed'] += 1
-        
+                    result["summary"]["cache_failed"] += 1
+
         # Calculate execution time and overall success
-        result['execution_time'] = time.time() - start_time
-        
+        result["execution_time"] = time.time() - start_time
+
         # Consider operation successful if at least one repository was processed successfully
-        successful_repos = sum(1 for repo_result in repo_results if repo_result['success'])
-        result['success'] = successful_repos > 0
-        
+        successful_repos = sum(1 for repo_result in repo_results if repo_result["success"])
+        result["success"] = successful_repos > 0
+
         # Log summary
-        if result['success']:
-            logger.info(f"Bulk operations completed successfully in {result['execution_time']:.2f} seconds. "
-                       f"Processed {result['repositories_processed']} repositories, "
-                       f"{successful_repos} successful, {len(repo_results) - successful_repos} failed.")
-            
+        if result["success"]:
+            logger.info(
+                f"Bulk operations completed successfully in {result['execution_time']:.2f} seconds. "
+                f"Processed {result['repositories_processed']} repositories, "
+                f"{successful_repos} successful, {len(repo_results) - successful_repos} failed."
+            )
+
             if fetch_remote:
-                logger.info(f"Fetch summary: {result['summary']['fetch_successful']} successful, "
-                           f"{result['summary']['fetch_failed']} failed, "
-                           f"{result['summary']['repositories_with_remotes']} have remotes")
-            
+                logger.info(
+                    f"Fetch summary: {result['summary']['fetch_successful']} successful, "
+                    f"{result['summary']['fetch_failed']} failed, "
+                    f"{result['summary']['repositories_with_remotes']} have remotes"
+                )
+
             if warm_cache:
-                logger.info(f"Cache warming summary: {result['summary']['cache_successful']} successful, "
-                           f"{result['summary']['cache_failed']} failed, "
-                           f"{result['summary']['total_cache_entries_created']} total cache entries created")
+                logger.info(
+                    f"Cache warming summary: {result['summary']['cache_successful']} successful, "
+                    f"{result['summary']['cache_failed']} failed, "
+                    f"{result['summary']['total_cache_entries_created']} total cache entries created"
+                )
         else:
-            logger.warning(f"Bulk operations completed with errors in {result['execution_time']:.2f} seconds. "
-                          f"No repositories processed successfully.")
-        
+            logger.warning(
+                f"Bulk operations completed with errors in {result['execution_time']:.2f} seconds. "
+                f"No repositories processed successfully."
+            )
+
         return result
 
     def invalidate_cache(self, keys=None, pattern=None, repositories=None):
         """Invalidate cache entries across multiple repositories.
-        
+
         Args:
             keys (Optional[List[str]]): List of specific cache keys to invalidate
             pattern (Optional[str]): Pattern to match cache keys (supports * wildcard)
             repositories (Optional[List[str]]): List of repository names to target.
                 If None, all repositories are targeted.
-            
+
         Returns:
             dict: Results with total invalidated and per-repository breakdown
         """
-        result = {
-            'total_invalidated': 0,
-            'repositories_processed': 0,
-            'repository_results': {}
-        }
-        
+        result = {"total_invalidated": 0, "repositories_processed": 0, "repository_results": {}}
+
         target_repos = self.repos
         if repositories:
             target_repos = [repo for repo in self.repos if repo.repo_name in repositories]
-        
+
         for repo in target_repos:
-            result['repositories_processed'] += 1
+            result["repositories_processed"] += 1
             try:
                 count = repo.invalidate_cache(keys=keys, pattern=pattern)
-                result['repository_results'][repo.repo_name] = {
-                    'success': True,
-                    'invalidated': count
-                }
-                result['total_invalidated'] += count
+                result["repository_results"][repo.repo_name] = {"success": True, "invalidated": count}
+                result["total_invalidated"] += count
             except Exception as e:
                 logger.error(f"Error invalidating cache for repository '{repo.repo_name}': {e}")
-                result['repository_results'][repo.repo_name] = {
-                    'success': False,
-                    'error': str(e),
-                    'invalidated': 0
-                }
-        
-        logger.info(f"Cache invalidation completed. Total invalidated: {result['total_invalidated']} "
-                   f"across {result['repositories_processed']} repositories")
-        
+                result["repository_results"][repo.repo_name] = {"success": False, "error": str(e), "invalidated": 0}
+
+        logger.info(
+            f"Cache invalidation completed. Total invalidated: {result['total_invalidated']} "
+            f"across {result['repositories_processed']} repositories"
+        )
+
         return result
 
     def get_cache_stats(self):
         """Get comprehensive cache statistics across all repositories.
-        
+
         Returns:
             dict: Aggregated cache statistics and per-repository breakdown
         """
         result = {
-            'project_directory': str(self.git_dir) if hasattr(self, 'git_dir') else 'N/A',
-            'total_repositories': len(self.repos),
-            'repositories_with_cache': 0,
-            'total_cache_entries': 0,
-            'cache_backends': {},
-            'global_stats': None,
-            'repository_stats': {}
+            "project_directory": str(self.git_dir) if hasattr(self, "git_dir") else "N/A",
+            "total_repositories": len(self.repos),
+            "repositories_with_cache": 0,
+            "total_cache_entries": 0,
+            "cache_backends": {},
+            "global_stats": None,
+            "repository_stats": {},
         }
-        
+
         # Get stats from first repository with cache backend for global stats
         for repo in self.repos:
             if repo.cache_backend is not None:
                 try:
                     stats = repo.get_cache_stats()
-                    result['global_stats'] = stats.get('global_cache_stats')
+                    result["global_stats"] = stats.get("global_cache_stats")
                     break
                 except Exception:
                     continue
-        
+
         # Collect stats from all repositories
         for repo in self.repos:
             repo_stats = repo.get_cache_stats()
-            result['repository_stats'][repo.repo_name] = repo_stats
-            
-            if repo_stats['cache_backend'] is not None:
-                result['repositories_with_cache'] += 1
-                result['total_cache_entries'] += repo_stats['repository_entries']
-                
+            result["repository_stats"][repo.repo_name] = repo_stats
+
+            if repo_stats["cache_backend"] is not None:
+                result["repositories_with_cache"] += 1
+                result["total_cache_entries"] += repo_stats["repository_entries"]
+
                 # Count cache backend types
-                backend_type = repo_stats['cache_backend']
-                result['cache_backends'][backend_type] = result['cache_backends'].get(backend_type, 0) + 1
-        
+                backend_type = repo_stats["cache_backend"]
+                result["cache_backends"][backend_type] = result["cache_backends"].get(backend_type, 0) + 1
+
         # Add summary percentages
-        if result['total_repositories'] > 0:
-            result['cache_coverage_percent'] = (result['repositories_with_cache'] / result['total_repositories']) * 100
+        if result["total_repositories"] > 0:
+            result["cache_coverage_percent"] = (result["repositories_with_cache"] / result["total_repositories"]) * 100
         else:
-            result['cache_coverage_percent'] = 0.0
-        
-        logger.info(f"Cache statistics collected for {result['total_repositories']} repositories. "
-                   f"Cache coverage: {result['cache_coverage_percent']:.1f}%, "
-                   f"Total entries: {result['total_cache_entries']}")
-        
+            result["cache_coverage_percent"] = 0.0
+
+        logger.info(
+            f"Cache statistics collected for {result['total_repositories']} repositories. "
+            f"Cache coverage: {result['cache_coverage_percent']:.1f}%, "
+            f"Total entries: {result['total_cache_entries']}"
+        )
+
         return result
 
 

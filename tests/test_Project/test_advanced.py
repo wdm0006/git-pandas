@@ -170,17 +170,13 @@ class TestProjectDirectoryAdvanced:
 
         # Test with by="file"
         # Create mock file-wise bus factor responses
-        mock_repo1_file_df = pd.DataFrame({
-            "file": ["file1.py", "file2.py"],
-            "bus factor": [1, 2],
-            "repository": ["repo1", "repo1"]
-        })
+        mock_repo1_file_df = pd.DataFrame(
+            {"file": ["file1.py", "file2.py"], "bus factor": [1, 2], "repository": ["repo1", "repo1"]}
+        )
 
-        mock_repo2_file_df = pd.DataFrame({
-            "file": ["file3.py", "file4.py"],
-            "bus factor": [1, 1],
-            "repository": ["repo2", "repo2"]
-        })
+        mock_repo2_file_df = pd.DataFrame(
+            {"file": ["file3.py", "file4.py"], "bus factor": [1, 1], "repository": ["repo2", "repo2"]}
+        )
 
         # Reset mocks for file test
         for repo in pd_obj.repos:
@@ -195,7 +191,7 @@ class TestProjectDirectoryAdvanced:
         assert len(result) == 4  # All files from both repos
         assert set(result["repository"].unique()) == {"repo1", "repo2"}
         assert set(result["file"].unique()) == {"file1.py", "file2.py", "file3.py", "file4.py"}
-        
+
         # Verify all bus factors are reasonable (at least 1)
         assert (result["bus factor"] >= 1).all()
 

@@ -961,7 +961,7 @@ class Repository:
             return pd.DataFrame(
                 columns=[
                     "file",
-                    "unique_committers", 
+                    "unique_committers",
                     "abs_rate_of_change",
                     "net_rate_of_change",
                     "net_change",
@@ -977,7 +977,7 @@ class Repository:
                 columns=[
                     "file",
                     "unique_committers",
-                    "abs_rate_of_change", 
+                    "abs_rate_of_change",
                     "net_rate_of_change",
                     "net_change",
                     "abs_change",
@@ -1893,8 +1893,8 @@ class Repository:
 
         df = DataFrame(tags_meta, columns=cols)
 
-        df["tag_date"] = to_datetime(pd.to_numeric(df["tag_date"], errors='coerce'), unit="s", utc=True)
-        df["commit_date"] = to_datetime(pd.to_numeric(df["commit_date"], errors='coerce'), unit="s", utc=True)
+        df["tag_date"] = to_datetime(pd.to_numeric(df["tag_date"], errors="coerce"), unit="s", utc=True)
+        df["commit_date"] = to_datetime(pd.to_numeric(df["commit_date"], errors="coerce"), unit="s", utc=True)
         df = self._add_labels_to_df(df)
 
         df = df.set_index(keys=["tag_date", "commit_date"], drop=True)
@@ -2222,28 +2222,28 @@ class Repository:
         if by == "file":
             # Get file-wise blame data
             blame = self.blame(include_globs=include_globs, ignore_globs=ignore_globs, by="file")
-            
+
             if blame.empty:
                 logger.warning("No blame data found for file-wise bus factor calculation.")
                 return DataFrame(columns=["file", "bus factor", "repository"])
-            
+
             # Reset index to access file column if it's in the index
             if isinstance(blame.index, pd.MultiIndex) and "file" in blame.index.names:
                 blame = blame.reset_index()
-            
+
             # Group by file and calculate bus factor for each file
             file_bus_factors = []
             files = blame["file"].unique()
-            
+
             for file_name in files:
                 file_blame = blame[blame["file"] == file_name].copy()
                 file_blame = file_blame.sort_values(by=["loc"], ascending=False)
-                
+
                 total = file_blame["loc"].sum()
                 if total == 0:
                     # If file has no lines of code, skip it
                     continue
-                    
+
                 cumulative = 0
                 tc = 0
                 for idx in range(file_blame.shape[0]):
@@ -2251,9 +2251,9 @@ class Repository:
                     tc += 1
                     if cumulative >= total / 2:
                         break
-                
+
                 file_bus_factors.append([file_name, tc, self._repo_name()])
-            
+
             logger.info(f"Calculated bus factor for {len(file_bus_factors)} files.")
             return DataFrame(file_bus_factors, columns=["file", "bus factor", "repository"])
 
@@ -2753,7 +2753,7 @@ class Repository:
             prev_sha = commit_sha
         return pd.DataFrame(rows)
 
-    def safe_fetch_remote(self, remote_name='origin', prune=False, dry_run=False):
+    def safe_fetch_remote(self, remote_name="origin", prune=False, dry_run=False):
         """Safely fetch changes from remote repository.
 
         Fetches the latest changes from a remote repository without modifying the working directory.
@@ -2780,73 +2780,71 @@ class Repository:
             rebases, or checkouts.
         """
         logger.info(f"Attempting to safely fetch from remote '{remote_name}' (dry_run={dry_run})")
-        
-        result = {
-            'success': False,
-            'message': '',
-            'remote_exists': False,
-            'changes_available': False,
-            'error': None
-        }
-        
+
+        result = {"success": False, "message": "", "remote_exists": False, "changes_available": False, "error": None}
+
         try:
             # Check if we have any remotes
             if not self.repo.remotes:
-                result['message'] = 'No remotes configured for this repository'
+                result["message"] = "No remotes configured for this repository"
                 logger.warning(f"No remotes configured for repository '{self.repo_name}'")
                 return result
-            
+
             # Check if the specified remote exists
             remote_names = [remote.name for remote in self.repo.remotes]
             if remote_name not in remote_names:
-                result['message'] = f"Remote '{remote_name}' not found. Available remotes: {remote_names}"
+                result["message"] = f"Remote '{remote_name}' not found. Available remotes: {remote_names}"
                 logger.warning(f"Remote '{remote_name}' not found in repository '{self.repo_name}'")
                 return result
-            
-            result['remote_exists'] = True
+
+            result["remote_exists"] = True
             remote = self.repo.remote(remote_name)
-            
+
             # Perform dry run if requested
             if dry_run:
                 try:
                     # Get remote refs to see what's available
                     remote_refs = list(remote.refs)
-                    result['message'] = f"Dry run: Would fetch from {remote.url}. Remote has {len(remote_refs)} refs."
-                    result['success'] = True
+                    result["message"] = f"Dry run: Would fetch from {remote.url}. Remote has {len(remote_refs)} refs."
+                    result["success"] = True
                     logger.info(f"Dry run completed for remote '{remote_name}' in repository '{self.repo_name}'")
                     return result
                 except Exception as e:
-                    result['error'] = f"Dry run failed: {str(e)}"
+                    result["error"] = f"Dry run failed: {str(e)}"
                     logger.error(f"Dry run failed for remote '{remote_name}' in repository '{self.repo_name}': {e}")
                     return result
-            
+
             # Perform the actual fetch
             try:
                 logger.info(f"Fetching from remote '{remote_name}' in repository '{self.repo_name}'")
                 fetch_info = remote.fetch(prune=prune)
-                
+
                 # Check if any changes were fetched
                 changes_available = len(fetch_info) > 0
-                result['changes_available'] = changes_available
-                
+                result["changes_available"] = changes_available
+
                 if changes_available:
                     fetched_refs = [info.ref.name for info in fetch_info if info.ref]
-                    result['message'] = f"Successfully fetched {len(fetch_info)} updates. Updated refs: {fetched_refs}"
-                    logger.info(f"Fetch completed with {len(fetch_info)} updates from '{remote_name}' in repository '{self.repo_name}'")
+                    result["message"] = f"Successfully fetched {len(fetch_info)} updates. Updated refs: {fetched_refs}"
+                    logger.info(
+                        f"Fetch completed with {len(fetch_info)} updates from '{remote_name}' in repository '{self.repo_name}'"
+                    )
                 else:
-                    result['message'] = f"Fetch completed - repository is up to date with '{remote_name}'"
+                    result["message"] = f"Fetch completed - repository is up to date with '{remote_name}'"
                     logger.info(f"Repository '{self.repo_name}' is up to date with remote '{remote_name}'")
-                
-                result['success'] = True
-                
+
+                result["success"] = True
+
             except Exception as e:
-                result['error'] = f"Fetch failed: {str(e)}"
+                result["error"] = f"Fetch failed: {str(e)}"
                 logger.error(f"Fetch failed for remote '{remote_name}' in repository '{self.repo_name}': {e}")
-                
+
         except Exception as e:
-            result['error'] = f"Unexpected error: {str(e)}"
-            logger.error(f"Unexpected error during fetch from remote '{remote_name}' in repository '{self.repo_name}': {e}")
-        
+            result["error"] = f"Unexpected error: {str(e)}"
+            logger.error(
+                f"Unexpected error during fetch from remote '{remote_name}' in repository '{self.repo_name}': {e}"
+            )
+
         return result
 
     def warm_cache(self, methods=None, **kwargs):
@@ -2888,108 +2886,108 @@ class Repository:
             success status but no methods executed.
         """
         logger.info(f"Starting cache warming for repository '{self.repo_name}'")
-        
+
         result = {
-            'success': False,
-            'methods_executed': [],
-            'methods_failed': [],
-            'cache_entries_created': 0,
-            'execution_time': 0.0,
-            'errors': []
+            "success": False,
+            "methods_executed": [],
+            "methods_failed": [],
+            "cache_entries_created": 0,
+            "execution_time": 0.0,
+            "errors": [],
         }
-        
+
         import time
+
         start_time = time.time()
-        
+
         # Check if caching is enabled
         if self.cache_backend is None:
-            result['success'] = True
-            result['execution_time'] = time.time() - start_time
+            result["success"] = True
+            result["execution_time"] = time.time() - start_time
             logger.info(f"No cache backend configured for repository '{self.repo_name}' - skipping cache warming")
             return result
-        
+
         # Default methods to warm if none specified
         if methods is None:
-            methods = [
-                'commit_history',
-                'branches', 
-                'tags',
-                'blame',
-                'file_detail',
-                'list_files'
-            ]
-        
+            methods = ["commit_history", "branches", "tags", "blame", "file_detail", "list_files"]
+
         # Get initial cache size
-        initial_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, '_cache') else 0
-        
+        initial_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, "_cache") else 0
+
         # Execute each method to warm the cache
         for method_name in methods:
             try:
                 if not hasattr(self, method_name):
-                    result['methods_failed'].append(method_name)
-                    result['errors'].append(f"Method '{method_name}' not found")
+                    result["methods_failed"].append(method_name)
+                    result["errors"].append(f"Method '{method_name}' not found")
                     logger.warning(f"Method '{method_name}' not found in repository '{self.repo_name}'")
                     continue
-                
+
                 method = getattr(self, method_name)
-                
+
                 # Execute method with provided kwargs
                 logger.debug(f"Executing method '{method_name}' for cache warming in repository '{self.repo_name}'")
-                
+
                 # Handle special cases for method arguments
                 method_kwargs = kwargs.copy()
-                
+
                 # For methods that might need specific arguments
-                if method_name in ['commit_history', 'file_change_rates']:
+                if method_name in ["commit_history", "file_change_rates"]:
                     # Set reasonable defaults if not provided
-                    if 'limit' not in method_kwargs:
-                        method_kwargs['limit'] = 100  # Reasonable default for cache warming
-                elif method_name == 'list_files':
+                    if "limit" not in method_kwargs:
+                        method_kwargs["limit"] = 100  # Reasonable default for cache warming
+                elif method_name == "list_files":
                     # list_files doesn't accept limit parameter, remove it if present
-                    method_kwargs.pop('limit', None)
-                
+                    method_kwargs.pop("limit", None)
+
                 # Execute the method
                 _ = method(**method_kwargs)
-                result['methods_executed'].append(method_name)
-                logger.debug(f"Successfully executed method '{method_name}' for cache warming in repository '{self.repo_name}'")
-                
+                result["methods_executed"].append(method_name)
+                logger.debug(
+                    f"Successfully executed method '{method_name}' for cache warming in repository '{self.repo_name}'"
+                )
+
             except Exception as e:
-                result['methods_failed'].append(method_name)
+                result["methods_failed"].append(method_name)
                 error_msg = f"Method '{method_name}' failed: {str(e)}"
-                result['errors'].append(error_msg)
+                result["errors"].append(error_msg)
                 logger.error(f"Cache warming failed for method '{method_name}' in repository '{self.repo_name}': {e}")
-        
+
         # Calculate cache entries created
-        final_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, '_cache') else 0
-        result['cache_entries_created'] = final_cache_size - initial_cache_size
-        
+        final_cache_size = len(self.cache_backend._cache) if hasattr(self.cache_backend, "_cache") else 0
+        result["cache_entries_created"] = final_cache_size - initial_cache_size
+
         # Calculate execution time
-        result['execution_time'] = time.time() - start_time
-        
+        result["execution_time"] = time.time() - start_time
+
         # Determine overall success
-        result['success'] = len(result['methods_executed']) > 0
-        
-        if result['success']:
-            logger.info(f"Cache warming completed for repository '{self.repo_name}'. "
-                       f"Executed {len(result['methods_executed'])} methods, "
-                       f"created {result['cache_entries_created']} cache entries "
-                       f"in {result['execution_time']:.2f} seconds")
+        result["success"] = len(result["methods_executed"]) > 0
+
+        if result["success"]:
+            logger.info(
+                f"Cache warming completed for repository '{self.repo_name}'. "
+                f"Executed {len(result['methods_executed'])} methods, "
+                f"created {result['cache_entries_created']} cache entries "
+                f"in {result['execution_time']:.2f} seconds"
+            )
         else:
-            logger.warning(f"Cache warming failed for repository '{self.repo_name}'. "
-                          f"No methods executed successfully. Errors: {result['errors']}")
-        
+            logger.warning(
+                f"Cache warming failed for repository '{self.repo_name}'. "
+                f"No methods executed successfully. Errors: {result['errors']}"
+            )
+
         return result
 
     def invalidate_cache(self, keys=None, pattern=None):
         """Invalidate specific cache entries or all cache entries for this repository.
-        
+
         Args:
             keys (Optional[List[str]]): List of specific cache keys to invalidate
             pattern (Optional[str]): Pattern to match cache keys (supports * wildcard)
-            
+
         Returns:
             int: Number of cache entries invalidated
-            
+
         Note:
             If both keys and pattern are None, all cache entries for this repository are invalidated.
             Cache keys are automatically prefixed with repository name.
@@ -2997,16 +2995,16 @@ class Repository:
         if self.cache_backend is None:
             logger.warning(f"No cache backend configured for repository '{self.repo_name}' - cannot invalidate cache")
             return 0
-            
-        if not hasattr(self.cache_backend, 'invalidate_cache'):
+
+        if not hasattr(self.cache_backend, "invalidate_cache"):
             logger.warning(f"Cache backend {type(self.cache_backend).__name__} does not support cache invalidation")
             return 0
-        
+
         # If specific keys provided, prefix them with repo name
         prefixed_keys = None
         if keys:
-            prefixed_keys = [f"*||{self.repo_name}||*{key}*" if not key.startswith('*') else key for key in keys]
-        
+            prefixed_keys = [f"*||{self.repo_name}||*{key}*" if not key.startswith("*") else key for key in keys]
+
         # If pattern provided, include repo name in pattern
         repo_pattern = None
         if pattern:
@@ -3014,7 +3012,7 @@ class Repository:
         elif keys is None:
             # No keys or pattern specified, invalidate all for this repo
             repo_pattern = f"*||{self.repo_name}||*"
-        
+
         try:
             if prefixed_keys and repo_pattern:
                 # Both keys and pattern specified
@@ -3033,40 +3031,40 @@ class Repository:
 
     def get_cache_stats(self):
         """Get cache statistics for this repository.
-        
+
         Returns:
             dict: Cache statistics including repository-specific and global cache information
         """
         if self.cache_backend is None:
             return {
-                'repository': self.repo_name,
-                'cache_backend': None,
-                'repository_entries': 0,
-                'global_cache_stats': None
+                "repository": self.repo_name,
+                "cache_backend": None,
+                "repository_entries": 0,
+                "global_cache_stats": None,
             }
-            
+
         # Get global cache stats
         global_stats = None
-        if hasattr(self.cache_backend, 'get_cache_stats'):
+        if hasattr(self.cache_backend, "get_cache_stats"):
             try:
                 global_stats = self.cache_backend.get_cache_stats()
             except Exception as e:
                 logger.error(f"Error getting global cache stats: {e}")
-        
+
         # Count repository-specific entries
         repo_entries = 0
-        if hasattr(self.cache_backend, 'list_cached_keys'):
+        if hasattr(self.cache_backend, "list_cached_keys"):
             try:
                 all_keys = self.cache_backend.list_cached_keys()
-                repo_entries = len([key for key in all_keys if self.repo_name in str(key.get('key', ''))])
+                repo_entries = len([key for key in all_keys if self.repo_name in str(key.get("key", ""))])
             except Exception as e:
                 logger.error(f"Error counting repository cache entries: {e}")
-        
+
         return {
-            'repository': self.repo_name,
-            'cache_backend': type(self.cache_backend).__name__,
-            'repository_entries': repo_entries,
-            'global_cache_stats': global_stats
+            "repository": self.repo_name,
+            "cache_backend": type(self.cache_backend).__name__,
+            "repository_entries": repo_entries,
+            "global_cache_stats": global_stats,
         }
 
 
