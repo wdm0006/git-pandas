@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Remote Operations and Cache Warming &mdash; git-pandas 2.2.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=341fb650"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use Cases and Examples" href="usecases.html" />
+    <link rel="prev" title="Caching" href="cache.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            git-pandas
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#core-analysis">Core Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="repository.html#repository-information">Repository Information</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#common-parameters">Common Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#available-methods">Available Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#core-analysis">Core Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#common-parameters">Common Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#disk-cache-diskcache">Disk Cache (DiskCache)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#cache-timestamp-information">Cache Timestamp Information</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-information-methods">Cache Information Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#backward-compatibility">Backward Compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#best-practices">Best Practices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#shared-cache-usage">Shared Cache Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-size-planning">Cache Size Planning</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Remote Operations and Cache Warming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#safe-remote-fetch">Safe Remote Fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-safe-fetch-remote">Repository.safe_fetch_remote()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-options">Advanced Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#safety-features">Safety Features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cache-warming">Cache Warming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-warm-cache">Repository.warm_cache()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-cache-warming">Custom Cache Warming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#available-methods">Available Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#performance-benefits">Performance Benefits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#bulk-operations">Bulk Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#projectdirectory-bulk-fetch-and-warm">ProjectDirectory.bulk_fetch_and_warm()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-bulk-operations">Advanced Bulk Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel-processing">Parallel Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#return-value-reference">Return Value Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">git-pandas</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Remote Operations and Cache Warming</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/remote_operations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="remote-operations-and-cache-warming">
+<h1>Remote Operations and Cache Warming<a class="headerlink" href="#remote-operations-and-cache-warming" title="Permalink to this heading"></a></h1>
+<p>Git-pandas provides safe and efficient methods for working with remote repositories and optimizing performance through cache warming. These features allow you to keep your repositories up to date and improve analysis performance through intelligent caching.</p>
+<section id="safe-remote-fetch">
+<h2>Safe Remote Fetch<a class="headerlink" href="#safe-remote-fetch" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> method allows you to safely fetch changes from remote repositories without modifying your working directory or current branch.</p>
+<section id="repository-safe-fetch-remote">
+<h3>Repository.safe_fetch_remote()<a class="headerlink" href="#repository-safe-fetch-remote" title="Permalink to this heading"></a></h3>
+<section id="basic-usage">
+<h4>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span>
+
+<span class="c1"># Create repository with caching</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Perform a dry run to see what would be fetched</span>
+<span class="n">dry_result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Would fetch from: </span><span class="si">{</span><span class="n">dry_result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Safely fetch changes</span>
+<span class="k">if</span> <span class="n">dry_result</span><span class="p">[</span><span class="s1">&#39;remote_exists&#39;</span><span class="p">]:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch completed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;changes_available&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New changes are available!&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-options">
+<h4>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch from a specific remote</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">remote_name</span><span class="o">=</span><span class="s1">&#39;upstream&#39;</span><span class="p">)</span>
+
+<span class="c1"># Fetch and prune deleted remote branches</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">prune</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Perform dry run to preview without fetching</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="safety-features">
+<h4>Safety Features<a class="headerlink" href="#safety-features" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>Read-only operation</strong>: Never modifies working directory or current branch</p></li>
+<li><p><strong>Error handling</strong>: Gracefully handles network errors and missing remotes</p></li>
+<li><p><strong>Validation</strong>: Checks for remote existence before attempting fetch</p></li>
+<li><p><strong>Dry run support</strong>: Preview operations without making changes</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="cache-warming">
+<h2>Cache Warming<a class="headerlink" href="#cache-warming" title="Permalink to this heading"></a></h2>
+<p>Cache warming pre-populates the cache with commonly used data to improve performance of subsequent analysis operations.</p>
+<section id="repository-warm-cache">
+<h3>Repository.warm_cache()<a class="headerlink" href="#repository-warm-cache" title="Permalink to this heading"></a></h3>
+<section id="id1">
+<h4>Basic Usage<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
+
+<span class="c1"># Create repository with persistent cache</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/my_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Warm cache with default methods</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache warming completed in </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Methods executed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_executed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-cache-warming">
+<h4>Custom Cache Warming<a class="headerlink" href="#custom-cache-warming" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warm specific methods with custom parameters</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span>
+    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">,</span> <span class="s1">&#39;file_detail&#39;</span><span class="p">],</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">,</span> <span class="s1">&#39;*.tmp&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Check results</span>
+<span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully warmed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_executed&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> methods&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Errors occurred: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="available-methods">
+<h4>Available Methods<a class="headerlink" href="#available-methods" title="Permalink to this heading"></a></h4>
+<p>The following methods can be warmed:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">commit_history</span></code>: Load commit history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">branches</span></code>: Load branch information</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tags</span></code>: Load tag information</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">blame</span></code>: Load blame information</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_detail</span></code>: Load file details</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">list_files</span></code>: Load file listing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_change_rates</span></code>: Load file change statistics</p></li>
+</ul>
+</section>
+<section id="performance-benefits">
+<h4>Performance Benefits<a class="headerlink" href="#performance-benefits" title="Permalink to this heading"></a></h4>
+<p>Cache warming can significantly improve performance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="c1"># Test cold performance</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">history_cold</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">cold_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+<span class="c1"># Warm the cache</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Test warm performance</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">history_warm</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">warm_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+
+<span class="n">speedup</span> <span class="o">=</span> <span class="n">cold_time</span> <span class="o">/</span> <span class="n">warm_time</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache warming provided </span><span class="si">{</span><span class="n">speedup</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x speedup!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="bulk-operations">
+<h2>Bulk Operations<a class="headerlink" href="#bulk-operations" title="Permalink to this heading"></a></h2>
+<p>For projects with multiple repositories, bulk operations allow you to efficiently fetch and warm caches across all repositories.</p>
+<section id="projectdirectory-bulk-fetch-and-warm">
+<h3>ProjectDirectory.bulk_fetch_and_warm()<a class="headerlink" href="#projectdirectory-bulk-fetch-and-warm" title="Permalink to this heading"></a></h3>
+<section id="id2">
+<h4>Basic Usage<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
+
+<span class="c1"># Create project directory with shared cache</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/project_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">&#39;/path/to/repos&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Perform bulk operations</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
+    <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;repositories_processed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> repositories&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;fetch_successful&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;cache_successful&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-bulk-operations">
+<h4>Advanced Bulk Operations<a class="headerlink" href="#advanced-bulk-operations" title="Permalink to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Customize bulk operations</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
+    <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">remote_name</span><span class="o">=</span><span class="s1">&#39;upstream&#39;</span><span class="p">,</span>
+    <span class="n">prune</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cache_methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">],</span>
+    <span class="n">limit</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Check individual repository results</span>
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">fetch_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;fetch_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fetch_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed for </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">fetch_result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">cache_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">cache_result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parallel-processing">
+<h4>Parallel Processing<a class="headerlink" href="#parallel-processing" title="Permalink to this heading"></a></h4>
+<p>Bulk operations support parallel processing when <code class="docutils literal notranslate"><span class="pre">joblib</span></code> is available:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable parallel processing (default when joblib available)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
+    <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Uses all available CPU cores</span>
+<span class="p">)</span>
+
+<span class="c1"># Disable parallel processing for sequential execution</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
+    <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Regular Fetching</strong>: Use <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> regularly to keep repositories current</p></li>
+<li><p><strong>Dry Run First</strong>: Use dry runs to preview fetch operations</p></li>
+<li><p><strong>Error Handling</strong>: Always check return values for errors</p></li>
+<li><p><strong>Remote Validation</strong>: Verify remotes exist before fetching</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p><strong>Persistent Caching</strong>: Use <code class="docutils literal notranslate"><span class="pre">DiskCache</span></code> for long-term cache persistence</p></li>
+<li><p><strong>Appropriate Cache Size</strong>: Set reasonable <code class="docutils literal notranslate"><span class="pre">max_keys</span></code> based on your usage</p></li>
+<li><p><strong>Selective Warming</strong>: Only warm methods you actually use</p></li>
+<li><p><strong>Regular Warming</strong>: Re-warm caches when data becomes stale</p></li>
+</ol>
+<ol class="arabic simple">
+<li><p><strong>Shared Caches</strong>: Use shared cache backends across repositories</p></li>
+<li><p><strong>Parallel Processing</strong>: Enable parallel processing for multiple repositories</p></li>
+<li><p><strong>Custom Parameters</strong>: Tailor operations to your specific needs</p></li>
+<li><p><strong>Error Isolation</strong>: Handle errors at the repository level</p></li>
+</ol>
+</section>
+<section id="error-handling">
+<h2>Error Handling<a class="headerlink" href="#error-handling" title="Permalink to this heading"></a></h2>
+<p>All remote operations and cache warming methods provide comprehensive error information:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Safe fetch error handling</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;remote_exists&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No remote configured: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Cache warming error handling</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed methods: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_failed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Bulk operation error handling</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span><span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">repo_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;fetch_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">repo_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repository </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">repo_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unknown error&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<p>Complete examples demonstrating these features can be found in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/remote_fetch_and_cache_warming.py</span></code>: Comprehensive demonstration of all features</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/cache_timestamps.py</span></code>: Cache timestamp and metadata examples</p></li>
+</ul>
+</section>
+<section id="return-value-reference">
+<h2>Return Value Reference<a class="headerlink" href="#return-value-reference" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> method returns a dictionary with these keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether the fetch was successful</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (str): Status message or description</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">remote_exists</span></code> (bool): Whether the specified remote exists</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">changes_available</span></code> (bool): Whether new changes were fetched</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code> (str or None): Error message if fetch failed</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">warm_cache</span></code> method returns a dictionary with these keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether cache warming was successful</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">methods_executed</span></code> (list): List of methods that were executed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">methods_failed</span></code> (list): List of methods that failed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cache_entries_created</span></code> (int): Number of cache entries created</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">execution_time</span></code> (float): Total execution time in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">errors</span></code> (list): List of error messages for failed methods</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">bulk_fetch_and_warm</span></code> method returns a dictionary with these keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether the overall operation was successful</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repositories_processed</span></code> (int): Number of repositories processed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fetch_results</span></code> (dict): Per-repository fetch results</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cache_results</span></code> (dict): Per-repository cache warming results</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">execution_time</span></code> (float): Total execution time in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">summary</span></code> (dict): Summary statistics including:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">fetch_successful</span></code> (int): Number of successful fetches</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fetch_failed</span></code> (int): Number of failed fetches</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cache_successful</span></code> (int): Number of successful cache warming operations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cache_failed</span></code> (int): Number of failed cache warming operations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repositories_with_remotes</span></code> (int): Number of repositories with remotes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_cache_entries_created</span></code> (int): Total cache entries created across all repositories</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cache.html" class="btn btn-neutral float-left" title="Caching" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usecases.html" class="btn btn-neutral float-right" title="Use Cases and Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -111,6 +111,41 @@
 <li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#safe-remote-fetch">Safe Remote Fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-safe-fetch-remote">Repository.safe_fetch_remote()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-options">Advanced Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#safety-features">Safety Features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#cache-warming">Cache Warming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-warm-cache">Repository.warm_cache()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id1">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#custom-cache-warming">Custom Cache Warming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#available-methods">Available Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#performance-benefits">Performance Benefits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#bulk-operations">Bulk Operations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#projectdirectory-bulk-fetch-and-warm">ProjectDirectory.bulk_fetch_and_warm()</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id2">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-bulk-operations">Advanced Bulk Operations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#parallel-processing">Parallel Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#error-handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#return-value-reference">Return Value Reference</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
@@ -227,7 +262,10 @@
 <li><p><strong>Repository Analysis</strong>: Extract commit history, file changes, and blame information</p></li>
 <li><p><strong>Project Insights</strong>: Calculate bus factor and analyze repository metrics</p></li>
 <li><p><strong>Multi-Repository Support</strong>: Analyze multiple repositories together</p></li>
-<li><p><strong>Performance Optimization</strong>: Basic caching support and glob-based filtering</p></li>
+<li><p><strong>Remote Operations</strong>: Safely fetch changes from remote repositories</p></li>
+<li><p><strong>Cache Warming</strong>: Pre-populate caches for improved performance</p></li>
+<li><p><strong>Bulk Operations</strong>: Efficiently process multiple repositories in parallel</p></li>
+<li><p><strong>Performance Optimization</strong>: Advanced caching support and glob-based filtering</p></li>
 </ul>
 </section>
 <section id="core-components">
@@ -275,6 +313,7 @@
 <li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a></li>
 </ul>
