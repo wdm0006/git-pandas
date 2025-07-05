@@ -1,3 +1,46 @@
+v2.5.0
+======
+
+## New Features
+
+### Remote Operations & Cache Warming
+ * **NEW**: `Repository.safe_fetch_remote()` - Safely fetch changes from remote repositories without modifying working directory
+   - Read-only operation with comprehensive error handling
+   - Support for dry-run preview and remote validation
+   - Configurable remote names and pruning options
+ * **NEW**: `Repository.warm_cache()` - Pre-populate repository cache for improved performance  
+   - Configurable method selection with intelligent parameter handling
+   - Performance metrics and cache entry tracking
+   - Significant performance improvements (1.5-10x speedup demonstrated)
+ * **NEW**: `ProjectDirectory.bulk_fetch_and_warm()` - Efficiently process multiple repositories
+   - Parallel processing support when joblib is available
+   - Error isolation (failures in one repo don't affect others)
+   - Comprehensive summary statistics and progress tracking
+
+### Enhanced Caching System
+ * **NEW**: `CacheEntry` class with metadata tracking (timestamps, age calculation)
+ * **ENHANCED**: Thread-safe cache operations with proper locking mechanisms  
+ * **ENHANCED**: Cache key consistency improvements using `||` delimiter format
+ * **ENHANCED**: Cache timestamp and metadata access methods (`get_cache_info()`, `list_cached_keys()`)
+
+### Documentation & Examples
+ * **NEW**: Comprehensive remote operations documentation (`docs/source/remote_operations.rst`)
+ * **NEW**: Cache warming and remote fetch example (`examples/remote_fetch_and_cache_warming.py`)
+ * **NEW**: Cache timestamp usage example (`examples/cache_timestamps.py`)
+ * **NEW**: Release analytics example (`examples/release_analytics.py`)
+
+## Testing & Quality
+ * **NEW**: 38 comprehensive tests for remote operations and cache warming
+ * **NEW**: Thread safety tests for cache operations
+ * **NEW**: Edge case and error handling test coverage
+ * **IMPROVED**: Overall test coverage and reliability
+ * **FIXED**: Various minor bugs and future warnings
+
+## Backward Compatibility
+ * All new features are fully backward compatible
+ * No breaking changes to existing APIs
+ * Existing cache backends work seamlessly with new features
+
 v2.4.0
 ======
 
