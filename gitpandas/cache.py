@@ -273,6 +273,92 @@ class EphemeralCache:
                     })
         return result
 
+    def invalidate_cache(self, keys=None, pattern=None):
+        """Invalidate specific cache entries or all entries.
+        
+        Args:
+            keys (Optional[List[str]]): List of specific keys to invalidate
+            pattern (Optional[str]): Pattern to match keys (supports * wildcard)
+            
+        Note:
+            If both keys and pattern are None, all cache entries are invalidated.
+        """
+        import fnmatch
+        
+        if keys is None and pattern is None:
+            # Clear all cache entries
+            self._cache.clear()
+            self._key_list.clear()
+            return len(self._cache)
+        
+        keys_to_remove = []
+        
+        if keys:
+            # Remove specific keys
+            for key in keys:
+                if key in self._cache:
+                    keys_to_remove.append(key)
+        
+        if pattern:
+            # Remove keys matching pattern
+            for key in self._key_list:
+                if fnmatch.fnmatch(key, pattern):
+                    keys_to_remove.append(key)
+        
+        # Remove duplicates
+        keys_to_remove = list(set(keys_to_remove))
+        
+        # Actually remove the keys
+        for key in keys_to_remove:
+            if key in self._cache:
+                del self._cache[key]
+            if key in self._key_list:
+                self._key_list.remove(key)
+        
+        return len(keys_to_remove)
+
+    def get_cache_stats(self):
+        """Get comprehensive cache statistics.
+        
+        Returns:
+            dict: Cache statistics including size, hit rates, and age information
+        """
+        if not self._cache:
+            return {
+                'total_entries': 0,
+                'max_entries': self._max_keys,
+                'cache_usage_percent': 0.0,
+                'oldest_entry_age_hours': None,
+                'newest_entry_age_hours': None,
+                'average_entry_age_hours': None
+            }
+        
+        ages_hours = []
+        for entry in self._cache.values():
+            if isinstance(entry, CacheEntry):
+                ages_hours.append(entry.age_hours())
+        
+        stats = {
+            'total_entries': len(self._cache),
+            'max_entries': self._max_keys,
+            'cache_usage_percent': (len(self._cache) / self._max_keys) * 100.0,
+        }
+        
+        if ages_hours:
+            stats.update({
+                'oldest_entry_age_hours': max(ages_hours),
+                'newest_entry_age_hours': min(ages_hours),
+                'average_entry_age_hours': sum(ages_hours) / len(ages_hours)
+            })
+        else:
+            stats.update({
+                'oldest_entry_age_hours': None,
+                'newest_entry_age_hours': None,
+                'average_entry_age_hours': None
+            })
+        
+        return stats
+
     # Add empty save method for compatibility with DiskCache
     def save(self):
         """Empty save method for compatibility with DiskCache."""
@@ -642,6 +728,102 @@ class RedisDFCache:
                 except Exception:
                     continue
         return result
+
+    def invalidate_cache(self, keys=None, pattern=None):
+        """Invalidate specific cache entries or all entries.
+        
+        Args:
+            keys (Optional[List[str]]): List of specific keys to invalidate (without prefix)
+            pattern (Optional[str]): Pattern to match keys (supports * wildcard, without prefix)
+            
+        Note:
+            If both keys and pattern are None, all cache entries are invalidated.
+        """
+        import fnmatch
+        
+        if keys is None and pattern is None:
+            # Clear all cache entries
+            for key in list(self._key_list):
+                if key.startswith(self.prefix):
+                    self._cache.delete(key)
+            self._key_list = [k for k in self._key_list if not k.startswith(self.prefix)]
+            return
+        
+        keys_to_remove = []
+        
+        if keys:
+            # Remove specific keys (add prefix)
+            for key in keys:
+                prefixed_key = self.prefix + key
+                if prefixed_key in self._key_list:
+                    keys_to_remove.append(prefixed_key)
+        
+        if pattern:
+            # Remove keys matching pattern
+            for key in self._key_list:
+                if key.startswith(self.prefix):
+                    orik = key[len(self.prefix):]
+                    if fnmatch.fnmatch(orik, pattern):
+                        keys_to_remove.append(key)
+        
+        # Remove duplicates
+        keys_to_remove = list(set(keys_to_remove))
+        
+        # Actually remove the keys
+        for key in keys_to_remove:
+            self._cache.delete(key)
+            if key in self._key_list:
+                self._key_list.remove(key)
+        
+        return len(keys_to_remove)
+
+    def get_cache_stats(self):
+        """Get comprehensive cache statistics.
+        
+        Returns:
+            dict: Cache statistics including size, hit rates, and age information
+        """
+        redis_keys = [k for k in self._key_list if k.startswith(self.prefix)]
+        
+        if not redis_keys:
+            return {
+                'total_entries': 0,
+                'max_entries': self._max_keys,
+                'cache_usage_percent': 0.0,
+                'oldest_entry_age_hours': None,
+                'newest_entry_age_hours': None,
+                'average_entry_age_hours': None
+            }
+        
+        ages_hours = []
+        for key in redis_keys:
+            try:
+                cached_value = pickle.loads(self._cache.get(key))
+                if isinstance(cached_value, CacheEntry):
+                    ages_hours.append(cached_value.age_hours())
+            except Exception:
+                continue
+        
+        stats = {
+            'total_entries': len(redis_keys),
+            'max_entries': self._max_keys,
+            'cache_usage_percent': (len(redis_keys) / self._max_keys) * 100.0,
+        }
+        
+        if ages_hours:
+            stats.update({
+                'oldest_entry_age_hours': max(ages_hours),
+                'newest_entry_age_hours': min(ages_hours),
+                'average_entry_age_hours': sum(ages_hours) / len(ages_hours)
+            })
+        else:
+            stats.update({
+                'oldest_entry_age_hours': None,
+                'newest_entry_age_hours': None,
+                'average_entry_age_hours': None
+            })
+        
+        return stats
 
     def purge(self):
         for key in self._cache.scan_iter(f"{self.prefix}*"):

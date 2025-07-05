@@ -2199,17 +2199,19 @@ class Repository:
         Args:
             by (str, optional): How to calculate the bus factor. One of:
                 - 'repository': Calculate for entire repository (default)
-                - 'file': Not implemented yet
+                - 'file': Calculate for each individual file
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            pandas.DataFrame: A DataFrame with columns:
-                - repository (str): Repository name
-                - bus factor (int): Bus factor for the repository
-
-        Raises:
-            NotImplementedError: If by='file' is specified (not implemented yet)
+            pandas.DataFrame: A DataFrame with columns depending on the 'by' parameter:
+                If by='repository':
+                    - repository (str): Repository name
+                    - bus factor (int): Bus factor for the repository
+                If by='file':
+                    - file (str): File path
+                    - bus factor (int): Bus factor for that file
+                    - repository (str): Repository name
 
         Note:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
@@ -2218,8 +2220,42 @@ class Repository:
         logger.info(f"Calculating bus factor. Group by: {by}, Ignore: {ignore_globs}, Include: {include_globs}")
 
         if by == "file":
-            logger.error("File-wise bus factor calculation is not implemented.")
-            raise NotImplementedError("File-wise bus factor calculation is not implemented.")
+            # Get file-wise blame data
+            blame = self.blame(include_globs=include_globs, ignore_globs=ignore_globs, by="file")
+            
+            if blame.empty:
+                logger.warning("No blame data found for file-wise bus factor calculation.")
+                return DataFrame(columns=["file", "bus factor", "repository"])
+            
+            # Reset index to access file column if it's in the index
+            if isinstance(blame.index, pd.MultiIndex) and "file" in blame.index.names:
+                blame = blame.reset_index()
+            
+            # Group by file and calculate bus factor for each file
+            file_bus_factors = []
+            files = blame["file"].unique()
+            
+            for file_name in files:
+                file_blame = blame[blame["file"] == file_name].copy()
+                file_blame = file_blame.sort_values(by=["loc"], ascending=False)
+                
+                total = file_blame["loc"].sum()
+                if total == 0:
+                    # If file has no lines of code, skip it
+                    continue
+                    
+                cumulative = 0
+                tc = 0
+                for idx in range(file_blame.shape[0]):
+                    cumulative += file_blame.iloc[idx]["loc"]
+                    tc += 1
+                    if cumulative >= total / 2:
+                        break
+                
+                file_bus_factors.append([file_name, tc, self._repo_name()])
+            
+            logger.info(f"Calculated bus factor for {len(file_bus_factors)} files.")
+            return DataFrame(file_bus_factors, columns=["file", "bus factor", "repository"])
 
         blame = self.blame(include_globs=include_globs, ignore_globs=ignore_globs, by=by)
         blame = blame.sort_values(by=["loc"], ascending=False)
@@ -2943,6 +2979,95 @@ class Repository:
                           f"No methods executed successfully. Errors: {result['errors']}")
         
         return result
+
+    def invalidate_cache(self, keys=None, pattern=None):
+        """Invalidate specific cache entries or all cache entries for this repository.
+        
+        Args:
+            keys (Optional[List[str]]): List of specific cache keys to invalidate
+            pattern (Optional[str]): Pattern to match cache keys (supports * wildcard)
+            
+        Returns:
+            int: Number of cache entries invalidated
+            
+        Note:
+            If both keys and pattern are None, all cache entries for this repository are invalidated.
+            Cache keys are automatically prefixed with repository name.
+        """
+        if self.cache_backend is None:
+            logger.warning(f"No cache backend configured for repository '{self.repo_name}' - cannot invalidate cache")
+            return 0
+            
+        if not hasattr(self.cache_backend, 'invalidate_cache'):
+            logger.warning(f"Cache backend {type(self.cache_backend).__name__} does not support cache invalidation")
+            return 0
+        
+        # If specific keys provided, prefix them with repo name
+        prefixed_keys = None
+        if keys:
+            prefixed_keys = [f"*||{self.repo_name}||*{key}*" if not key.startswith('*') else key for key in keys]
+        
+        # If pattern provided, include repo name in pattern
+        repo_pattern = None
+        if pattern:
+            repo_pattern = f"*||{self.repo_name}||*{pattern}*"
+        elif keys is None:
+            # No keys or pattern specified, invalidate all for this repo
+            repo_pattern = f"*||{self.repo_name}||*"
+        
+        try:
+            if prefixed_keys and repo_pattern:
+                # Both keys and pattern specified
+                count1 = self.cache_backend.invalidate_cache(pattern=repo_pattern)
+                count2 = self.cache_backend.invalidate_cache(pattern=prefixed_keys[0] if prefixed_keys else None)
+                return count1 + count2
+            elif prefixed_keys:
+                # Only keys specified
+                return sum(self.cache_backend.invalidate_cache(pattern=key) for key in prefixed_keys)
+            else:
+                # Only pattern (or neither, defaulting to repo pattern)
+                return self.cache_backend.invalidate_cache(pattern=repo_pattern)
+        except Exception as e:
+            logger.error(f"Error invalidating cache for repository '{self.repo_name}': {e}")
+            return 0
+
+    def get_cache_stats(self):
+        """Get cache statistics for this repository.
+        
+        Returns:
+            dict: Cache statistics including repository-specific and global cache information
+        """
+        if self.cache_backend is None:
+            return {
+                'repository': self.repo_name,
+                'cache_backend': None,
+                'repository_entries': 0,
+                'global_cache_stats': None
+            }
+            
+        # Get global cache stats
+        global_stats = None
+        if hasattr(self.cache_backend, 'get_cache_stats'):
+            try:
+                global_stats = self.cache_backend.get_cache_stats()
+            except Exception as e:
+                logger.error(f"Error getting global cache stats: {e}")
+        
+        # Count repository-specific entries
+        repo_entries = 0
+        if hasattr(self.cache_backend, 'list_cached_keys'):
+            try:
+                all_keys = self.cache_backend.list_cached_keys()
+                repo_entries = len([key for key in all_keys if self.repo_name in str(key.get('key', ''))])
+            except Exception as e:
+                logger.error(f"Error counting repository cache entries: {e}")
+        
+        return {
+            'repository': self.repo_name,
+            'cache_backend': type(self.cache_backend).__name__,
+            'repository_entries': repo_entries,
+            'global_cache_stats': global_stats
+        }
 
 
 class GitFlowRepository(Repository):

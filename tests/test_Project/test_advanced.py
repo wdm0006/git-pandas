@@ -168,6 +168,41 @@ class TestProjectDirectoryAdvanced:
         assert len(result) == 1  # Aggregated result
         assert result["bus factor"].values[0] > 0  # Should calculate some bus factor
 
+        # Test with by="file"
+        # Create mock file-wise bus factor responses
+        mock_repo1_file_df = pd.DataFrame({
+            "file": ["file1.py", "file2.py"],
+            "bus factor": [1, 2],
+            "repository": ["repo1", "repo1"]
+        })
+
+        mock_repo2_file_df = pd.DataFrame({
+            "file": ["file3.py", "file4.py"],
+            "bus factor": [1, 1],
+            "repository": ["repo2", "repo2"]
+        })
+
+        # Reset mocks for file test
+        for repo in pd_obj.repos:
+            repo.bus_factor.reset_mock()
+            if repo.repo_name == "repo1":
+                repo.bus_factor = MagicMock(return_value=mock_repo1_file_df)
+            else:
+                repo.bus_factor = MagicMock(return_value=mock_repo2_file_df)
+
+        result = pd_obj.bus_factor(by="file")
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 4  # All files from both repos
+        assert set(result["repository"].unique()) == {"repo1", "repo2"}
+        assert set(result["file"].unique()) == {"file1.py", "file2.py", "file3.py", "file4.py"}
+        
+        # Verify all bus factors are reasonable (at least 1)
+        assert (result["bus factor"] >= 1).all()
+
+        # Verify the method was called with the correct parameters
+        for repo in pd_obj.repos:
+            repo.bus_factor.assert_called_once_with(ignore_globs=None, include_globs=None, by="file")
+
     def test_file_detail(self, repo_directories):
         """Test file detail retrieval across multiple repositories."""
         pd_obj = ProjectDirectory(working_dir=str(repo_directories))

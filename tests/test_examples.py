@@ -25,6 +25,7 @@ EXAMPLE_SCRIPTS = [
     "parallel_blame.py",
     "project_blame.py",
     "punchcard.py",
+    "remote_fetch_and_cache_warming.py",  # Added new example
     "repo_file_detail.py",
     "release_analytics.py",  # Added new example
 ]

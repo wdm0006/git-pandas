@@ -1041,7 +1041,7 @@ class ProjectDirectory:
             by (str, optional): How to calculate the bus factor. One of:
                 - 'projectd': Calculate for entire project directory (default)
                 - 'repository': Calculate separately for each repository
-                - 'file': Not implemented yet
+                - 'file': Calculate separately for each file across all repositories
 
         Returns:
             pandas.DataFrame: A DataFrame with columns depending on the 'by' parameter:
@@ -1051,9 +1051,10 @@ class ProjectDirectory:
                 If by='repository':
                     - repository (str): Repository name
                     - bus factor (int): Bus factor for that repository
-
-        Raises:
-            NotImplementedError: If by='file' is specified (not implemented yet)
+                If by='file':
+                    - file (str): File path
+                    - bus factor (int): Bus factor for that file
+                    - repository (str): Repository name
 
         Note:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
@@ -1061,7 +1062,24 @@ class ProjectDirectory:
         """
         logger.info(f"Calculating bus factor grouped by '{by}'.")
         if by == "file":
-            raise NotImplementedError("File-wise bus factor")
+            # Calculate file-wise bus factor across all repositories
+            all_file_bus_factors = []
+            for repo in self.repos:
+                try:
+                    repo_file_bf = repo.bus_factor(ignore_globs=ignore_globs, include_globs=include_globs, by="file")
+                    if not repo_file_bf.empty:
+                        all_file_bus_factors.append(repo_file_bf)
+                except GitCommandError:
+                    logger.warning(f"Repo: {repo} couldn't be inspected for file-wise bus factor")
+                    continue
+            
+            if all_file_bus_factors:
+                result_df = pd.concat(all_file_bus_factors, ignore_index=True)
+                logger.info(f"Calculated file-wise bus factor for {len(result_df)} files across all repositories.")
+                return result_df
+            else:
+                logger.warning("No file-wise bus factor data could be calculated.")
+                return pd.DataFrame(columns=["file", "bus factor", "repository"])
         elif by == "projectd":
             blame = self.blame(ignore_globs=ignore_globs, include_globs=include_globs, by="repository")
             blame = blame.sort_values(by=["loc"], ascending=False)
@@ -1411,6 +1429,101 @@ class ProjectDirectory:
         else:
             logger.warning(f"Bulk operations completed with errors in {result['execution_time']:.2f} seconds. "
                           f"No repositories processed successfully.")
+        
+        return result
+
+    def invalidate_cache(self, keys=None, pattern=None, repositories=None):
+        """Invalidate cache entries across multiple repositories.
+        
+        Args:
+            keys (Optional[List[str]]): List of specific cache keys to invalidate
+            pattern (Optional[str]): Pattern to match cache keys (supports * wildcard)
+            repositories (Optional[List[str]]): List of repository names to target.
+                If None, all repositories are targeted.
+            
+        Returns:
+            dict: Results with total invalidated and per-repository breakdown
+        """
+        result = {
+            'total_invalidated': 0,
+            'repositories_processed': 0,
+            'repository_results': {}
+        }
+        
+        target_repos = self.repos
+        if repositories:
+            target_repos = [repo for repo in self.repos if repo.repo_name in repositories]
+        
+        for repo in target_repos:
+            result['repositories_processed'] += 1
+            try:
+                count = repo.invalidate_cache(keys=keys, pattern=pattern)
+                result['repository_results'][repo.repo_name] = {
+                    'success': True,
+                    'invalidated': count
+                }
+                result['total_invalidated'] += count
+            except Exception as e:
+                logger.error(f"Error invalidating cache for repository '{repo.repo_name}': {e}")
+                result['repository_results'][repo.repo_name] = {
+                    'success': False,
+                    'error': str(e),
+                    'invalidated': 0
+                }
+        
+        logger.info(f"Cache invalidation completed. Total invalidated: {result['total_invalidated']} "
+                   f"across {result['repositories_processed']} repositories")
+        
+        return result
+
+    def get_cache_stats(self):
+        """Get comprehensive cache statistics across all repositories.
+        
+        Returns:
+            dict: Aggregated cache statistics and per-repository breakdown
+        """
+        result = {
+            'project_directory': str(self.git_dir) if hasattr(self, 'git_dir') else 'N/A',
+            'total_repositories': len(self.repos),
+            'repositories_with_cache': 0,
+            'total_cache_entries': 0,
+            'cache_backends': {},
+            'global_stats': None,
+            'repository_stats': {}
+        }
+        
+        # Get stats from first repository with cache backend for global stats
+        for repo in self.repos:
+            if repo.cache_backend is not None:
+                try:
+                    stats = repo.get_cache_stats()
+                    result['global_stats'] = stats.get('global_cache_stats')
+                    break
+                except Exception:
+                    continue
+        
+        # Collect stats from all repositories
+        for repo in self.repos:
+            repo_stats = repo.get_cache_stats()
+            result['repository_stats'][repo.repo_name] = repo_stats
+            
+            if repo_stats['cache_backend'] is not None:
+                result['repositories_with_cache'] += 1
+                result['total_cache_entries'] += repo_stats['repository_entries']
+                
+                # Count cache backend types
+                backend_type = repo_stats['cache_backend']
+                result['cache_backends'][backend_type] = result['cache_backends'].get(backend_type, 0) + 1
+        
+        # Add summary percentages
+        if result['total_repositories'] > 0:
+            result['cache_coverage_percent'] = (result['repositories_with_cache'] / result['total_repositories']) * 100
+        else:
+            result['cache_coverage_percent'] = 0.0
+        
+        logger.info(f"Cache statistics collected for {result['total_repositories']} repositories. "
+                   f"Cache coverage: {result['cache_coverage_percent']:.1f}%, "
+                   f"Total entries: {result['total_cache_entries']}")
         
         return result
 
