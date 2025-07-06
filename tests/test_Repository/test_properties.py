@@ -16,7 +16,7 @@ def remote_repo():
 
 
 @pytest.fixture
-def local_repo(tmp_path):
+def local_repo(tmp_path, default_branch):
     """Create a local git repository for testing."""
     repo_path = tmp_path / "repository1"
     repo_path.mkdir()
@@ -26,8 +26,8 @@ def local_repo(tmp_path):
     repo.config_writer().set_value("user", "name", "Test User").release()
     repo.config_writer().set_value("user", "email", "test@example.com").release()
 
-    # Create and checkout master branch
-    repo.git.checkout("-b", "master")
+    # Create and checkout default branch
+    repo.git.checkout("-b", default_branch)
 
     # Create initial commit
     (repo_path / "README.md").write_text("# Test Repository")
@@ -60,9 +60,10 @@ class TestRemoteProperties:
         assert remote_repo.repo_name == "git-pandas"
 
     @pytest.mark.remote
-    def test_branches(self, remote_repo):
+    def test_branches(self, remote_repo, default_branch):
         branches = list(remote_repo.branches()["branch"].values)
-        assert "master" in branches
+        # Check for the default branch (could be master or main)
+        assert default_branch in branches or "master" in branches or "main" in branches
         assert "gh-pages" in branches
 
     @pytest.mark.remote
@@ -82,10 +83,10 @@ class TestLocalProperties:
         repo = Repository(working_dir=str(local_repo))
         assert repo.repo_name == "repository1"
 
-    def test_branches(self, local_repo):
+    def test_branches(self, local_repo, default_branch):
         repo = Repository(working_dir=str(local_repo))
         branches = list(repo.branches()["branch"].values)
-        assert "master" in branches
+        assert default_branch in branches
 
     def test_tags(self, local_repo):
         repo = Repository(working_dir=str(local_repo))
@@ -96,26 +97,26 @@ class TestLocalProperties:
         repo = Repository(working_dir=str(local_repo))
         assert not repo.is_bare()
 
-    def test_commit_history(self, local_repo):
+    def test_commit_history(self, local_repo, default_branch):
         """Test commit history retrieval."""
         repo = Repository(working_dir=str(local_repo))
-        history = repo.commit_history(branch="master")
+        history = repo.commit_history(branch=default_branch)
         assert isinstance(history, DataFrame)
         assert "repository" in history.columns
         assert len(history) > 0
 
-    def test_file_change_history(self, local_repo):
+    def test_file_change_history(self, local_repo, default_branch):
         """Test file change history retrieval."""
         repo = Repository(working_dir=str(local_repo))
-        history = repo.file_change_history(branch="master")
+        history = repo.file_change_history(branch=default_branch)
         assert isinstance(history, DataFrame)
         assert "repository" in history.columns
         assert len(history) > 0
 
-    def test_file_change_rates(self, local_repo):
+    def test_file_change_rates(self, local_repo, default_branch):
         """Test file change rates calculation."""
         repo = Repository(working_dir=str(local_repo))
-        rates = repo.file_change_rates(branch="master")
+        rates = repo.file_change_rates(branch=default_branch)
         assert isinstance(rates, DataFrame)
         assert "repository" in rates.columns
         assert len(rates) > 0
@@ -136,17 +137,17 @@ class TestLocalProperties:
         assert blame["loc"].sum() == 10
         assert blame.shape[0] == 1
 
-    def test_cumulative_blame(self, local_repo):
+    def test_cumulative_blame(self, local_repo, default_branch):
         """Test cumulative blame calculation."""
         repo = Repository(working_dir=str(local_repo))
-        blame = repo.cumulative_blame(branch="master")
+        blame = repo.cumulative_blame(branch=default_branch)
         assert isinstance(blame, DataFrame)
         assert len(blame) > 0
 
-    def test_revs(self, local_repo):
+    def test_revs(self, local_repo, default_branch):
         """Test revision history retrieval."""
         repo = Repository(working_dir=str(local_repo))
-        revs = repo.revs(branch="master")
+        revs = repo.revs(branch=default_branch)
         assert isinstance(revs, DataFrame)
         assert "repository" in revs.columns
         assert len(revs) > 0

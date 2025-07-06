@@ -6,7 +6,7 @@ from gitpandas import Repository
 
 
 @pytest.fixture
-def local_repo(tmp_path):
+def local_repo(tmp_path, default_branch):
     """Fixture for a local repository with commits at different times."""
     # Create a temporary directory
     repo_dir = tmp_path / "repository1"
@@ -19,8 +19,8 @@ def local_repo(tmp_path):
     grepo.git.config("user.name", "Test User")
     grepo.git.config("user.email", "test@example.com")
 
-    # Create and checkout master branch
-    grepo.git.checkout("-b", "master")
+    # Create and checkout default branch
+    grepo.git.checkout("-b", default_branch)
 
     # Add a README file
     readme_path = repo_dir / "README.md"
@@ -74,9 +74,9 @@ def local_repo(tmp_path):
 
 
 class TestPunchcard:
-    def test_punchcard_basic(self, local_repo):
+    def test_punchcard_basic(self, local_repo, default_branch):
         """Test basic functionality of the punchcard method."""
-        punchcard = local_repo.punchcard(branch="master")
+        punchcard = local_repo.punchcard(branch=default_branch)
 
         # Check the shape and columns
         assert isinstance(punchcard, pd.DataFrame)
@@ -103,13 +103,13 @@ class TestPunchcard:
             if len(matching_rows) > 0:
                 assert matching_rows["net"].values[0] > 0
 
-    def test_punchcard_normalize(self, local_repo):
+    def test_punchcard_normalize(self, local_repo, default_branch):
         """Test the normalize parameter of the punchcard method."""
         # Get punchcard without normalization
-        local_repo.punchcard(branch="master")
+        local_repo.punchcard(branch=default_branch)
 
         # Get punchcard with normalization by value
-        punchcard_norm = local_repo.punchcard(branch="master", normalize=1.0)
+        punchcard_norm = local_repo.punchcard(branch=default_branch, normalize=1.0)
 
         # Check that the normalized values are between 0 and 1
         assert punchcard_norm["net"].max() <= 1.0
