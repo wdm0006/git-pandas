@@ -79,27 +79,27 @@ class TestRemoteProperties:
 
 # Local repository tests
 class TestLocalProperties:
-    def test_repo_name(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_repo_name(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         assert repo.repo_name == "repository1"
 
     def test_branches(self, local_repo, default_branch):
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         branches = list(repo.branches()["branch"].values)
         assert default_branch in branches
 
-    def test_tags(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_tags(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         tags = repo.tags()
         assert len(tags) == 0
 
-    def test_is_bare(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_is_bare(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         assert not repo.is_bare()
 
     def test_commit_history(self, local_repo, default_branch):
         """Test commit history retrieval."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         history = repo.commit_history(branch=default_branch)
         assert isinstance(history, DataFrame)
         assert "repository" in history.columns
@@ -107,7 +107,7 @@ class TestLocalProperties:
 
     def test_file_change_history(self, local_repo, default_branch):
         """Test file change history retrieval."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         history = repo.file_change_history(branch=default_branch)
         assert isinstance(history, DataFrame)
         assert "repository" in history.columns
@@ -115,38 +115,38 @@ class TestLocalProperties:
 
     def test_file_change_rates(self, local_repo, default_branch):
         """Test file change rates calculation."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         rates = repo.file_change_rates(branch=default_branch)
         assert isinstance(rates, DataFrame)
         assert "repository" in rates.columns
         assert len(rates) > 0
 
-    def test_has_coverage(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_has_coverage(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         # We know this repo doesn't have coverage
         assert not repo.has_coverage()
 
-    def test_bus_factor(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_bus_factor(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         # We know this repo only has one committer
         assert repo.bus_factor(by="repository")["bus factor"].values[0] == 1
 
-    def test_blame(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_blame(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         blame = repo.blame(ignore_globs=["*.[!p][!y]"])
         assert blame["loc"].sum() == 10
         assert blame.shape[0] == 1
 
     def test_cumulative_blame(self, local_repo, default_branch):
         """Test cumulative blame calculation."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         blame = repo.cumulative_blame(branch=default_branch)
         assert isinstance(blame, DataFrame)
         assert len(blame) > 0
 
     def test_revs(self, local_repo, default_branch):
         """Test revision history retrieval."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         revs = repo.revs(branch=default_branch)
         assert isinstance(revs, DataFrame)
         assert "repository" in revs.columns

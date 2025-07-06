@@ -65,7 +65,7 @@ def local_repo(tmp_path, default_branch):
         grepo.git.commit(m=f"adding file_{idx}.py", env=env)
 
     # Create the Repository object
-    git_pandas_repo = Repository(working_dir=str(repo_dir), verbose=True)
+    git_pandas_repo = Repository(working_dir=str(repo_dir), verbose=True, default_branch=default_branch)
 
     yield git_pandas_repo
 
