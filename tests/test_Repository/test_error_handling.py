@@ -12,7 +12,7 @@ class TestRepositoryErrorHandling:
     """Test Repository error handling and exception paths."""
 
     @pytest.fixture
-    def temp_repo(self, tmp_path):
+    def temp_repo(self, tmp_path, default_branch):
         """Create a temporary git repository for testing."""
         repo_path = tmp_path / "test_repo"
         repo_path.mkdir()
@@ -22,6 +22,9 @@ class TestRepositoryErrorHandling:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create initial commit
         (repo_path / "README.md").write_text("# Test Repository")
         repo.index.add(["README.md"])
@@ -29,9 +32,9 @@ class TestRepositoryErrorHandling:
 
         return repo_path
 
-    def test_coverage_file_not_found(self, temp_repo):
+    def test_coverage_file_not_found(self, temp_repo, default_branch):
         """Test coverage method when .coverage file doesn't exist."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Should return empty DataFrame when no coverage file exists
         coverage_df = repo.coverage()
@@ -40,9 +43,9 @@ class TestRepositoryErrorHandling:
         assert coverage_df.empty
         assert list(coverage_df.columns) == ["filename", "lines_covered", "total_lines", "coverage"]
 
-    def test_coverage_permission_denied(self, temp_repo):
+    def test_coverage_permission_denied(self, temp_repo, default_branch):
         """Test coverage method when permission is denied to .coverage file."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a .coverage file
         coverage_file = temp_repo / ".coverage"
@@ -59,9 +62,9 @@ class TestRepositoryErrorHandling:
             assert coverage_df.empty
             assert list(coverage_df.columns) == ["filename", "lines_covered", "total_lines", "coverage"]
 
-    def test_coverage_invalid_format(self, temp_repo):
+    def test_coverage_invalid_format(self, temp_repo, default_branch):
         """Test coverage method when coverage data has invalid format."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a .coverage file
         coverage_file = temp_repo / ".coverage"
@@ -75,9 +78,9 @@ class TestRepositoryErrorHandling:
         # For an invalid coverage file, it should return empty DataFrame
         assert coverage_df.empty or len(coverage_df) == 0
 
-    def test_coverage_unexpected_error(self, temp_repo):
+    def test_coverage_unexpected_error(self, temp_repo, default_branch):
         """Test coverage method when unexpected error occurs."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a .coverage file
         coverage_file = temp_repo / ".coverage"
@@ -92,9 +95,9 @@ class TestRepositoryErrorHandling:
             assert isinstance(coverage_df, pd.DataFrame)
             assert coverage_df.empty
 
-    def test_file_change_history_git_errors(self, temp_repo):
+    def test_file_change_history_git_errors(self, temp_repo, default_branch):
         """Test file_change_history when Git commands fail."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock iter_commits to raise GitCommandError
         with patch.object(repo.repo, "iter_commits") as mock_iter:
@@ -107,9 +110,9 @@ class TestRepositoryErrorHandling:
             expected_columns = ["filename", "insertions", "deletions", "lines", "message", "committer", "author"]
             assert list(history.columns) == expected_columns
 
-    def test_file_change_history_skip_broken_commits(self, temp_repo):
+    def test_file_change_history_skip_broken_commits(self, temp_repo, default_branch):
         """Test file_change_history with skip_broken=True for problematic commits."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a mock commit that will raise an error
         mock_commit = Mock()
@@ -131,9 +134,9 @@ class TestRepositoryErrorHandling:
                 # Should have empty DataFrame since all commits were skipped
                 assert len(history) == 0
 
-    def test_file_change_history_memory_error_simulation(self, temp_repo):
+    def test_file_change_history_memory_error_simulation(self, temp_repo, default_branch):
         """Test file_change_rates when MemoryError occurs."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock file_change_history to raise MemoryError
         with patch.object(repo, "file_change_history") as mock_fch:
@@ -157,9 +160,9 @@ class TestRepositoryErrorHandling:
             assert list(rates.columns) == expected_columns
             assert rates.empty
 
-    def test_blame_unicode_decode_errors(self, temp_repo):
+    def test_blame_unicode_decode_errors(self, temp_repo, default_branch):
         """Test blame method when encountering Unicode decode errors."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a file with potential encoding issues
         binary_file = temp_repo / "binary.dat"
@@ -179,9 +182,9 @@ class TestRepositoryErrorHandling:
 
             assert isinstance(blame_df, pd.DataFrame)
 
-    def test_blame_binary_file_handling(self, temp_repo):
+    def test_blame_binary_file_handling(self, temp_repo, default_branch):
         """Test blame method with binary files."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # The blame method should handle cases where files can't be processed
         # This tests the continue logic in the blame processing
@@ -191,9 +194,9 @@ class TestRepositoryErrorHandling:
         # Should have expected columns even if empty
         assert "loc" in blame_df.columns
 
-    def test_cumulative_blame_broken_commits(self, temp_repo):
+    def test_cumulative_blame_broken_commits(self, temp_repo, default_branch):
         """Test cumulative_blame with broken commits that should be skipped."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock revs to return DataFrame with problematic revision
         mock_revs_df = pd.DataFrame({"rev": ["abc123"], "repository": ["test_repo"]})
@@ -210,9 +213,9 @@ class TestRepositoryErrorHandling:
 
                 assert isinstance(cumulative, pd.DataFrame)
 
-    def test_file_operations_missing_branch(self, temp_repo):
+    def test_file_operations_missing_branch(self, temp_repo, default_branch):
         """Test file operations when specified branch doesn't exist."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Try to access a non-existent branch
         with patch.object(repo.repo, "iter_commits") as mock_iter:
@@ -224,9 +227,9 @@ class TestRepositoryErrorHandling:
             assert isinstance(history, pd.DataFrame)
             assert history.empty
 
-    def test_punchcard_missing_columns(self, temp_repo):
+    def test_punchcard_missing_columns(self, temp_repo, default_branch):
         """Test punchcard when required columns are missing from commit history."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock the punchcard method on repository to return empty DataFrame
         with patch.object(repo, "punchcard") as mock_punchcard:
@@ -252,9 +255,9 @@ class TestRepositoryErrorHandling:
         with pytest.raises(git.exc.InvalidGitRepositoryError):
             Repository(working_dir=str(non_git_dir))
 
-    def test_file_change_rates_empty_repository(self, temp_repo):
+    def test_file_change_rates_empty_repository(self, temp_repo, default_branch):
         """Test file_change_rates with repository that has no file changes."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock file_change_history to return empty DataFrame
         with patch.object(repo, "file_change_history") as mock_fch:
@@ -267,9 +270,9 @@ class TestRepositoryErrorHandling:
             assert isinstance(rates, pd.DataFrame)
             assert rates.empty
 
-    def test_git_command_timeout_simulation(self, temp_repo):
+    def test_git_command_timeout_simulation(self, temp_repo, default_branch):
         """Test handling of git command timeouts."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock a git operation to raise timeout-like error
         with patch.object(repo.repo, "iter_commits") as mock_iter:
@@ -281,9 +284,9 @@ class TestRepositoryErrorHandling:
             assert isinstance(history, pd.DataFrame)
             assert history.empty
 
-    def test_revs_with_broken_commits(self, temp_repo):
+    def test_revs_with_broken_commits(self, temp_repo, default_branch):
         """Test revs method with commits that can't be processed."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock iter_commits to return a problematic commit
         mock_commit = Mock()
@@ -298,9 +301,9 @@ class TestRepositoryErrorHandling:
 
             assert isinstance(revs, pd.DataFrame)
 
-    def test_cleanup_on_error(self, temp_repo):
+    def test_cleanup_on_error(self, temp_repo, default_branch):
         """Test that cleanup happens properly even when errors occur."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Ensure the repository object can be cleaned up
         repo_name = repo.repo_name
@@ -312,9 +315,9 @@ class TestRepositoryErrorHandling:
         except Exception as e:
             pytest.fail(f"Repository cleanup raised unexpected exception: {e}")
 
-    def test_process_commit_error_handling(self, temp_repo):
+    def test_process_commit_error_handling(self, temp_repo, default_branch):
         """Test _process_commit_for_file_history error handling."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Create a mock commit
         mock_commit = Mock()
@@ -336,9 +339,9 @@ class TestRepositoryErrorHandling:
         # History should be empty due to error
         assert len(history) == 0
 
-    def test_file_change_rates_git_command_error(self, temp_repo):
+    def test_file_change_rates_git_command_error(self, temp_repo, default_branch):
         """Test file_change_rates when git commands fail."""
-        repo = Repository(working_dir=str(temp_repo))
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
 
         # Mock file_change_history to raise GitCommandError
         with patch.object(repo, "file_change_history") as mock_fch:

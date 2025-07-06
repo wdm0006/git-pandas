@@ -11,14 +11,14 @@ from gitpandas.cache import DiskCache
 
 
 @pytest.fixture
-def temp_git_repo():
+def temp_git_repo(default_branch):
     """Create a temporary git repository for testing."""
     temp_dir = tempfile.mkdtemp()
 
     # Initialize git repo
     repo = Repo.init(temp_dir)
-    # Explicitly create and checkout 'main' branch
-    repo.git.checkout(b="main")
+    # Explicitly create and checkout default branch
+    repo.git.checkout(b=default_branch)
 
     # Create a test file
     test_file_path = os.path.join(temp_dir, "test_file.txt")
@@ -57,7 +57,7 @@ def temp_cache_file():
 class TestRepositoryCache:
     """Test caching behavior with the actual Repository class."""
 
-    def test_repository_list_files_cache(self, temp_git_repo, temp_cache_file):
+    def test_repository_list_files_cache(self, temp_git_repo, temp_cache_file, default_branch):
         """Test that list_files method properly uses cache."""
         # Create cache and repository
         cache = DiskCache(filepath=temp_cache_file)
@@ -67,7 +67,7 @@ class TestRepositoryCache:
             mock.patch.object(cache, "_get_entry", wraps=cache._get_entry) as mock_get_entry,
             mock.patch.object(cache, "set", wraps=cache.set) as mock_set,
         ):
-            repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
+            repo = Repository(working_dir=temp_git_repo, cache_backend=cache, default_branch=default_branch)
 
             # First call - should set cache but not get from it
             result1 = repo.list_files()
@@ -93,13 +93,13 @@ class TestRepositoryCache:
             # Results should match (unchanged repo)
             assert result1.equals(result3), "Results should match even with force_refresh"
 
-    def test_repository_cache_with_different_params(self, temp_git_repo, temp_cache_file):
+    def test_repository_cache_with_different_params(self, temp_git_repo, temp_cache_file, default_branch):
         """Test caching with different parameters."""
         cache = DiskCache(filepath=temp_cache_file)
 
         # Spy on the cache's set method
         with mock.patch.object(cache, "set", wraps=cache.set) as mock_set:
-            repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
+            repo = Repository(working_dir=temp_git_repo, cache_backend=cache, default_branch=default_branch)
 
             # Call with default revision (HEAD)
             repo.list_files()
@@ -115,11 +115,11 @@ class TestRepositoryCache:
             repo.list_files(rev="HEAD~1")
             assert mock_set.call_count > 0, "Cache set should be called for different parameters"
 
-    def test_repository_cache_persistence(self, temp_git_repo, temp_cache_file):
+    def test_repository_cache_persistence(self, temp_git_repo, temp_cache_file, default_branch):
         """Test that cache persists between Repository instances."""
         # First repository
         cache1 = DiskCache(filepath=temp_cache_file)
-        repo1 = Repository(working_dir=temp_git_repo, cache_backend=cache1)
+        repo1 = Repository(working_dir=temp_git_repo, cache_backend=cache1, default_branch=default_branch)
 
         # Call method and get result
         result1 = repo1.list_files()
@@ -132,7 +132,7 @@ class TestRepositoryCache:
             mock.patch.object(cache2, "_get_entry", wraps=cache2._get_entry) as mock_get_entry,
             mock.patch.object(cache2, "set", wraps=cache2.set) as mock_set,
         ):
-            repo2 = Repository(working_dir=temp_git_repo, cache_backend=cache2)
+            repo2 = Repository(working_dir=temp_git_repo, cache_backend=cache2, default_branch=default_branch)
 
             # Call same method - should use cache
             result2 = repo2.list_files()
@@ -142,10 +142,10 @@ class TestRepositoryCache:
             # Results should match
             assert result1.equals(result2), "Results should match between repository instances"
 
-    def test_multiple_repository_methods_cache(self, temp_git_repo, temp_cache_file):
+    def test_multiple_repository_methods_cache(self, temp_git_repo, temp_cache_file, default_branch):
         """Test caching behavior across different repository methods."""
         cache = DiskCache(filepath=temp_cache_file)
-        repo = Repository(working_dir=temp_git_repo, cache_backend=cache)
+        repo = Repository(working_dir=temp_git_repo, cache_backend=cache, default_branch=default_branch)
 
         # Create a dictionary to store original results
         results = {}

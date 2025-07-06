@@ -235,7 +235,7 @@ class TestSafeFetchRemoteIntegration(unittest.TestCase):
         git_repo.index.commit("Initial commit")
 
         # Create Repository instance
-        repository = Repository(working_dir=repo_path, cache_backend=self.cache)
+        repository = Repository(working_dir=repo_path, cache_backend=self.cache, default_branch="main")
 
         # Test fetch (should fail gracefully - no remotes)
         result = repository.safe_fetch_remote()
@@ -268,7 +268,7 @@ class TestSafeFetchRemoteIntegration(unittest.TestCase):
         mock_fetch.return_value = []
 
         # Create Repository instance
-        repository = Repository(working_dir=repo_path, cache_backend=self.cache)
+        repository = Repository(working_dir=repo_path, cache_backend=self.cache, default_branch="main")
 
         # Test fetch
         result = repository.safe_fetch_remote()

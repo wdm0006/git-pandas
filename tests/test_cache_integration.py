@@ -9,7 +9,7 @@ class TestCacheIntegration:
     """Test cache integration across Repository and Project functionality."""
 
     @pytest.fixture
-    def cache_repo(self, tmp_path):
+    def cache_repo(self, tmp_path, default_branch):
         """Create a repository for cache testing."""
         repo_path = tmp_path / "cache_repo"
         repo_path.mkdir()
@@ -18,6 +18,9 @@ class TestCacheIntegration:
         # Configure git user
         repo.config_writer().set_value("user", "name", "Cache User").release()
         repo.config_writer().set_value("user", "email", "cache@example.com").release()
+
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
 
         # Create multiple commits for testing
         for i in range(3):
@@ -51,9 +54,9 @@ class TestCacheIntegration:
 
         return str(project_path)
 
-    def test_repository_cache_hit_miss_patterns(self, cache_repo):
+    def test_repository_cache_hit_miss_patterns(self, cache_repo, default_branch):
         """Test cache hit and miss patterns for repository operations."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # First call should be a cache miss
         history1 = repo.commit_history()
@@ -75,9 +78,9 @@ class TestCacheIntegration:
         assert isinstance(history4, pd.DataFrame)
         assert len(history4) == len(history3)
 
-    def test_repository_cache_different_methods(self, cache_repo):
+    def test_repository_cache_different_methods(self, cache_repo, default_branch):
         """Test that different repository methods use cache independently."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test different methods
         commit_history = repo.commit_history()
@@ -103,9 +106,9 @@ class TestCacheIntegration:
         assert len(blame_data2) == len(blame_data)
         assert len(file_change_rates2) == len(file_change_rates)
 
-    def test_repository_cache_parameter_sensitivity(self, cache_repo):
+    def test_repository_cache_parameter_sensitivity(self, cache_repo, default_branch):
         """Test that cache is sensitive to parameter changes."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test with different limits
         history_no_limit = repo.commit_history()
@@ -129,9 +132,9 @@ class TestCacheIntegration:
         assert isinstance(history_all_files, pd.DataFrame)
         assert isinstance(history_txt_only, pd.DataFrame)
 
-    def test_repository_cache_with_globs(self, cache_repo):
+    def test_repository_cache_with_globs(self, cache_repo, default_branch):
         """Test cache behavior with different glob patterns."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test with different include globs
         history1 = repo.commit_history(include_globs=["*.txt"])
@@ -194,9 +197,9 @@ class TestCacheIntegration:
             assert isinstance(repo_history, pd.DataFrame)
             assert isinstance(repo_blame, pd.DataFrame)
 
-    def test_cache_memory_efficiency(self, cache_repo):
+    def test_cache_memory_efficiency(self, cache_repo, default_branch):
         """Test cache memory efficiency with large datasets."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test with different limits to ensure cache doesn't grow unbounded
         limits = [1, 2, 3, None, 5, 10]
@@ -208,9 +211,9 @@ class TestCacheIntegration:
             if limit is not None:
                 assert len(history) <= limit
 
-    def test_cache_with_concurrent_access_simulation(self, cache_repo):
+    def test_cache_with_concurrent_access_simulation(self, cache_repo, default_branch):
         """Test cache behavior under simulated concurrent access."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Simulate multiple rapid accesses
         results = []
@@ -228,9 +231,9 @@ class TestCacheIntegration:
             assert result["blame_len"] == first_result["blame_len"]
             assert result["rates_len"] == first_result["rates_len"]
 
-    def test_cache_invalidation_scenarios(self, cache_repo):
+    def test_cache_invalidation_scenarios(self, cache_repo, default_branch):
         """Test scenarios that should or shouldn't invalidate cache."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Initial data
         history1 = repo.commit_history()
@@ -241,7 +244,7 @@ class TestCacheIntegration:
         assert len(history2) == len(history1)
 
         # Different repository object for same path should use cache
-        repo2 = Repository(working_dir=cache_repo)
+        repo2 = Repository(working_dir=cache_repo, default_branch=default_branch)
         history3 = repo2.commit_history()
         assert len(history3) == len(history1)
 
@@ -259,9 +262,9 @@ class TestCacheIntegration:
             # If error is raised, that's also acceptable behavior
             pass
 
-    def test_cache_key_consistency(self, cache_repo):
+    def test_cache_key_consistency(self, cache_repo, default_branch):
         """Test that cache keys are consistent for equivalent operations."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test that equivalent parameter sets produce same cache behavior
         history1 = repo.commit_history(limit=5, days=None)
@@ -277,9 +280,9 @@ class TestCacheIntegration:
         assert isinstance(history3, pd.DataFrame)
         assert isinstance(history4, pd.DataFrame)
 
-    def test_cache_data_integrity(self, cache_repo):
+    def test_cache_data_integrity(self, cache_repo, default_branch):
         """Test that cached data maintains integrity."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Get data multiple times
         history1 = repo.commit_history()
@@ -294,7 +297,7 @@ class TestCacheIntegration:
                 if col in history2.columns:
                     assert history1[col].dtype == history2[col].dtype
 
-    def test_cache_with_different_working_directories(self, tmp_path):
+    def test_cache_with_different_working_directories(self, tmp_path, default_branch):
         """Test cache behavior with different working directories."""
         # Create two different repositories
         repo1_path = tmp_path / "repo1"
@@ -316,8 +319,8 @@ class TestCacheIntegration:
         repo2.index.commit("Commit 2")
 
         # Test that different repositories have separate cache entries
-        git_repo1 = Repository(working_dir=str(repo1_path))
-        git_repo2 = Repository(working_dir=str(repo2_path))
+        git_repo1 = Repository(working_dir=str(repo1_path), default_branch=default_branch)
+        git_repo2 = Repository(working_dir=str(repo2_path), default_branch=default_branch)
 
         history1 = git_repo1.commit_history()
         history2 = git_repo2.commit_history()
@@ -331,9 +334,9 @@ class TestCacheIntegration:
             assert len(history1) >= 1
             assert len(history2) >= 1
 
-    def test_cache_performance_characteristics(self, cache_repo):
+    def test_cache_performance_characteristics(self, cache_repo, default_branch):
         """Test cache performance characteristics."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # First call (cache miss) - should work
         history1 = repo.commit_history()
@@ -345,9 +348,9 @@ class TestCacheIntegration:
             assert isinstance(history, pd.DataFrame)
             assert len(history) == len(history1)
 
-    def test_cache_with_complex_parameters(self, cache_repo):
+    def test_cache_with_complex_parameters(self, cache_repo, default_branch):
         """Test cache with complex parameter combinations."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Test various parameter combinations
         param_sets = [
@@ -368,9 +371,9 @@ class TestCacheIntegration:
             history2 = repo.commit_history(**params)
             assert len(history2) == results[i]
 
-    def test_cache_cross_method_independence(self, cache_repo):
+    def test_cache_cross_method_independence(self, cache_repo, default_branch):
         """Test that cache entries for different methods are independent."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Call different methods with similar parameters
         commit_history = repo.commit_history(limit=2)
@@ -395,7 +398,7 @@ class TestCacheErrorHandling:
     """Test cache behavior under error conditions."""
 
     @pytest.fixture
-    def cache_repo(self, tmp_path):
+    def cache_repo(self, tmp_path, default_branch):
         """Create a repository for cache testing."""
         repo_path = tmp_path / "cache_repo"
         repo_path.mkdir()
@@ -404,6 +407,9 @@ class TestCacheErrorHandling:
         # Configure git user
         repo.config_writer().set_value("user", "name", "Cache User").release()
         repo.config_writer().set_value("user", "email", "cache@example.com").release()
+
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
 
         # Create multiple commits for testing
         for i in range(3):
@@ -429,7 +435,7 @@ class TestCacheErrorHandling:
             # Acceptable to raise exception for corrupted repo
             pass
 
-    def test_cache_with_permission_errors(self, tmp_path):
+    def test_cache_with_permission_errors(self, tmp_path, default_branch):
         """Test cache behavior when file permissions prevent access."""
         # Create a repository
         repo_path = tmp_path / "perm_repo"
@@ -443,15 +449,15 @@ class TestCacheErrorHandling:
         repo.index.add(["file.txt"])
         repo.index.commit("Test commit")
 
-        git_repo = Repository(working_dir=str(repo_path))
+        git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
         # Normal operation should work
         history = git_repo.commit_history()
         assert isinstance(history, pd.DataFrame)
 
-    def test_cache_memory_pressure_simulation(self, cache_repo):
+    def test_cache_memory_pressure_simulation(self, cache_repo, default_branch):
         """Test cache behavior under simulated memory pressure."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Create many different cache entries
         for limit in range(1, 10):
@@ -463,7 +469,7 @@ class TestCacheErrorHandling:
                     # Acceptable if some combinations fail
                     pass
 
-    def test_cache_with_unicode_paths(self, tmp_path):
+    def test_cache_with_unicode_paths(self, tmp_path, default_branch):
         """Test cache behavior with unicode characters in paths."""
         # Create repository with unicode name
         unicode_name = "测试_repo_café"
@@ -479,7 +485,7 @@ class TestCacheErrorHandling:
             repo.index.add(["file.txt"])
             repo.index.commit("Unicode commit")
 
-            git_repo = Repository(working_dir=str(repo_path))
+            git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
             history = git_repo.commit_history()
             assert isinstance(history, pd.DataFrame)
 
@@ -487,9 +493,9 @@ class TestCacheErrorHandling:
             # Skip if unicode filenames not supported
             pytest.skip("Unicode filenames not supported on this platform")
 
-    def test_cache_cleanup_behavior(self, cache_repo):
+    def test_cache_cleanup_behavior(self, cache_repo, default_branch):
         """Test that cache doesn't grow unbounded."""
-        repo = Repository(working_dir=cache_repo)
+        repo = Repository(working_dir=cache_repo, default_branch=default_branch)
 
         # Generate many different cache entries
         for i in range(20):

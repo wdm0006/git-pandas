@@ -6,7 +6,7 @@ from gitpandas import Repository
 
 
 @pytest.fixture
-def multi_committer_repo(tmp_path):
+def multi_committer_repo(tmp_path, default_branch):
     """Fixture for a local repository with multiple committers."""
     # Create a temporary directory
     repo_dir = tmp_path / "repository1"
@@ -73,7 +73,7 @@ def multi_committer_repo(tmp_path):
     grepo.git.commit(m="adding more to shared file")
 
     # Create the Repository object
-    git_pandas_repo = Repository(working_dir=str(repo_dir), verbose=True)
+    git_pandas_repo = Repository(working_dir=str(repo_dir), default_branch=default_branch, verbose=True)
 
     yield git_pandas_repo
 
@@ -82,7 +82,7 @@ def multi_committer_repo(tmp_path):
 
 
 class TestBusFactor:
-    def test_bus_factor_by_repository(self, multi_committer_repo):
+    def test_bus_factor_by_repository(self, multi_committer_repo, default_branch):
         """Test the bus_factor method with by='repository'."""
         bus_factor = multi_committer_repo.bus_factor(by="repository")
 
@@ -102,7 +102,7 @@ class TestBusFactor:
         # But we'll just check it's at least 1 to be safe
         assert bus_factor["bus factor"].values[0] >= 1
 
-    def test_bus_factor_with_globs(self, multi_committer_repo):
+    def test_bus_factor_with_globs(self, multi_committer_repo, default_branch):
         """Test the ignore_globs and include_globs parameters."""
         # Get bus factor for all files
         bus_factor_all = multi_committer_repo.bus_factor(by="repository")
@@ -117,7 +117,7 @@ class TestBusFactor:
         assert bus_factor_no_user1["bus factor"].values[0] <= bus_factor_all["bus factor"].values[0]
         assert bus_factor_only_user1["bus factor"].values[0] <= bus_factor_all["bus factor"].values[0]
 
-    def test_bus_factor_calculation(self, multi_committer_repo):
+    def test_bus_factor_calculation(self, multi_committer_repo, default_branch):
         """Test the bus factor calculation logic."""
         # Get the blame data to understand the distribution of contributions
         blame = multi_committer_repo.blame(by="repository")
@@ -142,7 +142,7 @@ class TestBusFactor:
         # The calculated bus factor should match our manual calculation
         assert bus_factor == manual_bus_factor
 
-    def test_bus_factor_by_file(self, multi_committer_repo):
+    def test_bus_factor_by_file(self, multi_committer_repo, default_branch):
         """Test the bus_factor method with by='file'."""
         bus_factor_df = multi_committer_repo.bus_factor(by="file")
 
@@ -172,7 +172,7 @@ class TestBusFactor:
         python_files = [f for f in file_list if f.endswith(".py")]
         assert len(python_files) > 0, "Should have Python files in results"
 
-    def test_bus_factor_by_file_with_globs(self, multi_committer_repo):
+    def test_bus_factor_by_file_with_globs(self, multi_committer_repo, default_branch):
         """Test the file-wise bus factor with glob filtering."""
         # Get bus factor for all files
         bus_factor_all = multi_committer_repo.bus_factor(by="file")
@@ -194,7 +194,7 @@ class TestBusFactor:
         if not bus_factor_no_py.empty:
             assert not bus_factor_no_py["file"].str.endswith(".py").any()
 
-    def test_bus_factor_by_file_single_committer_files(self, multi_committer_repo):
+    def test_bus_factor_by_file_single_committer_files(self, multi_committer_repo, default_branch):
         """Test file-wise bus factor for files with single committers."""
         # Get all file-wise bus factors
         bus_factor_df = multi_committer_repo.bus_factor(by="file")

@@ -6,7 +6,7 @@ from gitpandas import Repository
 
 
 @pytest.fixture
-def local_repo(tmp_path):
+def local_repo(tmp_path, default_branch):
     """Create a local git repository with various file types and structures."""
     repo_path = tmp_path / "test_repo"
     repo_path.mkdir()
@@ -15,6 +15,9 @@ def local_repo(tmp_path):
     # Configure git user
     repo.config_writer().set_value("user", "name", "Test User").release()
     repo.config_writer().set_value("user", "email", "test@example.com").release()
+
+    # Create and checkout default branch
+    repo.git.checkout("-b", default_branch)
 
     # Create and checkout master branch
     repo.git.checkout("-b", "master")
@@ -53,11 +56,11 @@ def local_repo(tmp_path):
     repo.index.add([str(main_py)])
     commit = repo.index.commit("Update greeting")
 
-    return {"repo_path": repo_path, "repo": Repository(working_dir=str(repo_path)), "last_commit": commit.hexsha}
+    return {"repo_path": repo_path, "repo": Repository(working_dir=str(repo_path), default_branch=default_branch), "last_commit": commit.hexsha}
 
 
 class TestFileOperations:
-    def test_list_files(self, local_repo):
+    def test_list_files(self, local_repo, default_branch):
         """Test listing files in the repository."""
         repo = local_repo["repo"]
 
@@ -94,7 +97,7 @@ class TestFileOperations:
         # Check file modes (should be regular files)
         assert all(files["mode"].isin(["100644"]))
 
-    def test_get_file_content(self, local_repo):
+    def test_get_file_content(self, local_repo, default_branch):
         """Test getting file content from the repository."""
         repo = local_repo["repo"]
 
@@ -115,7 +118,7 @@ class TestFileOperations:
         # Test getting content with invalid revision
         assert repo.get_file_content("src/main.py", rev="invalid_rev") is None
 
-    def test_get_commit_content(self, local_repo):
+    def test_get_commit_content(self, local_repo, default_branch):
         """Test getting detailed content changes from a commit."""
         repo = local_repo["repo"]
         commit_sha = local_repo["last_commit"]
@@ -160,7 +163,7 @@ class TestFileOperations:
         invalid = repo.get_commit_content("invalid_sha")
         assert len(invalid) == 0
 
-    def test_file_change_rates_index_ambiguity(self, local_repo):
+    def test_file_change_rates_index_ambiguity(self, local_repo, default_branch):
         """Test that file_change_rates handles file index/column ambiguity correctly."""
         repo = local_repo["repo"]
 

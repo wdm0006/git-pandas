@@ -10,7 +10,7 @@ from gitpandas import Repository
 
 
 @pytest.fixture
-def local_repo(tmp_path):
+def local_repo(tmp_path, default_branch):
     """Create a more complex local git repository for advanced testing."""
     repo_path = tmp_path / "advanced_repo"
     repo_path.mkdir()
@@ -19,6 +19,9 @@ def local_repo(tmp_path):
     # Configure git user
     repo.config_writer().set_value("user", "name", "Test User").release()
     repo.config_writer().set_value("user", "email", "test@example.com").release()
+
+    # Create and checkout default branch
+    repo.git.checkout("-b", default_branch)
 
     # Create and checkout master branch
     repo.git.checkout("-b", "master")
@@ -74,9 +77,9 @@ def local_repo(tmp_path):
 
 
 class TestRepositoryAdvanced:
-    def test_commits_in_tags(self, local_repo):
+    def test_commits_in_tags(self, local_repo, default_branch):
         """Test retrieving commits between tags."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # Get the result
         commits_in_tags = repo.commits_in_tags()
@@ -86,9 +89,9 @@ class TestRepositoryAdvanced:
         assert "tag" in commits_in_tags.columns
         assert "commit_sha" in commits_in_tags.columns
 
-    def test_get_branches_by_commit(self, local_repo):
+    def test_get_branches_by_commit(self, local_repo, default_branch):
         """Test getting branches that contain a specific commit."""
-        repo_obj = Repository(working_dir=str(local_repo))
+        repo_obj = Repository(working_dir=str(local_repo), default_branch=default_branch)
         repo = Repo(str(local_repo))
 
         # Get the first commit (should be in both master and feature)
@@ -120,9 +123,9 @@ class TestRepositoryAdvanced:
         assert "feature" in branch_list
         assert "master" not in branch_list
 
-    def test_file_owner(self, local_repo):
+    def test_file_owner(self, local_repo, default_branch):
         """Test getting the owner of a file as of a specific revision."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # Get the file owner information
         owner_info = repo.file_owner(rev="HEAD", filename="src/main.py", committer=True)
@@ -132,7 +135,7 @@ class TestRepositoryAdvanced:
         assert "name" in owner_info
         assert owner_info["name"] == "Test User"
 
-    def test_cumulative_blame_multi_author(self, tmp_path):
+    def test_cumulative_blame_multi_author(self, tmp_path, default_branch):
         """Test cumulative_blame with multiple authors and changing blame."""
         repo_path = tmp_path / "blame_repo"
         repo_path.mkdir()
@@ -171,7 +174,7 @@ class TestRepositoryAdvanced:
         repo.index.commit("Commit 3", author=author1, committer=author1, commit_date=f"{timestamp_3} +0000")
 
         # Instantiate Repository and get cumulative blame
-        repo_obj = Repository(working_dir=str(repo_path))
+        repo_obj = Repository(working_dir=str(repo_path), default_branch=default_branch)
         # Use committer=False to test author blame
         blame_df = repo_obj.cumulative_blame(branch="main", committer=False)
 
@@ -211,9 +214,9 @@ class TestRepositoryAdvanced:
         assert blame_df.loc[commit_date_3, "Author One"] == 2.0
         assert blame_df.loc[commit_date_3, "Author Two"] == 4.0
 
-    def test_parallel_cumulative_blame(self, local_repo):
+    def test_parallel_cumulative_blame(self, local_repo, default_branch):
         """Test parallel cumulative blame calculation."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # We need to patch the Parallel function to simulate joblib if not available
         with patch("gitpandas.repository._has_joblib", True), patch("gitpandas.repository.Parallel") as mock_parallel:
@@ -260,9 +263,9 @@ class TestRepositoryAdvanced:
             # Verify parallel was called
             assert mock_parallel.called
 
-    def test_punchcard(self, local_repo):
+    def test_punchcard(self, local_repo, default_branch):
         """Test punchcard generation with various parameters."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # Mock commit_history to return controlled data
         mock_history = pd.DataFrame(
@@ -305,9 +308,9 @@ class TestRepositoryAdvanced:
         # Normalized values should be between 0 and 100
         assert punchcard_norm["lines"].max() <= 100.0
 
-    def test_file_last_edit(self, local_repo):
+    def test_file_last_edit(self, local_repo, default_branch):
         """Test getting the last edit information for a file."""
-        repo_obj = Repository(working_dir=str(local_repo))
+        repo_obj = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # Test a file that exists
         last_edit = repo_obj._get_last_edit_date("src/main.py")
@@ -316,9 +319,9 @@ class TestRepositoryAdvanced:
         # Test a file that doesn't exist
         assert pd.isna(repo_obj._get_last_edit_date("nonexistent_file.txt"))
 
-    def test_file_detail_with_cache(self, local_repo):
+    def test_file_detail_with_cache(self, local_repo, default_branch):
         """Test that file_detail properly uses caching."""
-        repo = Repository(working_dir=str(local_repo))
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
 
         # Get a specific revision to test with
         first_commit = list(repo.repo.iter_commits(max_count=1))[0].hexsha
@@ -342,7 +345,7 @@ class TestRepositoryAdvanced:
         result3 = repo.file_detail(rev="HEAD")
         assert isinstance(result3, pd.DataFrame)
 
-    def test_blame_deleted_file(self, tmp_path):
+    def test_blame_deleted_file(self, tmp_path, default_branch):
         """Test blame on a revision where a file existed but was later deleted."""
         repo_path = tmp_path / "blame_test_repo"
         repo_path.mkdir()
@@ -365,7 +368,7 @@ class TestRepositoryAdvanced:
         repo.index.commit("Delete file", author=author, committer=author, commit_date=f"{delete_date} +0000")
 
         # Create Repository object
-        repo_obj = Repository(working_dir=str(repo_path))
+        repo_obj = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
         # Test blame on previous revision where file existed
         blame_result = repo_obj.blame(rev=commit.hexsha)
@@ -375,8 +378,8 @@ class TestRepositoryAdvanced:
         blame_head = repo_obj.blame(rev="HEAD")
         assert isinstance(blame_head, pd.DataFrame)  # Should return empty DataFrame
 
-    def test_time_between_revs(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_time_between_revs(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test time_between_revs")
@@ -387,8 +390,8 @@ class TestRepositoryAdvanced:
         # Should be 2 hours = 2/24 days in our fixture
         assert abs(days - (2 / 24)) < 1e-6
 
-    def test_diff_stats_between_revs(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_diff_stats_between_revs(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test diff_stats_between_revs")
@@ -399,8 +402,8 @@ class TestRepositoryAdvanced:
         assert stats["files_changed"] >= 0
         assert isinstance(stats["files"], list)
 
-    def test_committers_between_revs(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_committers_between_revs(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test committers_between_revs")
@@ -414,8 +417,8 @@ class TestRepositoryAdvanced:
         assert "Test User" in info["committers"]
         assert "Test User" in info["authors"]
 
-    def test_files_changed_between_revs(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_files_changed_between_revs(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         commits = list(repo.repo.iter_commits("master", max_count=2))
         if len(commits) < 2:
             pytest.skip("Not enough commits to test files_changed_between_revs")
@@ -425,8 +428,8 @@ class TestRepositoryAdvanced:
         # Should include at least one file
         assert any(f.endswith(".py") or f.endswith(".md") for f in files)
 
-    def test_release_tag_summary(self, local_repo):
-        repo = Repository(working_dir=str(local_repo))
+    def test_release_tag_summary(self, local_repo, default_branch):
+        repo = Repository(working_dir=str(local_repo), default_branch=default_branch)
         repo_path = local_repo
         # Add a new commit before the second tag to ensure there are commits between tags
         with open(os.path.join(repo_path, "README.md"), "a") as f:

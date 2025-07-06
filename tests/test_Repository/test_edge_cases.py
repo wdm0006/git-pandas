@@ -9,7 +9,7 @@ class TestRepositoryEdgeCases:
     """Test Repository edge cases and boundary conditions."""
 
     @pytest.fixture
-    def empty_repo(self, tmp_path):
+    def empty_repo(self, tmp_path, default_branch):
         """Create an empty git repository with no commits."""
         repo_path = tmp_path / "empty_repo"
         repo_path.mkdir()
@@ -19,10 +19,13 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         return str(repo_path)
 
     @pytest.fixture
-    def single_commit_repo(self, tmp_path):
+    def single_commit_repo(self, tmp_path, default_branch):
         """Create a repository with exactly one commit."""
         repo_path = tmp_path / "single_commit_repo"
         repo_path.mkdir()
@@ -32,6 +35,9 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create single commit
         (repo_path / "README.md").write_text("# Single Commit")
         repo.index.add(["README.md"])
@@ -40,7 +46,7 @@ class TestRepositoryEdgeCases:
         return str(repo_path)
 
     @pytest.fixture
-    def large_file_repo(self, tmp_path):
+    def large_file_repo(self, tmp_path, default_branch):
         """Create a repository with a large file."""
         repo_path = tmp_path / "large_file_repo"
         repo_path.mkdir()
@@ -50,6 +56,9 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create a large file (simulated)
         large_content = "A" * 10000  # 10KB file
         (repo_path / "large_file.txt").write_text(large_content)
@@ -58,9 +67,9 @@ class TestRepositoryEdgeCases:
 
         return str(repo_path)
 
-    def test_empty_repository_operations(self, empty_repo):
+    def test_empty_repository_operations(self, empty_repo, default_branch):
         """Test all repository operations on an empty repository."""
-        repo = Repository(working_dir=empty_repo, default_branch="main")
+        repo = Repository(working_dir=empty_repo, default_branch=default_branch)
 
         # Test commit_history on empty repo - may fail with GitCommandError
         try:
@@ -103,9 +112,9 @@ class TestRepositoryEdgeCases:
         except Exception:
             pass
 
-    def test_single_commit_repository(self, single_commit_repo):
+    def test_single_commit_repository(self, single_commit_repo, default_branch):
         """Test repository operations with exactly one commit."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test commit_history with single commit
         history = repo.commit_history()
@@ -124,9 +133,9 @@ class TestRepositoryEdgeCases:
         # Should have blame data for the single file
         assert len(blame_df) >= 1
 
-    def test_repository_with_zero_limit(self, single_commit_repo):
+    def test_repository_with_zero_limit(self, single_commit_repo, default_branch):
         """Test repository operations with limit=0."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test commit_history with zero limit
         history = repo.commit_history(limit=0)
@@ -138,9 +147,9 @@ class TestRepositoryEdgeCases:
         assert isinstance(file_history, pd.DataFrame)
         assert file_history.empty
 
-    def test_repository_with_negative_limit(self, single_commit_repo):
+    def test_repository_with_negative_limit(self, single_commit_repo, default_branch):
         """Test repository operations with negative limit."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test commit_history with negative limit - should handle gracefully
         history = repo.commit_history(limit=-1)
@@ -151,9 +160,9 @@ class TestRepositoryEdgeCases:
         file_history = repo.file_change_history(limit=-1)
         assert isinstance(file_history, pd.DataFrame)
 
-    def test_repository_with_very_large_limit(self, single_commit_repo):
+    def test_repository_with_very_large_limit(self, single_commit_repo, default_branch):
         """Test repository operations with very large limit."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with extremely large limit
         large_limit = 999999999
@@ -163,9 +172,9 @@ class TestRepositoryEdgeCases:
         # Should not crash and return available data
         assert len(history) <= large_limit
 
-    def test_repository_with_empty_globs(self, single_commit_repo):
+    def test_repository_with_empty_globs(self, single_commit_repo, default_branch):
         """Test repository operations with empty glob patterns."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with empty include_globs
         history = repo.commit_history(include_globs=[])
@@ -179,9 +188,9 @@ class TestRepositoryEdgeCases:
         file_history = repo.file_change_history(include_globs=[])
         assert isinstance(file_history, pd.DataFrame)
 
-    def test_repository_with_nonexistent_globs(self, single_commit_repo):
+    def test_repository_with_nonexistent_globs(self, single_commit_repo, default_branch):
         """Test repository operations with glob patterns that match nothing."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with globs that match no files
         nonexistent_globs = ["*.nonexistent", "*.xyz", "impossible_pattern_*"]
@@ -193,7 +202,7 @@ class TestRepositoryEdgeCases:
         file_history = repo.file_change_history(include_globs=nonexistent_globs)
         assert isinstance(file_history, pd.DataFrame)
 
-    def test_repository_with_special_characters_in_paths(self, tmp_path):
+    def test_repository_with_special_characters_in_paths(self, tmp_path, default_branch):
         """Test repository with special characters in file paths."""
         repo_path = tmp_path / "special_chars_repo"
         repo_path.mkdir()
@@ -202,6 +211,9 @@ class TestRepositoryEdgeCases:
         # Configure git user
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
+
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
 
         # Create files with special characters (that are valid in git)
         special_files = [
@@ -222,7 +234,7 @@ class TestRepositoryEdgeCases:
         if repo.index.entries:  # Only commit if we have files
             repo.index.commit("Add files with special characters")
 
-            git_repo = Repository(working_dir=str(repo_path))
+            git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
             # Test operations with special character files
             history = git_repo.commit_history()
@@ -231,7 +243,7 @@ class TestRepositoryEdgeCases:
             file_history = git_repo.file_change_history()
             assert isinstance(file_history, pd.DataFrame)
 
-    def test_repository_with_unicode_content(self, tmp_path):
+    def test_repository_with_unicode_content(self, tmp_path, default_branch):
         """Test repository with unicode content in files."""
         repo_path = tmp_path / "unicode_repo"
         repo_path.mkdir()
@@ -241,13 +253,16 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create file with unicode content
         unicode_content = "Hello 世界 🌍 Café naïve résumé"
         (repo_path / "unicode.txt").write_text(unicode_content, encoding="utf-8")
         repo.index.add(["unicode.txt"])
         repo.index.commit("Add unicode content")
 
-        git_repo = Repository(working_dir=str(repo_path))
+        git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
         # Test operations with unicode content
         history = git_repo.commit_history()
@@ -256,9 +271,9 @@ class TestRepositoryEdgeCases:
         blame_df = git_repo.blame()
         assert isinstance(blame_df, pd.DataFrame)
 
-    def test_repository_boundary_dates(self, single_commit_repo):
+    def test_repository_boundary_dates(self, single_commit_repo, default_branch):
         """Test repository operations with boundary date conditions."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with days=0 (should include all commits)
         history = repo.commit_history(days=0)
@@ -272,9 +287,9 @@ class TestRepositoryEdgeCases:
         history = repo.commit_history(days=365000)  # 1000 years
         assert isinstance(history, pd.DataFrame)
 
-    def test_repository_extreme_skip_values(self, single_commit_repo):
+    def test_repository_extreme_skip_values(self, single_commit_repo, default_branch):
         """Test repository operations with extreme skip values."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with skip=0
         revs = repo.revs(skip=0)
@@ -288,7 +303,7 @@ class TestRepositoryEdgeCases:
 
     def test_repository_with_large_files(self, large_file_repo):
         """Test repository operations with large files."""
-        repo = Repository(working_dir=large_file_repo)
+        repo = Repository(working_dir=large_file_repo, default_branch=default_branch)
 
         # Test blame on large file
         blame_df = repo.blame()
@@ -301,9 +316,9 @@ class TestRepositoryEdgeCases:
         # Should handle large files without crashing
         assert len(file_history) >= 1
 
-    def test_repository_operations_consistency(self, single_commit_repo):
+    def test_repository_operations_consistency(self, single_commit_repo, default_branch):
         """Test that repository operations return consistent data structures."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test that all operations return DataFrames with expected column types
         history = repo.commit_history()
@@ -325,9 +340,9 @@ class TestRepositoryEdgeCases:
                 if col in file_history.columns:
                     assert pd.api.types.is_numeric_dtype(file_history[col])
 
-    def test_repository_cache_behavior_edge_cases(self, single_commit_repo):
+    def test_repository_cache_behavior_edge_cases(self, single_commit_repo, default_branch):
         """Test repository caching behavior with edge cases."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test that multiple calls return consistent results
         history1 = repo.commit_history()
@@ -342,7 +357,7 @@ class TestRepositoryEdgeCases:
         assert isinstance(history_limited, pd.DataFrame)
         assert len(history_limited) <= 1
 
-    def test_repository_with_binary_files(self, tmp_path):
+    def test_repository_with_binary_files(self, tmp_path, default_branch):
         """Test repository operations with binary files."""
         repo_path = tmp_path / "binary_repo"
         repo_path.mkdir()
@@ -352,13 +367,16 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create a binary file (simulated)
         binary_content = bytes([i % 256 for i in range(1000)])
         (repo_path / "binary.bin").write_bytes(binary_content)
         repo.index.add(["binary.bin"])
         repo.index.commit("Add binary file")
 
-        git_repo = Repository(working_dir=str(repo_path))
+        git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
         # Test operations with binary file - should handle gracefully
         history = git_repo.commit_history()
@@ -368,9 +386,9 @@ class TestRepositoryEdgeCases:
         blame_df = git_repo.blame()
         assert isinstance(blame_df, pd.DataFrame)
 
-    def test_repository_memory_constraints(self, single_commit_repo):
+    def test_repository_memory_constraints(self, single_commit_repo, default_branch):
         """Test repository operations under simulated memory constraints."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Test with very small limits to simulate memory constraints
         history = repo.commit_history(limit=1)
@@ -381,9 +399,9 @@ class TestRepositoryEdgeCases:
         assert isinstance(file_history, pd.DataFrame)
         assert len(file_history) <= 1
 
-    def test_repository_concurrent_access_simulation(self, single_commit_repo):
+    def test_repository_concurrent_access_simulation(self, single_commit_repo, default_branch):
         """Test repository operations that might be affected by concurrent access."""
-        repo = Repository(working_dir=single_commit_repo)
+        repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
         # Simulate multiple rapid calls (as might happen in concurrent scenarios)
         results = []
@@ -394,7 +412,7 @@ class TestRepositoryEdgeCases:
         # All calls should return consistent results
         assert all(r == results[0] for r in results)
 
-    def test_repository_with_no_default_branch(self, tmp_path):
+    def test_repository_with_no_default_branch(self, tmp_path, default_branch):
         """Test repository operations when default branch detection might fail."""
         repo_path = tmp_path / "no_default_branch_repo"
         repo_path.mkdir()
@@ -404,7 +422,10 @@ class TestRepositoryEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
-        git_repo = Repository(working_dir=str(repo_path), default_branch="main")
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
+        git_repo = Repository(working_dir=str(repo_path), default_branch=default_branch)
 
         # Test operations on repo with no commits/branches
         try:
@@ -428,7 +449,7 @@ class TestRepositoryDataValidation:
     """Test Repository data validation and sanitization."""
 
     @pytest.fixture
-    def validation_repo(self, tmp_path):
+    def validation_repo(self, tmp_path, default_branch):
         """Create a repository for data validation tests."""
         repo_path = tmp_path / "validation_repo"
         repo_path.mkdir()
@@ -438,6 +459,9 @@ class TestRepositoryDataValidation:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create test file
         (repo_path / "test.txt").write_text("Test content")
         repo.index.add(["test.txt"])
@@ -445,9 +469,9 @@ class TestRepositoryDataValidation:
 
         return str(repo_path)
 
-    def test_commit_history_data_types(self, validation_repo):
+    def test_commit_history_data_types(self, validation_repo, default_branch):
         """Test that commit_history returns proper data types."""
-        repo = Repository(working_dir=validation_repo)
+        repo = Repository(working_dir=validation_repo, default_branch=default_branch)
         history = repo.commit_history()
 
         if not history.empty:
@@ -463,9 +487,9 @@ class TestRepositoryDataValidation:
                 if col in history.columns:
                     assert history[col].dtype == object, f"Column {col} should be string/object type"
 
-    def test_blame_data_consistency(self, validation_repo):
+    def test_blame_data_consistency(self, validation_repo, default_branch):
         """Test that blame data is consistent and valid."""
-        repo = Repository(working_dir=validation_repo)
+        repo = Repository(working_dir=validation_repo, default_branch=default_branch)
         blame_df = repo.blame()
 
         if not blame_df.empty:
@@ -477,9 +501,9 @@ class TestRepositoryDataValidation:
             if "committer" in blame_df.columns:
                 assert not blame_df["committer"].isnull().all(), "Committer should not be all null"
 
-    def test_file_change_rates_data_bounds(self, validation_repo):
+    def test_file_change_rates_data_bounds(self, validation_repo, default_branch):
         """Test that file change rates have reasonable bounds."""
-        repo = Repository(working_dir=validation_repo)
+        repo = Repository(working_dir=validation_repo, default_branch=default_branch)
         change_rates = repo.file_change_rates()
 
         if not change_rates.empty:
@@ -495,9 +519,9 @@ class TestRepositoryDataValidation:
                 if col in change_rates.columns:
                     assert (change_rates[col] >= 0).all(), f"{col} should be non-negative"
 
-    def test_punchcard_data_structure(self, validation_repo):
+    def test_punchcard_data_structure(self, validation_repo, default_branch):
         """Test that punchcard data has proper structure."""
-        repo = Repository(working_dir=validation_repo)
+        repo = Repository(working_dir=validation_repo, default_branch=default_branch)
         punchcard = repo.punchcard()
 
         if not punchcard.empty:
@@ -511,9 +535,9 @@ class TestRepositoryDataValidation:
                 assert (punchcard["day_of_week"] >= 0).all(), "Day of week should be >= 0"
                 assert (punchcard["day_of_week"] <= 6).all(), "Day of week should be <= 6"
 
-    def test_revs_data_ordering(self, validation_repo):
+    def test_revs_data_ordering(self, validation_repo, default_branch):
         """Test that revs data is properly ordered."""
-        repo = Repository(working_dir=validation_repo)
+        repo = Repository(working_dir=validation_repo, default_branch=default_branch)
         revs = repo.revs()
 
         if not revs.empty and len(revs) > 1 and "date" in revs.columns:

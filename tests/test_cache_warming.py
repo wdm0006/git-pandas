@@ -225,7 +225,7 @@ class TestWarmCacheIntegration(unittest.TestCase):
 
         # Create a cache and Repository instance
         cache = EphemeralCache(max_keys=50)
-        repository = Repository(working_dir=repo_path, cache_backend=cache)
+        repository = Repository(working_dir=repo_path, cache_backend=cache, default_branch="main")
 
         # Test cache warming
         result = repository.warm_cache(methods=["commit_history", "branches", "list_files"], limit=10)
@@ -257,7 +257,7 @@ class TestWarmCacheIntegration(unittest.TestCase):
         # Create a DiskCache and Repository instance
         cache_file = os.path.join(self.temp_dir, "test_cache.gz")
         cache = DiskCache(filepath=cache_file, max_keys=50)
-        repository = Repository(working_dir=repo_path, cache_backend=cache)
+        repository = Repository(working_dir=repo_path, cache_backend=cache, default_branch="main")
 
         # Test cache warming
         result = repository.warm_cache(methods=["branches", "list_files"])
@@ -287,7 +287,7 @@ class TestWarmCacheIntegration(unittest.TestCase):
 
         # Create Repository instance
         cache = EphemeralCache(max_keys=50)
-        repository = Repository(working_dir=repo_path, cache_backend=cache)
+        repository = Repository(working_dir=repo_path, cache_backend=cache, default_branch="main")
 
         # Test cache warming with defaults
         result = repository.warm_cache()
