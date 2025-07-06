@@ -23,31 +23,61 @@ def get_default_branch():
     except Exception:
         pass
     
-    # If no default branch is configured, fall back to system default
-    # Most modern git versions use 'main', older versions use 'master'
+    # If no default branch is configured, create a temporary repo to see what git actually creates
+    import tempfile
+    import os
+    
     try:
-        # Create a temporary repo to see what branch name git actually uses
-        result = subprocess.run(
-            ["git", "init", "--bare", "/tmp/test_default_branch_detection"],
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        if result.returncode == 0:
-            # Clean up immediately
-            subprocess.run(["rm", "-rf", "/tmp/test_default_branch_detection"], check=False)
-            # Check git version to determine likely default
-            version_result = subprocess.run(
-                ["git", "--version"],
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_repo_path = os.path.join(temp_dir, "test_repo")
+            
+            # Initialize a repo and make an initial commit to see what branch git creates
+            init_result = subprocess.run(
+                ["git", "init", test_repo_path],
                 capture_output=True,
                 text=True,
                 check=False
             )
-            if version_result.returncode == 0:
-                version_output = version_result.stdout
-                # Git 2.28+ defaults to 'main' if no config is set
-                if "git version 2.28" in version_output or "git version 2.2" in version_output:
-                    return "main"
+            
+            if init_result.returncode == 0:
+                # Configure user for the test repo
+                subprocess.run(
+                    ["git", "-C", test_repo_path, "config", "user.name", "Test"],
+                    capture_output=True,
+                    check=False
+                )
+                subprocess.run(
+                    ["git", "-C", test_repo_path, "config", "user.email", "test@example.com"],
+                    capture_output=True,
+                    check=False
+                )
+                
+                # Create a file and commit to establish a branch
+                test_file = os.path.join(test_repo_path, "test.txt")
+                with open(test_file, "w") as f:
+                    f.write("test")
+                
+                subprocess.run(
+                    ["git", "-C", test_repo_path, "add", "test.txt"],
+                    capture_output=True,
+                    check=False
+                )
+                subprocess.run(
+                    ["git", "-C", test_repo_path, "commit", "-m", "initial"],
+                    capture_output=True,
+                    check=False
+                )
+                
+                # Check what branch was created
+                branch_result = subprocess.run(
+                    ["git", "-C", test_repo_path, "branch", "--show-current"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                
+                if branch_result.returncode == 0 and branch_result.stdout.strip():
+                    return branch_result.stdout.strip()
     except Exception:
         pass
     
