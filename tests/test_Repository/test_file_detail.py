@@ -7,7 +7,7 @@ from gitpandas import Repository
 
 
 @pytest.fixture
-def local_repo(tmp_path):
+def local_repo(tmp_path, default_branch):
     """Fixture for a local repository with different file types."""
     # Create a temporary directory
     repo_dir = tmp_path / "repository1"
@@ -20,8 +20,8 @@ def local_repo(tmp_path):
     grepo.git.config("user.name", "Test User")
     grepo.git.config("user.email", "test@example.com")
 
-    # Create and checkout master branch
-    grepo.git.checkout("-b", "master")
+    # Create and checkout default branch
+    grepo.git.checkout("-b", default_branch)
 
     # Add a README file
     readme_path = repo_dir / "README.md"
@@ -132,14 +132,14 @@ class TestFileDetail:
         # Check that the sum of the filtered file details equals the total
         assert file_detail_no_py.shape[0] + file_detail_only_py.shape[0] == file_detail_all.shape[0]
 
-    def test_file_detail_with_rev(self, local_repo):
+    def test_file_detail_with_rev(self, local_repo, default_branch):
         """Test the rev parameter of the file_detail method."""
         # Get file detail for the current revision
         file_detail_head = local_repo.file_detail(rev="HEAD")
 
         # Get file detail for the first commit
         # This should only include the README.md file
-        first_commit = local_repo.revs(branch="master").iloc[-1]["rev"]
+        first_commit = local_repo.revs(branch=default_branch).iloc[-1]["rev"]
         file_detail_first = local_repo.file_detail(rev=first_commit)
 
         # Check that we have fewer files in the first commit
