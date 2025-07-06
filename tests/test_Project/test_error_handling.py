@@ -380,7 +380,7 @@ class TestProjectErrorHandling:
         # Basic operations should work with bare repos
         is_bare = project.is_bare()
         assert isinstance(is_bare, pd.DataFrame)
-        assert is_bare["is_bare"].iloc[0] is True
+        assert is_bare["is_bare"].iloc[0] == True  # noqa: E712
 
 
 class TestProjectInitializationEdgeCases:
