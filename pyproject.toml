@@ -43,7 +43,6 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=1.0.0",
     "ruff>=0.1.0",
     "matplotlib",
     "joblib",
@@ -55,7 +54,6 @@ all = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=1.0.0",
     "ruff>=0.1.0",
 ]
 

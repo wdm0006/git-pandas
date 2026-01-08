@@ -8,29 +8,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone
-        uses: actions/checkout@v1
-      
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      
+          python-version: '3.11'
+
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      
+
       - name: Install Dependencies
         run: |
           uv pip install --system -e ".[dev]"
-      
+          uv pip install --system -r docs/requirements.txt
+
       - name: Build Docs
-        uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "./docs/"
-      
+        run: |
+          cd docs
+          sphinx-build -b html source build/html
+
       - name: Deploy Docs
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: "./docs/build/html/"
