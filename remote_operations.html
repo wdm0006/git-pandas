@@ -1,9 +1,10 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
@@ -14,258 +15,209 @@
         gtag('config', 'G-Z43R9PWW0B');
     </script>
     
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Remote Operations and Cache Warming &mdash; git-pandas 2.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
-      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
-
-  
-      <script src="_static/jquery.js?v=5d32c60e"></script>
-      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=1e3cc387"></script>
-      <script src="_static/doctools.js?v=888ff710"></script>
-      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
-      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
-    <script src="_static/js/theme.js"></script>
+    <title>Remote Operations and Cache Warming &#8212; git-pandas 2.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=30d13653" />
+    <link rel="stylesheet" type="text/css" href="_static/css/wabi.css?v=501c8ac3" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e5d61e22" />
+    <script src="_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Performance Guide" href="performance.html" />
-    <link rel="prev" title="Caching" href="cache.html" /> 
-</head>
+    <link rel="prev" title="Caching" href="cache.html" />
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: #2980B9" >
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 
+
+
+<meta name="description" content="Remote Operations and Cache Warming - git-pandas documentation">
+
+
+
+
+
+<meta property="og:title" content="Remote Operations and Cache Warming">
+<meta property="og:description" content="Remote Operations and Cache Warming - git-pandas documentation">
+<meta property="og:type" content="website">
+
+<meta property="og:url" content="https://gitpandas.mcginniscommawill.com/remote_operations.html">
+
+
+<meta property="og:site_name" content="git-pandas">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Remote Operations and Cache Warming">
+<meta name="twitter:description" content="Remote Operations and Cache Warming - git-pandas documentation">
+
+<meta name="twitter:site" content="@willmcginniser">
+
+
+
+
+
+<link rel="canonical" href="https://gitpandas.mcginniscommawill.com/remote_operations.html">
+
+
+ 
+
+  </head><body>
+<header class="header">
+  <div class="header__inner">
+    
+    <a href="https://mcginniscommawill.com" class="header__logo">
+      McGinnis, Will
+    </a>
+
+    
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </button>
+
+    
+    <nav class="nav" role="navigation">
+      
+      
+        
           
           
-          <a href="index.html" class="icon icon-home">
-            git-pandas
+          
+          <a href="https://mcginniscommawill.com/guides/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Guides
           </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#available-methods">Available Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#core-analysis">Core Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#repository-information">Repository Information</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#common-parameters">Common Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#available-methods">Available Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#core-analysis">Core Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#common-parameters">Common Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#disk-cache-diskcache">Disk Cache (DiskCache)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#cache-timestamp-information">Cache Timestamp Information</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-information-methods">Cache Information Methods</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#backward-compatibility">Backward Compatibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#best-practices">Best Practices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#shared-cache-usage">Shared Cache Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-size-planning">Cache Size Planning</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Remote Operations and Cache Warming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#safe-remote-fetch">Safe Remote Fetch</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#repository-safe-fetch-remote">Repository.safe_fetch_remote()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#advanced-options">Advanced Options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#safety-features">Safety Features</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#cache-warming">Cache Warming</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#repository-warm-cache">Repository.warm_cache()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#custom-cache-warming">Custom Cache Warming</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#available-methods">Available Methods</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#performance-benefits">Performance Benefits</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#bulk-operations">Bulk Operations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#projectdirectory-bulk-fetch-and-warm">ProjectDirectory.bulk_fetch_and_warm()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#advanced-bulk-operations">Advanced Bulk Operations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parallel-processing">Parallel Processing</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#error-handling">Error Handling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#return-value-reference">Return Value Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#caching-system">Caching System</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-backends">Cache Backends</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-configuration">Cache Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-warming">Cache Warming</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-management">Cache Management</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#performance-benchmarks">Performance Benchmarks</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#data-filtering-and-limits">Data Filtering and Limits</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#glob-patterns">Glob Patterns</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#limits-and-time-windows">Limits and Time Windows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#branch-specific-analysis">Branch-Specific Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#parallelization">Parallelization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#installation">Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#parallel-operations">Parallel Operations</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#memory-management">Memory Management</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#dataframe-memory-usage">DataFrame Memory Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#chunked-processing">Chunked Processing</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#large-repository-strategies">Large Repository Strategies</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#repository-size-guidelines">Repository Size Guidelines</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#configuration-for-large-repositories">Configuration for Large Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#monitoring-performance">Monitoring Performance</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#performance-anti-patterns">Performance Anti-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#best-practices-summary">Best Practices Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#basic-repository-analysis">Basic Repository Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#repository-attributes">Repository Attributes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-history-analysis">Commit History Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#project-level-analysis">Project-Level Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#multiple-repository-analysis">Multiple Repository Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#advanced-analysis">Advanced Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#bus-factor-analysis">Bus Factor Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#performance-optimization">Performance Optimization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#using-caching">Using Caching</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#cache-management-new-in-v2-5-0">Cache Management (New in v2.5.0)</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#commit-analysis">Commit Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="usecases.html#file-change-analysis">File Change Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="usecases.html#best-practices">Best Practices</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#recently-completed-v2-5-0">Recently Completed (v2.5.0)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
-</ul>
-</li>
-</ul>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/topics/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Topics
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/posts/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Blog
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/about/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            About
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/coffee/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Free Coffee
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/oss/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            OSS
+          </a>
+        
+      
 
-        </div>
-      </div>
+      
+      
+      <a href="index.html" class="nav__link nav__link--active">
+        Docs
+      </a>
+      
     </nav>
+  </div>
+</header>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">git-pandas</a>
-      </nav>
 
-      <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Remote Operations and Cache Warming</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/remote_operations.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <div class="breadcrumbs__inner">
+    
+    <a href="https://mcginniscommawill.com">Home</a>
+    <span class="breadcrumbs__separator">/</span>
+    
+    <a href="index.html">Docs</a>
+    
+    
+    <span class="breadcrumbs__separator">/</span>
+    <span>Remote Operations and Cache Warming</span>
+    
+  </div>
+</nav>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
   <section id="remote-operations-and-cache-warming">
-<h1>Remote Operations and Cache Warming<a class="headerlink" href="#remote-operations-and-cache-warming" title="Permalink to this heading"></a></h1>
+<h1>Remote Operations and Cache Warming<a class="headerlink" href="#remote-operations-and-cache-warming" title="Link to this heading">¶</a></h1>
 <p>Git-pandas provides safe and efficient methods for working with remote repositories and optimizing performance through cache warming. These features allow you to keep your repositories up to date and improve analysis performance through intelligent caching.</p>
 <section id="safe-remote-fetch">
-<h2>Safe Remote Fetch<a class="headerlink" href="#safe-remote-fetch" title="Permalink to this heading"></a></h2>
+<h2>Safe Remote Fetch<a class="headerlink" href="#safe-remote-fetch" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> method allows you to safely fetch changes from remote repositories without modifying your working directory or current branch.</p>
 <section id="repository-safe-fetch-remote">
-<h3>Repository.safe_fetch_remote()<a class="headerlink" href="#repository-safe-fetch-remote" title="Permalink to this heading"></a></h3>
+<h3>Repository.safe_fetch_remote()<a class="headerlink" href="#repository-safe-fetch-remote" title="Link to this heading">¶</a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.repository.Repository.safe_fetch_remote">
+<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">safe_fetch_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'origin'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.safe_fetch_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.safe_fetch_remote" title="Link to this definition">¶</a></dt>
+<dd><p>Safely fetch changes from remote repository.</p>
+<p>Fetches the latest changes from a remote repository without modifying the working directory.
+This is a read-only operation that only updates remote-tracking branches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
+<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist on remote.
+Defaults to False.</p></li>
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
+Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Fetch results with keys:</dt><dd><ul class="simple">
+<li><p>success (bool): Whether the fetch was successful</p></li>
+<li><p>message (str): Status message or error description</p></li>
+<li><p>remote_exists (bool): Whether the specified remote exists</p></li>
+<li><p>changes_available (bool): Whether new changes were fetched</p></li>
+<li><p>error (Optional[str]): Error message if fetch failed</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is safe as it only fetches remote changes and never modifies
+the working directory or current branch. It will not perform any merges,
+rebases, or checkouts.</p>
+</div>
+</dd></dl>
+
 <section id="basic-usage">
-<h4>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading"></a></h4>
+<h4>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span>
 
@@ -290,7 +242,7 @@
 </div>
 </section>
 <section id="advanced-options">
-<h4>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this heading"></a></h4>
+<h4>Advanced Options<a class="headerlink" href="#advanced-options" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch from a specific remote</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">remote_name</span><span class="o">=</span><span class="s1">&#39;upstream&#39;</span><span class="p">)</span>
 
@@ -303,7 +255,7 @@
 </div>
 </section>
 <section id="safety-features">
-<h4>Safety Features<a class="headerlink" href="#safety-features" title="Permalink to this heading"></a></h4>
+<h4>Safety Features<a class="headerlink" href="#safety-features" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Read-only operation</strong>: Never modifies working directory or current branch</p></li>
 <li><p><strong>Error handling</strong>: Gracefully handles network errors and missing remotes</p></li>
@@ -314,12 +266,65 @@
 </section>
 </section>
 <section id="cache-warming">
-<h2>Cache Warming<a class="headerlink" href="#cache-warming" title="Permalink to this heading"></a></h2>
+<h2>Cache Warming<a class="headerlink" href="#cache-warming" title="Link to this heading">¶</a></h2>
 <p>Cache warming pre-populates the cache with commonly used data to improve performance of subsequent analysis operations.</p>
 <section id="repository-warm-cache">
-<h3>Repository.warm_cache()<a class="headerlink" href="#repository-warm-cache" title="Permalink to this heading"></a></h3>
+<h3>Repository.warm_cache()<a class="headerlink" href="#repository-warm-cache" title="Link to this heading">¶</a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.repository.Repository.warm_cache">
+<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">warm_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.warm_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.warm_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Pre-populate cache with commonly used data.</p>
+<p>Executes a set of commonly used repository analysis methods to populate the cache,
+improving performance for subsequent calls. Only methods that support caching
+will be executed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of method names to pre-warm. If None,
+uses a default set of commonly used methods. Available methods:
+- ‘commit_history’: Load commit history
+- ‘branches’: Load branch information
+- ‘tags’: Load tag information
+- ‘blame’: Load blame information
+- ‘file_detail’: Load file details
+- ‘list_files’: Load file listing
+- ‘file_change_rates’: Load file change statistics</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments to pass to the methods.
+Common arguments include:
+- branch: Branch to analyze (default: repository’s default branch)
+- limit: Limit number of commits to analyze
+- ignore_globs: List of glob patterns to ignore
+- include_globs: List of glob patterns to include</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Results of cache warming operations with keys:</dt><dd><ul class="simple">
+<li><p>success (bool): Whether cache warming was successful</p></li>
+<li><p>methods_executed (List[str]): List of methods that were executed</p></li>
+<li><p>methods_failed (List[str]): List of methods that failed</p></li>
+<li><p>cache_entries_created (int): Number of cache entries created</p></li>
+<li><p>execution_time (float): Total execution time in seconds</p></li>
+<li><p>errors (List[str]): List of error messages for failed methods</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method will only execute methods if a cache backend is configured.
+If no cache backend is available, it will return immediately with a
+success status but no methods executed.</p>
+</div>
+</dd></dl>
+
 <section id="id1">
-<h4>Basic Usage<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h4>
+<h4>Basic Usage<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
 
@@ -336,7 +341,7 @@
 </div>
 </section>
 <section id="custom-cache-warming">
-<h4>Custom Cache Warming<a class="headerlink" href="#custom-cache-warming" title="Permalink to this heading"></a></h4>
+<h4>Custom Cache Warming<a class="headerlink" href="#custom-cache-warming" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warm specific methods with custom parameters</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span>
     <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">,</span> <span class="s1">&#39;file_detail&#39;</span><span class="p">],</span>
@@ -354,7 +359,7 @@
 </div>
 </section>
 <section id="available-methods">
-<h4>Available Methods<a class="headerlink" href="#available-methods" title="Permalink to this heading"></a></h4>
+<h4>Available Methods<a class="headerlink" href="#available-methods" title="Link to this heading">¶</a></h4>
 <p>The following methods can be warmed:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">commit_history</span></code>: Load commit history</p></li>
@@ -367,7 +372,7 @@
 </ul>
 </section>
 <section id="performance-benefits">
-<h4>Performance Benefits<a class="headerlink" href="#performance-benefits" title="Permalink to this heading"></a></h4>
+<h4>Performance Benefits<a class="headerlink" href="#performance-benefits" title="Link to this heading">¶</a></h4>
 <p>Cache warming can significantly improve performance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -392,12 +397,64 @@
 </section>
 </section>
 <section id="bulk-operations">
-<h2>Bulk Operations<a class="headerlink" href="#bulk-operations" title="Permalink to this heading"></a></h2>
+<h2>Bulk Operations<a class="headerlink" href="#bulk-operations" title="Link to this heading">¶</a></h2>
 <p>For projects with multiple repositories, bulk operations allow you to efficiently fetch and warm caches across all repositories.</p>
 <section id="projectdirectory-bulk-fetch-and-warm">
-<h3>ProjectDirectory.bulk_fetch_and_warm()<a class="headerlink" href="#projectdirectory-bulk-fetch-and-warm" title="Permalink to this heading"></a></h3>
+<h3>ProjectDirectory.bulk_fetch_and_warm()<a class="headerlink" href="#projectdirectory-bulk-fetch-and-warm" title="Link to this heading">¶</a></h3>
+<dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.project.ProjectDirectory.bulk_fetch_and_warm">
+<span class="sig-prename descclassname"><span class="pre">ProjectDirectory.</span></span><span class="sig-name descname"><span class="pre">bulk_fetch_and_warm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fetch_remote</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warm_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'origin'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_methods</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bulk_fetch_and_warm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bulk_fetch_and_warm" title="Link to this definition">¶</a></dt>
+<dd><p>Safely fetch remote changes and pre-warm cache for all repositories.</p>
+<p>Performs bulk operations across all repositories in the project directory,
+optionally fetching from remote repositories and pre-warming caches to
+improve subsequent analysis performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fetch_remote</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to fetch from remote repositories.
+Defaults to False.</p></li>
+<li><p><strong>warm_cache</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to pre-warm repository caches.
+Defaults to False.</p></li>
+<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Use parallel processing when available (joblib).
+Defaults to True.</p></li>
+<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
+<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist.
+Defaults to False.</p></li>
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
+Defaults to False.</p></li>
+<li><p><strong>cache_methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of methods to use for cache warming.
+If None, uses default methods. See Repository.warm_cache for available methods.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments to pass to cache warming methods.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Results with keys:</dt><dd><ul class="simple">
+<li><p>success (bool): Whether the overall operation was successful</p></li>
+<li><p>repositories_processed (int): Number of repositories processed</p></li>
+<li><p>fetch_results (dict): Per-repository fetch results (if fetch_remote=True)</p></li>
+<li><p>cache_results (dict): Per-repository cache warming results (if warm_cache=True)</p></li>
+<li><p>execution_time (float): Total execution time in seconds</p></li>
+<li><p>summary (dict): Summary statistics of the operation</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method safely handles errors at the repository level, ensuring that
+failures in one repository don’t affect processing of others. All operations
+are read-only and will not modify working directories or current branches.</p>
+</div>
+</dd></dl>
+
 <section id="id2">
-<h4>Basic Usage<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<h4>Basic Usage<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
 
@@ -419,7 +476,7 @@
 </div>
 </section>
 <section id="advanced-bulk-operations">
-<h4>Advanced Bulk Operations<a class="headerlink" href="#advanced-bulk-operations" title="Permalink to this heading"></a></h4>
+<h4>Advanced Bulk Operations<a class="headerlink" href="#advanced-bulk-operations" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Customize bulk operations</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
     <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -444,7 +501,7 @@
 </div>
 </section>
 <section id="parallel-processing">
-<h4>Parallel Processing<a class="headerlink" href="#parallel-processing" title="Permalink to this heading"></a></h4>
+<h4>Parallel Processing<a class="headerlink" href="#parallel-processing" title="Link to this heading">¶</a></h4>
 <p>Bulk operations support parallel processing when <code class="docutils literal notranslate"><span class="pre">joblib</span></code> is available:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable parallel processing (default when joblib available)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
@@ -465,7 +522,7 @@
 </section>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
 <ol class="arabic simple">
 <li><p><strong>Regular Fetching</strong>: Use <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> regularly to keep repositories current</p></li>
 <li><p><strong>Dry Run First</strong>: Use dry runs to preview fetch operations</p></li>
@@ -486,7 +543,7 @@
 </ol>
 </section>
 <section id="error-handling">
-<h2>Error Handling<a class="headerlink" href="#error-handling" title="Permalink to this heading"></a></h2>
+<h2>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading">¶</a></h2>
 <p>All remote operations and cache warming methods provide comprehensive error information:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Safe fetch error handling</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">()</span>
@@ -512,7 +569,7 @@
 </div>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
 <p>Complete examples demonstrating these features can be found in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">examples/remote_fetch_and_cache_warming.py</span></code>: Comprehensive demonstration of all features</p></li>
@@ -520,7 +577,7 @@
 </ul>
 </section>
 <section id="return-value-reference">
-<h2>Return Value Reference<a class="headerlink" href="#return-value-reference" title="Permalink to this heading"></a></h2>
+<h2>Return Value Reference<a class="headerlink" href="#return-value-reference" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">safe_fetch_remote</span></code> method returns a dictionary with these keys:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">success</span></code> (bool): Whether the fetch was successful</p></li>
@@ -560,34 +617,99 @@
 </section>
 
 
-           </div>
+            <div class="clearer"></div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="cache.html" class="btn btn-neutral float-left" title="Caching" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="performance.html" class="btn btn-neutral float-right" title="Performance Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
         </div>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Remote Operations and Cache Warming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a></li>
+</ul>
 
-</body>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="cache.html"
+                          title="previous chapter">Caching</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="performance.html"
+                          title="next chapter">Performance Guide</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/remote_operations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <div class="footer__inner">
+    
+    
+    <div class="footer__links">
+      
+        <a href="https://github.com/wdm0006" class="footer__link" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+      
+        <a href="https://www.linkedin.com/in/wmcginnis/" class="footer__link" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+      
+        <a href="https://x.com/willmcginniser" class="footer__link" target="_blank" rel="noopener noreferrer">
+          Twitter
+        </a>
+      
+    </div>
+    
+
+    
+    <p class="footer__copy">
+      
+        &copy; 2015-2025, Will McGinnis
+      
+    </p>
+  </div>
+</footer>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+    if (toggle && nav) {
+      toggle.addEventListener('click', function() {
+        nav.classList.toggle('is-open');
+        const isOpen = nav.classList.contains('is-open');
+        toggle.setAttribute('aria-expanded', isOpen);
+      });
+    }
+  });
+</script>
+
+  </body>
 </html>

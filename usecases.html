@@ -1,9 +1,10 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
@@ -14,255 +15,165 @@
         gtag('config', 'G-Z43R9PWW0B');
     </script>
     
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Use Cases and Examples &mdash; git-pandas 2.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/general.css?v=c0a7eb24" />
-      <link rel="stylesheet" type="text/css" href="_static/dark_mode_css/dark.css?v=70edf1c7" />
-
-  
-      <script src="_static/jquery.js?v=5d32c60e"></script>
-      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=1e3cc387"></script>
-      <script src="_static/doctools.js?v=888ff710"></script>
-      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
-      <script src="_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
-    <script src="_static/js/theme.js"></script>
+    <title>Use Cases and Examples &#8212; git-pandas 2.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=30d13653" />
+    <link rel="stylesheet" type="text/css" href="_static/css/wabi.css?v=501c8ac3" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e5d61e22" />
+    <script src="_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Contributing to Git-Pandas" href="contributors.html" />
-    <link rel="prev" title="Performance Guide" href="performance.html" /> 
-</head>
+    <link rel="prev" title="Performance Guide" href="performance.html" />
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search"  style="background: #2980B9" >
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 
+
+
+<meta name="description" content="Use Cases and Examples - git-pandas documentation">
+
+
+
+
+
+<meta property="og:title" content="Use Cases and Examples">
+<meta property="og:description" content="Use Cases and Examples - git-pandas documentation">
+<meta property="og:type" content="website">
+
+<meta property="og:url" content="https://gitpandas.mcginniscommawill.com/usecases.html">
+
+
+<meta property="og:site_name" content="git-pandas">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Use Cases and Examples">
+<meta name="twitter:description" content="Use Cases and Examples - git-pandas documentation">
+
+<meta name="twitter:site" content="@willmcginniser">
+
+
+
+
+
+<link rel="canonical" href="https://gitpandas.mcginniscommawill.com/usecases.html">
+
+
+ 
+
+  </head><body>
+<header class="header">
+  <div class="header__inner">
+    
+    <a href="https://mcginniscommawill.com" class="header__logo">
+      McGinnis, Will
+    </a>
+
+    
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </button>
+
+    
+    <nav class="nav" role="navigation">
+      
+      
+        
           
           
-          <a href="index.html" class="icon icon-home">
-            git-pandas
+          
+          <a href="https://mcginniscommawill.com/guides/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Guides
           </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#creating-a-repository">Creating a Repository</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#local-repository">Local Repository</a></li>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#remote-repository">Remote Repository</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#available-methods">Available Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#core-analysis">Core Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="repository.html#repository-information">Repository Information</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#common-parameters">Common Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repository.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="project.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#creating-a-projectdirectory">Creating a ProjectDirectory</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#directory-of-repositories">Directory of Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-local-repositories">Explicit Local Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="project.html#explicit-remote-repositories">Explicit Remote Repositories</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#available-methods">Available Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="project.html#core-analysis">Core Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#common-parameters">Common Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="project.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#available-cache-backends">Available Cache Backends</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#in-memory-cache-ephemeralcache">In-Memory Cache (EphemeralCache)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#disk-cache-diskcache">Disk Cache (DiskCache)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#redis-cache-redisdfcache">Redis Cache (RedisDFCache)</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#cache-timestamp-information">Cache Timestamp Information</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-information-methods">Cache Information Methods</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#using-the-cache-decorator">Using the Cache Decorator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#configuration">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#backward-compatibility">Backward Compatibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#best-practices">Best Practices</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#shared-cache-usage">Shared Cache Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cache.html#cache-size-planning">Cache Size Planning</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="cache.html#api-reference">API Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#safe-remote-fetch">Safe Remote Fetch</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-safe-fetch-remote">Repository.safe_fetch_remote()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#basic-usage">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-options">Advanced Options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#safety-features">Safety Features</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#cache-warming">Cache Warming</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#repository-warm-cache">Repository.warm_cache()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id1">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#custom-cache-warming">Custom Cache Warming</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#available-methods">Available Methods</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#performance-benefits">Performance Benefits</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#bulk-operations">Bulk Operations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="remote_operations.html#projectdirectory-bulk-fetch-and-warm">ProjectDirectory.bulk_fetch_and_warm()</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#id2">Basic Usage</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#advanced-bulk-operations">Advanced Bulk Operations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="remote_operations.html#parallel-processing">Parallel Processing</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#best-practices">Best Practices</a></li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#error-handling">Error Handling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#examples">Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="remote_operations.html#return-value-reference">Return Value Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#caching-system">Caching System</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-backends">Cache Backends</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-configuration">Cache Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-warming">Cache Warming</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#cache-management">Cache Management</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#performance-benchmarks">Performance Benchmarks</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#data-filtering-and-limits">Data Filtering and Limits</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#glob-patterns">Glob Patterns</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#limits-and-time-windows">Limits and Time Windows</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#branch-specific-analysis">Branch-Specific Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#parallelization">Parallelization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#installation">Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#parallel-operations">Parallel Operations</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#memory-management">Memory Management</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#dataframe-memory-usage">DataFrame Memory Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#chunked-processing">Chunked Processing</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#large-repository-strategies">Large Repository Strategies</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#repository-size-guidelines">Repository Size Guidelines</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#configuration-for-large-repositories">Configuration for Large Repositories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="performance.html#monitoring-performance">Monitoring Performance</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#performance-anti-patterns">Performance Anti-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="performance.html#best-practices-summary">Best Practices Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Use Cases and Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#basic-repository-analysis">Basic Repository Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#repository-attributes">Repository Attributes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#commit-history-analysis">Commit History Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#project-level-analysis">Project-Level Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#multiple-repository-analysis">Multiple Repository Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#advanced-analysis">Advanced Analysis</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#cumulative-blame-analysis">Cumulative Blame Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#bus-factor-analysis">Bus Factor Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#performance-optimization">Performance Optimization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#using-caching">Using Caching</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cache-management-new-in-v2-5-0">Cache Management (New in v2.5.0)</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#visualization-examples">Visualization Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#commit-analysis">Commit Analysis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-change-analysis">File Change Analysis</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-guidelines">Development Guidelines</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#code-style">Code Style</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#documentation">Documentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#api-design-principles">API Design Principles</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#current-development-focus">Current Development Focus</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#high-priority">High Priority</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#recently-completed-v2-5-0">Recently Completed (v2.5.0)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="contributors.html#feature-ideas">Feature Ideas</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#development-setup">Development Setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contributors.html#questions">Questions?</a></li>
-</ul>
-</li>
-</ul>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/topics/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Topics
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/posts/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Blog
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/about/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            About
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/coffee/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Free Coffee
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/oss/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            OSS
+          </a>
+        
+      
 
-        </div>
-      </div>
+      
+      
+      <a href="index.html" class="nav__link nav__link--active">
+        Docs
+      </a>
+      
     </nav>
+  </div>
+</header>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">git-pandas</a>
-      </nav>
 
-      <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Use Cases and Examples</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/usecases.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <div class="breadcrumbs__inner">
+    
+    <a href="https://mcginniscommawill.com">Home</a>
+    <span class="breadcrumbs__separator">/</span>
+    
+    <a href="index.html">Docs</a>
+    
+    
+    <span class="breadcrumbs__separator">/</span>
+    <span>Use Cases and Examples</span>
+    
+  </div>
+</nav>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
   <section id="use-cases-and-examples">
-<h1>Use Cases and Examples<a class="headerlink" href="#use-cases-and-examples" title="Permalink to this heading"></a></h1>
+<h1>Use Cases and Examples<a class="headerlink" href="#use-cases-and-examples" title="Link to this heading">¶</a></h1>
 <p>Git-Pandas provides a powerful interface for analyzing Git repositories using pandas DataFrames. This guide demonstrates common use cases and provides practical examples.</p>
 <section id="basic-repository-analysis">
-<h2>Basic Repository Analysis<a class="headerlink" href="#basic-repository-analysis" title="Permalink to this heading"></a></h2>
+<h2>Basic Repository Analysis<a class="headerlink" href="#basic-repository-analysis" title="Link to this heading">¶</a></h2>
 <section id="repository-attributes">
-<h3>Repository Attributes<a class="headerlink" href="#repository-attributes" title="Permalink to this heading"></a></h3>
+<h3>Repository Attributes<a class="headerlink" href="#repository-attributes" title="Link to this heading">¶</a></h3>
 <p>Get basic information about a repository:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
@@ -288,7 +199,7 @@
 </div>
 </section>
 <section id="commit-history-analysis">
-<h3>Commit History Analysis<a class="headerlink" href="#commit-history-analysis" title="Permalink to this heading"></a></h3>
+<h3>Commit History Analysis<a class="headerlink" href="#commit-history-analysis" title="Link to this heading">¶</a></h3>
 <p>Analyze commit patterns and history:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history</span>
 <span class="n">commits_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
@@ -309,9 +220,9 @@
 </section>
 </section>
 <section id="project-level-analysis">
-<h2>Project-Level Analysis<a class="headerlink" href="#project-level-analysis" title="Permalink to this heading"></a></h2>
+<h2>Project-Level Analysis<a class="headerlink" href="#project-level-analysis" title="Link to this heading">¶</a></h2>
 <section id="multiple-repository-analysis">
-<h3>Multiple Repository Analysis<a class="headerlink" href="#multiple-repository-analysis" title="Permalink to this heading"></a></h3>
+<h3>Multiple Repository Analysis<a class="headerlink" href="#multiple-repository-analysis" title="Link to this heading">¶</a></h3>
 <p>Analyze multiple repositories simultaneously:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
 
@@ -337,9 +248,9 @@
 </section>
 </section>
 <section id="advanced-analysis">
-<h2>Advanced Analysis<a class="headerlink" href="#advanced-analysis" title="Permalink to this heading"></a></h2>
+<h2>Advanced Analysis<a class="headerlink" href="#advanced-analysis" title="Link to this heading">¶</a></h2>
 <section id="cumulative-blame-analysis">
-<h3>Cumulative Blame Analysis<a class="headerlink" href="#cumulative-blame-analysis" title="Permalink to this heading"></a></h3>
+<h3>Cumulative Blame Analysis<a class="headerlink" href="#cumulative-blame-analysis" title="Link to this heading">¶</a></h3>
 <p>Track code ownership over time:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cumulative blame</span>
 <span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">cumulative_blame</span><span class="p">()</span>
@@ -352,7 +263,7 @@
 </div>
 </section>
 <section id="bus-factor-analysis">
-<h3>Bus Factor Analysis<a class="headerlink" href="#bus-factor-analysis" title="Permalink to this heading"></a></h3>
+<h3>Bus Factor Analysis<a class="headerlink" href="#bus-factor-analysis" title="Link to this heading">¶</a></h3>
 <p>Analyze project sustainability:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate bus factor for repository</span>
 <span class="n">bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
@@ -370,9 +281,9 @@
 </section>
 </section>
 <section id="performance-optimization">
-<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permalink to this heading"></a></h2>
+<h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading">¶</a></h2>
 <section id="using-caching">
-<h3>Using Caching<a class="headerlink" href="#using-caching" title="Permalink to this heading"></a></h3>
+<h3>Using Caching<a class="headerlink" href="#using-caching" title="Link to this heading">¶</a></h3>
 <p>Optimize performance with caching:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">EphemeralCache</span><span class="p">,</span> <span class="n">DiskCache</span><span class="p">,</span> <span class="n">RedisDFCache</span>
@@ -397,7 +308,7 @@
 </div>
 </section>
 <section id="cache-management-new-in-v2-5-0">
-<h3>Cache Management (New in v2.5.0)<a class="headerlink" href="#cache-management-new-in-v2-5-0" title="Permalink to this heading"></a></h3>
+<h3>Cache Management (New in v2.5.0)<a class="headerlink" href="#cache-management-new-in-v2-5-0" title="Link to this heading">¶</a></h3>
 <p>Manage cache performance and contents:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
@@ -417,9 +328,9 @@
 </section>
 </section>
 <section id="visualization-examples">
-<h2>Visualization Examples<a class="headerlink" href="#visualization-examples" title="Permalink to this heading"></a></h2>
+<h2>Visualization Examples<a class="headerlink" href="#visualization-examples" title="Link to this heading">¶</a></h2>
 <section id="commit-analysis">
-<h3>Commit Analysis<a class="headerlink" href="#commit-analysis" title="Permalink to this heading"></a></h3>
+<h3>Commit Analysis<a class="headerlink" href="#commit-analysis" title="Link to this heading">¶</a></h3>
 <p>Visualize commit patterns:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get commit history</span>
 <span class="n">commit_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
@@ -434,7 +345,7 @@
 </div>
 </section>
 <section id="file-change-analysis">
-<h3>File Change Analysis<a class="headerlink" href="#file-change-analysis" title="Permalink to this heading"></a></h3>
+<h3>File Change Analysis<a class="headerlink" href="#file-change-analysis" title="Link to this heading">¶</a></h3>
 <p>Visualize file changes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get file change history</span>
 <span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
@@ -450,7 +361,7 @@
 </section>
 </section>
 <section id="best-practices">
-<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Use caching for expensive operations like blame analysis</p></li>
 <li><p>Filter data early using include_globs/ignore_globs</p></li>
@@ -464,34 +375,99 @@
 </section>
 
 
-           </div>
+            <div class="clearer"></div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="performance.html" class="btn btn-neutral float-left" title="Performance Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="contributors.html" class="btn btn-neutral float-right" title="Contributing to Git-Pandas" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2015-2025, Will McGinnis.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
         </div>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Use Cases and Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a></li>
+</ul>
 
-</body>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="performance.html"
+                          title="previous chapter">Performance Guide</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="contributors.html"
+                          title="next chapter">Contributing to Git-Pandas</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usecases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <div class="footer__inner">
+    
+    
+    <div class="footer__links">
+      
+        <a href="https://github.com/wdm0006" class="footer__link" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+      
+        <a href="https://www.linkedin.com/in/wmcginnis/" class="footer__link" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+      
+        <a href="https://x.com/willmcginniser" class="footer__link" target="_blank" rel="noopener noreferrer">
+          Twitter
+        </a>
+      
+    </div>
+    
+
+    
+    <p class="footer__copy">
+      
+        &copy; 2015-2025, Will McGinnis
+      
+    </p>
+  </div>
+</footer>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+    if (toggle && nav) {
+      toggle.addEventListener('click', function() {
+        nav.classList.toggle('is-open');
+        const isOpen = nav.classList.contains('is-open');
+        toggle.setAttribute('aria-expanded', isOpen);
+      });
+    }
+  });
+</script>
+
+  </body>
 </html>
