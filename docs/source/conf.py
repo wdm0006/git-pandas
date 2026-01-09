@@ -53,8 +53,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
-    "sphinx_rtd_theme",
-    "sphinx_rtd_dark_mode",
     "sphinxcontrib.googleanalytics",
 ]
 
@@ -119,7 +117,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+pygments_style = "wabi_sphinx_theme.pygments_style.WabiStyle"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -135,24 +133,27 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme = "wabi_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 html_theme_options = {
-    "navigation_depth": 4,
-    "collapse_navigation": False,
-    "sticky_navigation": True,
-    "includehidden": True,
-    "titles_only": False,
-    "logo_only": False,
-    "style_nav_header_background": "#2980B9",
-    "style_external_links": True,
+    "site_title": "McGinnis, Will",
+    "site_url": "https://mcginniscommawill.com",
+    "docs_base_url": "https://gitpandas.mcginniscommawill.com",
+    "nav_links": [
+        {"label": "Guides", "url": "https://mcginniscommawill.com/guides/"},
+        {"label": "Topics", "url": "https://mcginniscommawill.com/topics/"},
+        {"label": "Blog", "url": "https://mcginniscommawill.com/posts/"},
+        {"label": "About", "url": "https://mcginniscommawill.com/about/"},
+        {"label": "Free Coffee", "url": "https://mcginniscommawill.com/coffee/"},
+        {"label": "OSS", "url": "https://mcginniscommawill.com/oss/"},
+    ],
+    "nav_show_docs_link": True,
+    "nav_docs_label": "Docs",
+    "show_breadcrumbs": True,
+    "show_home_breadcrumb": True,
+    "twitter_site": "@willmcginniser",
 }
-
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [
-    "_themes",
-]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -174,6 +175,12 @@ html_theme_path = [
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    "custom.css",
+]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -336,9 +343,6 @@ texinfo_documents = [
 # Google Analytics configuration
 googleanalytics_id = "G-Z43R9PWW0B"
 googleanalytics_enabled = True
-
-# Default to dark theme
-default_dark_mode = True
 
 # -- Options for intersphinx extension ------------------------------------
 

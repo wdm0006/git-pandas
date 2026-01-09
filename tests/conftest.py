@@ -2,7 +2,10 @@
 Shared pytest fixtures for git-pandas tests.
 """
 
+import os
 import subprocess
+import tempfile
+
 import pytest
 
 __author__ = "willmcginnis"
@@ -24,9 +27,6 @@ def get_default_branch():
         pass
     
     # If no default branch is configured, create a temporary repo to see what git actually creates
-    import tempfile
-    import os
-    
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             test_repo_path = os.path.join(temp_dir, "test_repo")

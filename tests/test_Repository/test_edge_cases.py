@@ -301,7 +301,7 @@ class TestRepositoryEdgeCases:
         # Should return empty or minimal DataFrame when skip exceeds available commits
         # (behavior may vary based on implementation)
 
-    def test_repository_with_large_files(self, large_file_repo):
+    def test_repository_with_large_files(self, large_file_repo, default_branch):
         """Test repository operations with large files."""
         repo = Repository(working_dir=large_file_repo, default_branch=default_branch)
 

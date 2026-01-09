@@ -56,7 +56,11 @@ def local_repo(tmp_path, default_branch):
     repo.index.add([str(main_py)])
     commit = repo.index.commit("Update greeting")
 
-    return {"repo_path": repo_path, "repo": Repository(working_dir=str(repo_path), default_branch=default_branch), "last_commit": commit.hexsha}
+    return {
+        "repo_path": repo_path,
+        "repo": Repository(working_dir=str(repo_path), default_branch=default_branch),
+        "last_commit": commit.hexsha,
+    }
 
 
 class TestFileOperations:

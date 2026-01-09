@@ -122,33 +122,33 @@ class TestPunchcard:
                 # If there are commits on this day, the max value should be 1.0 or close to it
                 assert day_rows["net"].max() <= 1.0
 
-    def test_punchcard_by_parameter(self, local_repo):
+    def test_punchcard_by_parameter(self, local_repo, default_branch):
         """Test the 'by' parameter of the punchcard method."""
         # Test with by='committer'
-        punchcard_committer = local_repo.punchcard(branch="master", by="committer")
+        punchcard_committer = local_repo.punchcard(branch=default_branch, by="committer")
 
         # Check that we have the committer column
         assert "committer" in punchcard_committer.columns
 
         # Test with by='repository'
-        punchcard_repo = local_repo.punchcard(branch="master", by="repository")
+        punchcard_repo = local_repo.punchcard(branch=default_branch, by="repository")
 
         # Check that we have the repository column
         assert "repository" in punchcard_repo.columns
 
-    def test_punchcard_with_globs(self, local_repo):
+    def test_punchcard_with_globs(self, local_repo, default_branch):
         """Test the ignore_globs and include_globs parameters."""
         # Get punchcard for all files
-        punchcard_all = local_repo.punchcard(branch="master")
+        punchcard_all = local_repo.punchcard(branch=default_branch)
 
         # Get punchcard ignoring Python files
-        punchcard_no_py = local_repo.punchcard(branch="master", ignore_globs=["*.py"])
+        punchcard_no_py = local_repo.punchcard(branch=default_branch, ignore_globs=["*.py"])
 
         # Check that we have fewer lines in the filtered punchcard
         assert punchcard_no_py["lines"].sum() < punchcard_all["lines"].sum()
 
         # Get punchcard including only Python files
-        punchcard_only_py = local_repo.punchcard(branch="master", include_globs=["*.py"])
+        punchcard_only_py = local_repo.punchcard(branch=default_branch, include_globs=["*.py"])
 
         # Check that we have fewer lines than the full punchcard
         assert punchcard_only_py["lines"].sum() < punchcard_all["lines"].sum()
@@ -156,25 +156,25 @@ class TestPunchcard:
         # Check that the sum of the filtered punchcards equals the total
         assert punchcard_no_py["lines"].sum() + punchcard_only_py["lines"].sum() == punchcard_all["lines"].sum()
 
-    def test_punchcard_with_limit(self, local_repo):
+    def test_punchcard_with_limit(self, local_repo, default_branch):
         """Test the limit parameter of the punchcard method."""
         # Get punchcard with all commits
-        punchcard_all = local_repo.punchcard(branch="master")
+        punchcard_all = local_repo.punchcard(branch=default_branch)
 
         # Get punchcard with limited commits
-        punchcard_limited = local_repo.punchcard(branch="master", limit=3)
+        punchcard_limited = local_repo.punchcard(branch=default_branch, limit=3)
 
         # Check that we have fewer lines in the limited punchcard
         assert punchcard_limited["lines"].sum() <= punchcard_all["lines"].sum()
 
-    def test_punchcard_with_days(self, local_repo):
+    def test_punchcard_with_days(self, local_repo, default_branch):
         """Test the days parameter of the punchcard method."""
         # Get punchcard with all commits
-        local_repo.punchcard(branch="master")
+        local_repo.punchcard(branch=default_branch)
 
         # Get punchcard with commits from the last 2 days
         # Since our test data is from 2023, this should return an empty DataFrame
-        punchcard_recent = local_repo.punchcard(branch="master", days=2)
+        punchcard_recent = local_repo.punchcard(branch=default_branch, days=2)
 
         # Check that we have no lines in the recent punchcard
         assert punchcard_recent["lines"].sum() == 0
