@@ -16,7 +16,7 @@ class TestProjectEdgeCases:
         return str(project_path)
 
     @pytest.fixture
-    def single_repo_project(self, tmp_path):
+    def single_repo_project(self, tmp_path, default_branch):
         """Create a project directory with one repository."""
         project_path = tmp_path / "single_repo_project"
         project_path.mkdir()
@@ -30,6 +30,9 @@ class TestProjectEdgeCases:
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
+
         # Create commit
         (repo_path / "README.md").write_text("# Repo 1")
         repo.index.add(["README.md"])
@@ -38,7 +41,7 @@ class TestProjectEdgeCases:
         return str(project_path)
 
     @pytest.fixture
-    def multi_repo_project(self, tmp_path):
+    def multi_repo_project(self, tmp_path, default_branch):
         """Create a project directory with multiple repositories."""
         project_path = tmp_path / "multi_repo_project"
         project_path.mkdir()
@@ -53,6 +56,9 @@ class TestProjectEdgeCases:
             repo.config_writer().set_value("user", "name", f"User {i + 1}").release()
             repo.config_writer().set_value("user", "email", f"user{i + 1}@example.com").release()
 
+            # Create and checkout default branch
+            repo.git.checkout("-b", default_branch)
+
             # Create commits
             (repo_path / "README.md").write_text(f"# Repo {i + 1}")
             repo.index.add(["README.md"])
@@ -66,7 +72,7 @@ class TestProjectEdgeCases:
         return str(project_path)
 
     @pytest.fixture
-    def mixed_content_project(self, tmp_path):
+    def mixed_content_project(self, tmp_path, default_branch):
         """Create a project directory with repos and non-repo directories."""
         project_path = tmp_path / "mixed_content_project"
         project_path.mkdir()
@@ -79,6 +85,9 @@ class TestProjectEdgeCases:
         # Configure git user
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
+
+        # Create and checkout default branch
+        repo.git.checkout("-b", default_branch)
 
         # Create commit
         (repo_path / "README.md").write_text("# Valid Repo")
@@ -437,7 +446,7 @@ class TestProjectDataValidation:
     """Test ProjectDirectory data validation and aggregation."""
 
     @pytest.fixture
-    def validation_project(self, tmp_path):
+    def validation_project(self, tmp_path, default_branch):
         """Create a project for data validation tests."""
         project_path = tmp_path / "validation_project"
         project_path.mkdir()
@@ -451,6 +460,9 @@ class TestProjectDataValidation:
             # Configure git user
             repo.config_writer().set_value("user", "name", f"User {i + 1}").release()
             repo.config_writer().set_value("user", "email", f"user{i + 1}@example.com").release()
+
+            # Create and checkout default branch
+            repo.git.checkout("-b", default_branch)
 
             # Create different types of commits
             (repo_path / f"file{i + 1}.txt").write_text(f"Content {i + 1}")

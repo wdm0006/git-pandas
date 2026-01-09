@@ -31,7 +31,7 @@ class TestCacheIntegration:
         return str(repo_path)
 
     @pytest.fixture
-    def cache_project(self, tmp_path):
+    def cache_project(self, tmp_path, default_branch):
         """Create a project with multiple repositories for cache testing."""
         project_path = tmp_path / "cache_project"
         project_path.mkdir()
@@ -45,6 +45,9 @@ class TestCacheIntegration:
             # Configure git user
             repo.config_writer().set_value("user", "name", f"User {repo_num}").release()
             repo.config_writer().set_value("user", "email", f"user{repo_num}@example.com").release()
+
+            # Create and checkout default branch
+            repo.git.checkout("-b", default_branch)
 
             # Create commits
             for i in range(2):
