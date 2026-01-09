@@ -158,9 +158,9 @@ class TestCacheIntegration:
         assert isinstance(history4, pd.DataFrame)
         assert isinstance(history5, pd.DataFrame)
 
-    def test_project_cache_aggregation(self, cache_project):
+    def test_project_cache_aggregation(self, cache_project, default_branch):
         """Test cache behavior for project-level aggregation."""
-        project = ProjectDirectory(working_dir=cache_project)
+        project = ProjectDirectory(working_dir=cache_project, default_branch=default_branch)
 
         # First call should aggregate from all repositories
         history1 = project.commit_history()
@@ -177,9 +177,9 @@ class TestCacheIntegration:
         assert isinstance(history3, pd.DataFrame)
         assert len(history3) <= 2
 
-    def test_project_cache_per_repository(self, cache_project):
+    def test_project_cache_per_repository(self, cache_project, default_branch):
         """Test that project caching works correctly per repository."""
-        project = ProjectDirectory(working_dir=cache_project)
+        project = ProjectDirectory(working_dir=cache_project, default_branch=default_branch)
 
         # Get project-level data
         project_history = project.commit_history()

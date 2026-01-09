@@ -140,9 +140,9 @@ class TestProjectEdgeCases:
         assert isinstance(file_change_rates, pd.DataFrame)
         assert file_change_rates.empty
 
-    def test_single_repository_project(self, single_repo_project):
+    def test_single_repository_project(self, single_repo_project, default_branch):
         """Test project operations with exactly one repository."""
-        project = ProjectDirectory(working_dir=single_repo_project)
+        project = ProjectDirectory(working_dir=single_repo_project, default_branch=default_branch)
 
         # Test that repositories list has one item
         repos = project.repos
@@ -162,9 +162,9 @@ class TestProjectEdgeCases:
         assert isinstance(blame_df, pd.DataFrame)
         assert len(blame_df) >= 1
 
-    def test_multi_repository_project(self, multi_repo_project):
+    def test_multi_repository_project(self, multi_repo_project, default_branch):
         """Test project operations with multiple repositories."""
-        project = ProjectDirectory(working_dir=multi_repo_project)
+        project = ProjectDirectory(working_dir=multi_repo_project, default_branch=default_branch)
 
         # Test that repositories list has multiple items
         repos = project.repos
@@ -182,9 +182,9 @@ class TestProjectEdgeCases:
             unique_repos = commit_history["repository"].nunique()
             assert unique_repos == 3
 
-    def test_mixed_content_project(self, mixed_content_project):
+    def test_mixed_content_project(self, mixed_content_project, default_branch):
         """Test project with mix of repositories and non-repository directories."""
-        project = ProjectDirectory(working_dir=mixed_content_project)
+        project = ProjectDirectory(working_dir=mixed_content_project, default_branch=default_branch)
 
         # Should only include the valid repository
         repos = project.repos
@@ -562,7 +562,7 @@ class TestProjectDataValidation:
             # Each method should use the same repository naming convention
             assert len(all_repo_names) >= 1
 
-    def test_project_empty_repository_handling(self, tmp_path):
+    def test_project_empty_repository_handling(self, tmp_path, default_branch):
         """Test project handling when some repositories are empty."""
         project_path = tmp_path / "mixed_empty_project"
         project_path.mkdir()
@@ -575,6 +575,9 @@ class TestProjectDataValidation:
         normal_repo.config_writer().set_value("user", "name", "Test User").release()
         normal_repo.config_writer().set_value("user", "email", "test@example.com").release()
 
+        # Create and checkout default branch
+        normal_repo.git.checkout("-b", default_branch)
+
         (normal_path / "file.txt").write_text("Normal content")
         normal_repo.index.add(["file.txt"])
         normal_repo.index.commit("Normal commit")
@@ -586,7 +589,7 @@ class TestProjectDataValidation:
         empty_repo.config_writer().set_value("user", "name", "Empty User").release()
         empty_repo.config_writer().set_value("user", "email", "empty@example.com").release()
 
-        project = ProjectDirectory(working_dir=str(project_path))
+        project = ProjectDirectory(working_dir=str(project_path), default_branch=default_branch)
 
         # Should handle mix of empty and non-empty repositories
         repos = project.repos
