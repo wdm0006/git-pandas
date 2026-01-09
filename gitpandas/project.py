@@ -10,7 +10,6 @@
 
 import math
 import os
-import sys
 import warnings
 
 import numpy as np
@@ -890,11 +889,7 @@ class ProjectDirectory:
 
         if by == "committer":
             committers = [(str(x).split("__")[0].lower().strip(), x) for x in numeric_columns]
-
-            if sys.version_info.major == 2:
-                committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
-            else:
-                committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
+            committer_mapping = {c: [x[1] for x in committers if x[0] == c] for c in {x[0] for x in committers}}
 
             for committer in committer_mapping:
                 global_blame[committer] = pd.Series(0.0, index=global_blame.index)
@@ -904,11 +899,7 @@ class ProjectDirectory:
             global_blame = global_blame.reindex(columns=list(committer_mapping.keys()))
         elif by == "project":
             projects = [(str(x).split("__")[1].lower().strip(), x) for x in numeric_columns]
-
-            if sys.version_info.major == 2:
-                project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
-            else:
-                project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
+            project_mapping = {c: [x[1] for x in projects if x[0] == c] for c in {x[0] for x in projects}}
 
             for project in project_mapping:
                 global_blame[project] = pd.Series(0.0, index=global_blame.index)
