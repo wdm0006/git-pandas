@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import shutil
-import sys
 import tempfile
 import time
 
@@ -433,10 +432,7 @@ class Repository:
                 dlim = time.time() - days * 24 * 3600
                 while c_date > dlim:
                     try:
-                        if sys.version_info.major == 2:
-                            x = commits.next()
-                        else:
-                            x = commits.__next__()
+                        x = next(commits)
                     except StopIteration:
                         break
                     c_date = x.committed_date
