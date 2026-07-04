@@ -1089,7 +1089,7 @@ class ProjectDirectory:
             df = pd.DataFrame(columns=["repository", "bus factor"])
             for repo in self.repos:
                 try:
-                    bf_df = repo.bus_factor(ignore_globs=include_globs, include_globs=include_globs, by=by)
+                    bf_df = repo.bus_factor(ignore_globs=ignore_globs, include_globs=include_globs, by=by)
                     if not bf_df.empty:
                         df = pd.concat([df, bf_df], ignore_index=True)
                 except GitCommandError:
