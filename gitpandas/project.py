@@ -385,8 +385,6 @@ class ProjectDirectory:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} seems to not have the branch: {branch}")
 
-        df.reset_index()
-
         if by == "committer" or by == "author":
             df = df.groupby(com).agg({"hours": sum})
             df = df.reset_index()
@@ -631,11 +629,18 @@ class ProjectDirectory:
                 logger.warning(f"Repo: {repo} couldnt be blamed")
                 pass
 
+        groupby_column = "committer" if committer else "author"
+
+        if df is None:
+            # No repos, or every repo raised GitCommandError — return an empty
+            # DataFrame matching the normal output shape.
+            columns = [groupby_column, "file", "loc"] if by == "file" else [groupby_column, "loc"]
+            return pd.DataFrame(columns=columns)
+
         # Reset index to convert committer/author from index to column
         df = df.reset_index()
 
         # Fix column naming after reset_index - the grouped column becomes 'index'
-        groupby_column = "committer" if committer else "author"
         if "index" in df.columns and groupby_column not in df.columns:
             df = df.rename(columns={"index": groupby_column})
         elif groupby_column not in df.columns:
@@ -714,6 +719,12 @@ class ProjectDirectory:
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldnt be inspected")
+
+        if df is None:
+            # No repos, or every repo raised GitCommandError — return an empty
+            # DataFrame with the same (file, repository) index as the normal output.
+            empty = pd.DataFrame(columns=["file", "repository", "loc", "file_owner", "ext", "last_edit_date"])
+            return empty.set_index(["file", "repository"])
 
         df = df.reset_index()
         df = df.set_index(["file", "repository"])
@@ -1096,7 +1107,6 @@ class ProjectDirectory:
                     # Use logger instead of print
                     logger.warning(f"Repo: {repo} couldn't be inspected")
 
-            df.reset_index()
             logger.info(f"Calculated bus factor for {len(df)} repositories.")
             return df
 
@@ -1151,8 +1161,6 @@ class ProjectDirectory:
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldn't be inspected")
-
-        df.reset_index()
 
         aggs = ["hour_of_day", "day_of_week"]
         if by is not None:
