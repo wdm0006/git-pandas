@@ -7,7 +7,7 @@ name = "git-pandas"
 version = "2.5.0"
 description = "A utility for interacting with data from git repositories as Pandas dataframes"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "BSD"}
 authors = [
     {name = "Will McGinnis", email = "will@mcginniscommawill.com"},
@@ -22,7 +22,7 @@ keywords = ["git", "pandas", "data", "analysis"]
 dependencies = [
     "gitpython>=1.0.0",
     "numpy>=1.9.0",
-    "pandas>=2.0.0",
+    "pandas>=2.0.0,<3.0.0",
     "requests",
     "redis",
     "coverage>=5.0.0",
@@ -95,4 +95,4 @@ suppress-none-returning = true
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
-line-ending = "auto" 
+line-ending = "auto"
