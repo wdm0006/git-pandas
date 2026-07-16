@@ -514,7 +514,10 @@ class Repository:
         logger.info(f"Finished fetching commit history for branch '{branch}'. Found {len(df)} relevant commits.")
         return df
 
-    @multicache(key_prefix="file_change_history", key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
+    @multicache(
+        key_prefix="file_change_history",
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs", "skip_broken"],
+    )
     def file_change_history(
         self,
         branch=None,
@@ -773,7 +776,7 @@ class Repository:
 
     @multicache(
         key_prefix="file_change_rates",
-        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs"],
+        key_list=["branch", "limit", "coverage", "days", "ignore_globs", "include_globs", "skip_broken"],
     )
     def file_change_rates(
         self,
@@ -1033,7 +1036,7 @@ class Repository:
         logger.debug(f"Finished checking extensions. Filtered files count: {len(out)}")
         return out
 
-    @multicache(key_prefix="blame", key_list=["rev", "committer", "by", "ignore_blobs", "include_globs"])
+    @multicache(key_prefix="blame", key_list=["rev", "committer", "by", "ignore_globs", "include_globs"])
     def blame(
         self,
         rev="HEAD",
@@ -1153,7 +1156,7 @@ class Repository:
         logger.info(f"Finished calculating blame for rev '{rev}'. Found {len(blames_df)} blame entries.")
         return blames_df
 
-    @multicache(key_prefix="revs", key_list=["branch", "limit", "skip", "num_datapoints"])
+    @multicache(key_prefix="revs", key_list=["branch", "limit", "skip", "num_datapoints", "skip_broken"])
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None, skip_broken=False):
         """
         Returns a dataframe of all revision tags and their timestamps. It will have the columns:
@@ -1279,7 +1282,16 @@ class Repository:
 
     @multicache(
         key_prefix="cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "ignore_globs", "include_globs"],
+        key_list=[
+            "branch",
+            "limit",
+            "skip",
+            "num_datapoints",
+            "committer",
+            "ignore_globs",
+            "include_globs",
+            "skip_broken",
+        ],
     )
     def cumulative_blame(
         self,
@@ -1452,7 +1464,17 @@ class Repository:
 
     @multicache(
         key_prefix="parallel_cumulative_blame",
-        key_list=["branch", "limit", "skip", "num_datapoints", "committer", "workers", "ignore_globs", "include_globs"],
+        key_list=[
+            "branch",
+            "limit",
+            "skip",
+            "num_datapoints",
+            "committer",
+            "workers",
+            "ignore_globs",
+            "include_globs",
+            "skip_broken",
+        ],
     )
     def parallel_cumulative_blame(
         self,
@@ -1757,7 +1779,7 @@ class Repository:
             "commit_date": commit_date,
         }
 
-    @multicache(key_prefix="tags", key_list=[])
+    @multicache(key_prefix="tags", key_list=["skip_broken"])
     def tags(self, skip_broken=False):
         """Returns information about all tags in the repository.
 
