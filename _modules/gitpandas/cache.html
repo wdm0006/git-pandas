@@ -36,6 +36,10 @@
 
 
 
+
+
+
+
 <meta property="og:title" content="gitpandas.cache">
 <meta property="og:description" content="gitpandas.cache - git-pandas documentation">
 <meta property="og:type" content="website">
@@ -171,6 +175,7 @@
             
   <h1>Source code for gitpandas.cache</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
@@ -247,7 +252,11 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        key_prefix (str): Prefix for the cache key.</span>
-<span class="sd">        key_list (list[str]): List of argument names (from kwargs) to include in the cache key.</span>
+<span class="sd">        key_list (list[str]): List of parameter names of the decorated method to include</span>
+<span class="sd">            in the cache key. Arguments are resolved against the method&#39;s signature, so</span>
+<span class="sd">            a value passed positionally contributes to the key exactly as it would if</span>
+<span class="sd">            passed by keyword. Every name must exist in the signature; an unknown name</span>
+<span class="sd">            raises ValueError at decoration time.</span>
 <span class="sd">        skip_if (callable, optional): A function that takes kwargs and returns True</span>
 <span class="sd">            if caching should be skipped entirely (no read, no write). Defaults to None.</span>
 
@@ -257,6 +266,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">multicache_nest</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">accepts_var_keyword</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">kind</span> <span class="ow">is</span> <span class="n">p</span><span class="o">.</span><span class="n">VAR_KEYWORD</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accepts_var_keyword</span><span class="p">:</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_list</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;multicache(key_prefix=</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">!r}</span><span class="s2">) key_list names parameters that do not exist on &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">. Valid parameters: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">signature</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">deco</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="c1"># If no cache backend, just run the function</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_backend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -273,9 +292,18 @@
             <span class="n">force_refresh</span> <span class="o">=</span> <span class="n">is_propagated_force</span> <span class="ow">or</span> <span class="n">explicit_force_refresh</span>
 
             <span class="c1"># Generate the cache key (ensure force_refresh itself is not part of the key)</span>
-            <span class="c1"># Use || as delimiter to avoid conflicts with repository names containing underscores</span>
-            <span class="n">key_parts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">]</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s2">||</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">||</span><span class="si">{</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key_parts</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="c1"># Resolve against the signature so positional and keyword calls key identically</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">bound</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">bound</span><span class="o">.</span><span class="n">apply_defaults</span><span class="p">()</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="n">bound</span><span class="o">.</span><span class="n">arguments</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="c1"># Let the function itself raise the real argument error</span>
+                <span class="n">arguments</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+            <span class="c1"># Use || as delimiter to avoid conflicts with values containing underscores</span>
+            <span class="n">key_parts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">]</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s2">||</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">||</span><span class="si">{</span><span class="s1">&#39;||&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key_parts</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache key generated for </span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># Explicitly log force refresh bypass of cache read</span>

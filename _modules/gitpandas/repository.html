@@ -36,6 +36,10 @@
 
 
 
+
+
+
+
 <meta property="og:title" content="gitpandas.repository">
 <meta property="og:description" content="gitpandas.repository - git-pandas documentation">
 <meta property="og:type" content="website">
@@ -694,7 +698,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished fetching commit history for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> relevant commits.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
-    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;file_change_history&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">])</span>
+    <span class="nd">@multicache</span><span class="p">(</span>
+        <span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;file_change_history&quot;</span><span class="p">,</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;skip_broken&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_change_history</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -956,7 +963,7 @@
 
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;file_change_rates&quot;</span><span class="p">,</span>
-        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">],</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;skip_broken&quot;</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">file_change_rates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1216,7 +1223,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished checking extensions. Filtered files count: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;blame&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="s2">&quot;committer&quot;</span><span class="p">,</span> <span class="s2">&quot;by&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_blobs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">])</span>
+    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;blame&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rev&quot;</span><span class="p">,</span> <span class="s2">&quot;committer&quot;</span><span class="p">,</span> <span class="s2">&quot;by&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">blame</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">,</span>
@@ -1336,7 +1343,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished calculating blame for rev &#39;</span><span class="si">{</span><span class="n">rev</span><span class="si">}</span><span class="s2">&#39;. Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blames_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> blame entries.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">blames_df</span>
 
-    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;revs&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="s2">&quot;num_datapoints&quot;</span><span class="p">])</span>
+    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;revs&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="s2">&quot;num_datapoints&quot;</span><span class="p">,</span> <span class="s2">&quot;skip_broken&quot;</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">revs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_broken</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a dataframe of all revision tags and their timestamps. It will have the columns:</span>
@@ -1462,7 +1469,16 @@
 
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;cumulative_blame&quot;</span><span class="p">,</span>
-        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="s2">&quot;num_datapoints&quot;</span><span class="p">,</span> <span class="s2">&quot;committer&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">],</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span>
+            <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;limit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;skip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_datapoints&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;committer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;include_globs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;skip_broken&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cumulative_blame</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1635,7 +1651,17 @@
 
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;parallel_cumulative_blame&quot;</span><span class="p">,</span>
-        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="s2">&quot;skip&quot;</span><span class="p">,</span> <span class="s2">&quot;num_datapoints&quot;</span><span class="p">,</span> <span class="s2">&quot;committer&quot;</span><span class="p">,</span> <span class="s2">&quot;workers&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span> <span class="s2">&quot;include_globs&quot;</span><span class="p">],</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span>
+            <span class="s2">&quot;branch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;limit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;skip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_datapoints&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;committer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;workers&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ignore_globs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;include_globs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;skip_broken&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parallel_cumulative_blame</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1940,7 +1966,7 @@
             <span class="s2">&quot;commit_date&quot;</span><span class="p">:</span> <span class="n">commit_date</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[])</span>
+    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;skip_broken&quot;</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_broken</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns information about all tags in the repository.</span>
 

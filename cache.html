@@ -39,6 +39,10 @@
 
 
 
+
+
+
+
 <meta property="og:title" content="Caching">
 <meta property="og:description" content="Caching - git-pandas documentation">
 <meta property="og:type" content="website">
@@ -725,7 +729,11 @@ Thread-safe operation.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>key_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Prefix for the cache key.</p></li>
-<li><p><strong>key_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – List of argument names (from kwargs) to include in the cache key.</p></li>
+<li><p><strong>key_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – List of parameter names of the decorated method to include
+in the cache key. Arguments are resolved against the method’s signature, so
+a value passed positionally contributes to the key exactly as it would if
+passed by keyword. Every name must exist in the signature; an unknown name
+raises ValueError at decoration time.</p></li>
 <li><p><strong>skip_if</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function that takes kwargs and returns True
 if caching should be skipped entirely (no read, no write). Defaults to None.</p></li>
 </ul>
