@@ -1,3 +1,19 @@
+Unreleased
+==========
+
+## Bug Fixes
+
+### Cache Correctness
+ * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
+   - `Repository(working_dir=<master-only repo>, cache_backend=...)` raising `ValueError: Could not detect default branch` — the internal `has_branch("main")` / `has_branch("master")` probes shared one key.
+   - `file_detail()` reporting the first file's owner for every file — the internal `file_owner(rev, file_path, ...)` calls shared one key.
+ * **FIXED**: `blame()`'s `key_list` misspelled `ignore_globs` as `ignore_blobs`, so `ignore_globs` never contributed to the cache key and all variants collided. `blame(ignore_globs=[...])` and `bus_factor(ignore_globs=[...])` now return the same results with and without a cache backend.
+ * **FIXED**: `skip_broken` was missing from the cache key of `file_change_history`, `file_change_rates`, `revs`, `cumulative_blame`, `parallel_cumulative_blame`, and `tags`, so `skip_broken=True` and `skip_broken=False` shared an entry.
+ * **FIXED**: Cache key parts are now joined with `||` instead of `_`, which could occur inside the values themselves (e.g. `get_file_content(path="docs", rev="release_2")` collided with `path="docs_release", rev="2"`).
+ * **NEW**: `@multicache` validates `key_list` against the decorated method's signature at decoration time and raises `ValueError` on a name that isn't a parameter, turning the typo class of bug into a loud failure.
+
+**Note**: The cache key format has changed. Stale `EphemeralCache`/`DiskCache` entries simply miss and recompute, but `RedisDFCache` users sharing a cache across versions should flush it (or use a new key prefix) to avoid retaining entries under the old format.
+
 v2.5.0
 ======
 

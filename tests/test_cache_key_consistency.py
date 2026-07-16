@@ -1,10 +1,12 @@
 import os
+import subprocess
 import tempfile
 
 import pandas as pd
 import pytest
 
-from gitpandas.cache import DiskCache, multicache
+from gitpandas import Repository
+from gitpandas.cache import DiskCache, EphemeralCache, multicache
 
 
 class RepositoryMock:
@@ -160,9 +162,7 @@ class TestCacheKeyConsistency:
         # Check key format
         key = captured_keys[0]
         assert key.startswith("complex_method||")
-        assert "value1_" in key
-        assert "value2_" in key
-        assert "value3" in key
+        assert key.endswith("||value1||value2||value3")
 
         # Call again with different order of parameters in the call
         # Python should normalize kwargs, so the key should be the same
@@ -171,3 +171,154 @@ class TestCacheKeyConsistency:
 
         # Key should be the same despite different parameter order
         assert captured_keys[0] == key
+
+
+@pytest.fixture
+def master_only_repo():
+    """A two-file repo on a 'master' branch with known line counts and a single author.
+
+    keep.py has 3 lines, vendor.js has 6 lines, so blame totals are exactly known.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull}
+
+        def git(*cmd):
+            subprocess.run(["git", "-C", tmpdir, *cmd], check=True, capture_output=True, env=env)
+
+        subprocess.run(["git", "init", "-b", "master", tmpdir], check=True, capture_output=True, env=env)
+        git("config", "user.name", "Test Author")
+        git("config", "user.email", "test@example.com")
+
+        with open(os.path.join(tmpdir, "keep.py"), "w") as f:
+            f.write("a = 1\nb = 2\nc = 3\n")
+        with open(os.path.join(tmpdir, "vendor.js"), "w") as f:
+            f.write("\n".join(f"var v{i} = {i};" for i in range(6)) + "\n")
+
+        git("add", "keep.py", "vendor.js")
+        git("commit", "-m", "initial")
+
+        yield tmpdir
+
+
+class TestCachedResultsMatchUncached:
+    """Attaching a cache backend must not change results — only speed."""
+
+    def test_master_only_repo_constructs_with_cache_backend(self, master_only_repo):
+        """has_branch('main')/has_branch('master') are called positionally in __init__.
+
+        Keying on kwargs only collapses both to the same key, so the cached False from
+        the 'main' probe answers the 'master' probe and default branch detection fails.
+        """
+        cached = Repository(working_dir=master_only_repo, cache_backend=EphemeralCache())
+        assert cached.default_branch == "master"
+        assert Repository(working_dir=master_only_repo).default_branch == "master"
+
+    def test_has_branch_positional_and_keyword_share_one_key(self, master_only_repo):
+        cache = EphemeralCache()
+        repo = Repository(working_dir=master_only_repo, cache_backend=cache)
+
+        assert repo.has_branch("master") is True
+        assert repo.has_branch(branch="master") is True
+
+        has_branch_keys = [k for k in cache._cache if k.startswith("has_branch||")]
+        assert len(has_branch_keys) == 2  # one for the 'main' probe, one for 'master'
+        assert sum(k.endswith("||master") for k in has_branch_keys) == 1
+
+    def test_blame_ignore_globs_respected_with_cache(self, master_only_repo):
+        uncached = Repository(working_dir=master_only_repo)
+        cached = Repository(working_dir=master_only_repo, cache_backend=EphemeralCache())
+
+        def loc(repo, **kwargs):
+            return repo.blame(**kwargs)["loc"].sum()
+
+        # Warm the cache with the unfiltered call first — the ignore_globs call must not hit it.
+        assert loc(cached) == 9
+        assert loc(uncached) == 9
+
+        assert loc(cached, ignore_globs=["*.js"]) == 3
+        assert loc(uncached, ignore_globs=["*.js"]) == 3
+
+    def test_bus_factor_ignore_globs_respected_with_cache(self, master_only_repo):
+        cached = Repository(working_dir=master_only_repo, cache_backend=EphemeralCache())
+        uncached = Repository(working_dir=master_only_repo)
+
+        cached.blame()  # poison-prone warm-up: caches the unfiltered blame first
+
+        cached_bf = cached.bus_factor(ignore_globs=["*.js"])
+        uncached_bf = uncached.bus_factor(ignore_globs=["*.js"])
+        pd.testing.assert_frame_equal(cached_bf, uncached_bf)
+
+    def test_file_owner_distinct_key_per_filename(self, master_only_repo):
+        cache = EphemeralCache()
+        repo = Repository(working_dir=master_only_repo, cache_backend=cache)
+
+        repo.file_owner("HEAD", "keep.py", committer=True)
+        repo.file_owner("HEAD", "vendor.js", committer=True)
+
+        file_owner_keys = [k for k in cache._cache if k.startswith("file_owner||")]
+        assert len(file_owner_keys) == 2
+
+    def test_file_detail_owners_match_uncached(self, master_only_repo):
+        cached = Repository(working_dir=master_only_repo, cache_backend=EphemeralCache())
+        uncached = Repository(working_dir=master_only_repo)
+
+        pd.testing.assert_frame_equal(cached.file_detail(), uncached.file_detail())
+
+    def test_get_file_content_key_parts_do_not_collide(self, master_only_repo):
+        """path='docs', rev='release_2' must not key the same as path='docs_release', rev='2'."""
+        cache = EphemeralCache()
+        repo = Repository(working_dir=master_only_repo, cache_backend=cache)
+
+        repo.get_file_content(path="docs", rev="release_2")
+        repo.get_file_content(path="docs_release", rev="2")
+
+        assert len([k for k in cache._cache if k.startswith("get_file_content||")]) == 2
+
+
+class TestKeyListValidation:
+    """key_list must name real parameters, checked when the decorator is applied."""
+
+    def test_unknown_key_list_entry_rejected_at_decoration_time(self):
+        with pytest.raises(ValueError, match="do not exist"):
+
+            class Bad:
+                cache_backend = None
+                repo_name = "bad"
+
+                @multicache(key_prefix="blame", key_list=["ignore_blobs"])
+                def blame(self, ignore_globs=None):
+                    return None
+
+    def test_valid_key_list_accepted(self):
+        class Good:
+            cache_backend = None
+            repo_name = "good"
+
+            @multicache(key_prefix="blame", key_list=["ignore_globs"])
+            def blame(self, ignore_globs=None):
+                return ignore_globs
+
+        assert Good().blame(ignore_globs=["*.js"]) == ["*.js"]
+
+
+class TestSkipBrokenInKey:
+    """skip_broken changes both the rows returned and whether the method raises."""
+
+    def test_skip_broken_variants_do_not_share_a_cache_entry(self, master_only_repo):
+        cache = EphemeralCache()
+        repo = Repository(working_dir=master_only_repo, cache_backend=cache)
+
+        repo.revs(branch="master", skip_broken=True)
+        repo.revs(branch="master", skip_broken=False)
+
+        revs_keys = [k for k in cache._cache if k.startswith("revs||")]
+        assert len(revs_keys) == 2
+
+    def test_tags_skip_broken_variants_do_not_share_a_cache_entry(self, master_only_repo):
+        cache = EphemeralCache()
+        repo = Repository(working_dir=master_only_repo, cache_backend=cache)
+
+        repo.tags(skip_broken=True)
+        repo.tags(skip_broken=False)
+
+        assert len([k for k in cache._cache if k.startswith("tags||")]) == 2

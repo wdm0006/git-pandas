@@ -1,4 +1,5 @@
 import gzip
+import inspect
 import logging
 import os
 import pickle
@@ -52,7 +53,11 @@ def multicache(key_prefix, key_list, skip_if=None):
 
     Args:
         key_prefix (str): Prefix for the cache key.
-        key_list (list[str]): List of argument names (from kwargs) to include in the cache key.
+        key_list (list[str]): List of parameter names of the decorated method to include
+            in the cache key. Arguments are resolved against the method's signature, so
+            a value passed positionally contributes to the key exactly as it would if
+            passed by keyword. Every name must exist in the signature; an unknown name
+            raises ValueError at decoration time.
         skip_if (callable, optional): A function that takes kwargs and returns True
             if caching should be skipped entirely (no read, no write). Defaults to None.
 
@@ -62,6 +67,16 @@ def multicache(key_prefix, key_list, skip_if=None):
     """
 
     def multicache_nest(func):
+        signature = inspect.signature(func)
+        accepts_var_keyword = any(p.kind is p.VAR_KEYWORD for p in signature.parameters.values())
+        if not accepts_var_keyword:
+            unknown = [k for k in key_list if k not in signature.parameters]
+            if unknown:
+                raise ValueError(
+                    f"multicache(key_prefix={key_prefix!r}) key_list names parameters that do not exist on "
+                    f"{func.__qualname__}: {unknown}. Valid parameters: {sorted(signature.parameters)}"
+                )
+
         def deco(self, *args, **kwargs):
             # If no cache backend, just run the function
             if self.cache_backend is None:
@@ -78,9 +93,18 @@ def multicache(key_prefix, key_list, skip_if=None):
             force_refresh = is_propagated_force or explicit_force_refresh
 
             # Generate the cache key (ensure force_refresh itself is not part of the key)
-            # Use || as delimiter to avoid conflicts with repository names containing underscores
-            key_parts = [str(kwargs.get(k)) for k in key_list]
-            key = f"{key_prefix}||{self.repo_name}||{'_'.join(key_parts)}"
+            # Resolve against the signature so positional and keyword calls key identically
+            try:
+                bound = signature.bind(self, *args, **kwargs)
+                bound.apply_defaults()
+                arguments = bound.arguments
+            except TypeError:
+                # Let the function itself raise the real argument error
+                arguments = kwargs
+
+            # Use || as delimiter to avoid conflicts with values containing underscores
+            key_parts = [str(arguments.get(k)) for k in key_list]
+            key = f"{key_prefix}||{self.repo_name}||{'||'.join(key_parts)}"
             logging.debug(f"Cache key generated for {key_prefix}: {key}")
 
             # Explicitly log force refresh bypass of cache read
