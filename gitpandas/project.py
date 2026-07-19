@@ -608,22 +608,15 @@ class ProjectDirectory:
 
         for repo in self.repos:
             try:
-                if df is None:
-                    df = repo.blame(
-                        committer=committer,
-                        by=by,
-                        ignore_globs=ignore_globs,
-                        include_globs=include_globs,
-                    )
-                else:
-                    blame_df = repo.blame(
-                        committer=committer,
-                        by=by,
-                        ignore_globs=ignore_globs,
-                        include_globs=include_globs,
-                    )
-                    if not blame_df.empty:
-                        df = pd.concat([df, blame_df], ignore_index=True)
+                blame_df = repo.blame(
+                    committer=committer,
+                    by=by,
+                    ignore_globs=ignore_globs,
+                    include_globs=include_globs,
+                )
+                if not blame_df.empty:
+                    blame_df = blame_df.reset_index()
+                    df = blame_df if df is None else pd.concat([df, blame_df], ignore_index=True)
             except GitCommandError:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldnt be blamed")
@@ -637,18 +630,13 @@ class ProjectDirectory:
             columns = [groupby_column, "file", "loc"] if by == "file" else [groupby_column, "loc"]
             return pd.DataFrame(columns=columns)
 
-        # Reset index to convert committer/author from index to column
-        df = df.reset_index()
-
-        # Fix column naming after reset_index - the grouped column becomes 'index'
-        if "index" in df.columns and groupby_column not in df.columns:
-            df = df.rename(columns={"index": groupby_column})
-        elif groupby_column not in df.columns:
+        if groupby_column not in df.columns:
             logger.warning(
                 f"Expected column '{groupby_column}' not found in blame data. Available columns: {df.columns.tolist()}"
             )
             # Return empty DataFrame with proper structure if column is missing
-            return pd.DataFrame(columns=[groupby_column, "loc"])
+            columns = [groupby_column, "file", "loc"] if by == "file" else [groupby_column, "loc"]
+            return pd.DataFrame(columns=columns)
 
         if committer:
             if by == "repository":

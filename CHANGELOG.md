@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### Project Blame Aggregation
+ * **FIXED**: `ProjectDirectory.blame()` now preserves committer/author and file grouping keys when combining multiple repositories. Contributors are aggregated by name across repositories, `blame(by="file")` no longer raises `KeyError`, and project-level bus factors are calculated from contributors instead of row numbers.
+
 ### Cache Correctness
  * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
    - `Repository(working_dir=<master-only repo>, cache_backend=...)` raising `ValueError: Could not detect default branch` — the internal `has_branch("main")` / `has_branch("master")` probes shared one key.
