@@ -5,6 +5,7 @@ import os
 import pickle
 import threading
 from datetime import datetime, timezone
+from functools import wraps
 
 try:
     import redis
@@ -77,6 +78,7 @@ def multicache(key_prefix, key_list, skip_if=None):
                     f"{func.__qualname__}: {unknown}. Valid parameters: {sorted(signature.parameters)}"
                 )
 
+        @wraps(func)
         def deco(self, *args, **kwargs):
             # If no cache backend, just run the function
             if self.cache_backend is None:
