@@ -932,6 +932,10 @@ class ProjectDirectory:
             except GitCommandError as e:
                 # Use logger instead of print
                 logger.warning(f"Repo: {repo} couldn't be inspected because of {e!r}")
+        if not dfs:
+            return pd.DataFrame(columns=["commit_sha", "tag", "repository", "tag_date", "commit_date"]).set_index(
+                ["tag_date", "commit_date"]
+            )
         df = pd.concat(dfs)
         logger.info(f"Analyzed commits in tags, found {len(df)} relevant commits.")
         return df
