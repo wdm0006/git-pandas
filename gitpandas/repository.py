@@ -340,10 +340,6 @@ class Repository:
             commits = ch[ch[by] == person]
             commits_ts = [x * 10e-10 for x in sorted(commits.index.values.tolist())]
 
-            if len(commits_ts) < 2:
-                ds.append([person, 0])
-                continue
-
             def estimate(index, date, commits_ts):
                 next_ts = commits_ts[index + 1]
                 diff_in_minutes = next_ts - date
@@ -353,7 +349,7 @@ class Repository:
                 return first_commit_addition_in_minutes / 60.0
 
             hours = [estimate(a, b, commits_ts) for a, b in enumerate(commits_ts[:-1])]
-            hours = sum(hours)
+            hours = single_commit_hours + sum(hours)
             ds.append([person, hours])
 
         df = DataFrame(ds, columns=[by, "hours"])
