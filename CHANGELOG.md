@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### Hours Estimation
+ * **FIXED**: `Repository.hours_estimate()` now includes the first-commit allowance, increasing estimates by `single_commit_hours` per contributor and giving single-commit contributors a non-zero estimate.
+
 ### Project Blame Aggregation
  * **FIXED**: `ProjectDirectory.blame()` now preserves committer/author and file grouping keys when combining multiple repositories. Contributors are aggregated by name across repositories, `blame(by="file")` no longer raises `KeyError`, and project-level bus factors are calculated from contributors instead of row numbers.
 
