@@ -314,10 +314,9 @@ class Repository:
         :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
         :return: DataFrame
         """
-        if branch is None:
-            branch = self.default_branch
+        resolved_branch = self.default_branch if branch is None else branch
 
-        logger.info(f"Starting hours estimation for branch '{branch}'")
+        logger.info(f"Starting hours estimation for branch '{resolved_branch}'")
 
         max_diff_in_minutes = grouping_window * 60.0
         first_commit_addition_in_minutes = single_commit_hours * 60.0
@@ -1323,11 +1322,10 @@ class Repository:
             If both ignore_globs and include_globs are provided, files must match an include
             pattern and not match any ignore patterns to be included.
         """
-        if branch is None:
-            branch = self.default_branch
+        resolved_branch = self.default_branch if branch is None else branch
 
         logger.info(
-            f"Starting cumulative blame calculation for branch '{branch}'. "
+            f"Starting cumulative blame calculation for branch '{resolved_branch}'. "
             f"Limit: {limit}, Skip: {skip}, Num Datapoints: {num_datapoints}, "
             f"Committer: {committer}, Skip Broken: {skip_broken}"
         )
@@ -1345,7 +1343,7 @@ class Repository:
         logger.debug("Fetching all committers to pre-populate columns...")
         committers = set()
         try:
-            for commit in self.repo.iter_commits(branch):
+            for commit in self.repo.iter_commits(resolved_branch):
                 try:
                     # Determine the name based on the 'committer' flag
                     name = commit.committer.name if committer else commit.author.name
@@ -1455,7 +1453,7 @@ class Repository:
             logger.error(f"Error processing cumulative blame data: {e}")
             return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
-        logger.info(f"Finished cumulative blame calculation for '{branch}'. Result shape: {revs.shape}")
+        logger.info(f"Finished cumulative blame calculation for '{resolved_branch}'. Result shape: {revs.shape}")
         return revs
 
     @multicache(
@@ -1504,11 +1502,10 @@ class Repository:
         Returns:
             DataFrame: DataFrame with blame information
         """
-        if branch is None:
-            branch = self.default_branch
+        resolved_branch = self.default_branch if branch is None else branch
 
         logger.info(
-            f"Starting parallel cumulative blame for branch '{branch}'. "
+            f"Starting parallel cumulative blame for branch '{resolved_branch}'. "
             f"Limit: {limit}, Skip: {skip}, Num Datapoints: {num_datapoints}, "
             f"Committer: {committer}, Workers: {workers}, Skip Broken: {skip_broken}"
         )
@@ -1522,7 +1519,7 @@ class Repository:
 
         # If revs is empty, return an empty DataFrame with proper index
         if revs.empty:
-            logger.warning(f"No valid revisions found for branch '{branch}'. Returning empty DataFrame.")
+            logger.warning(f"No valid revisions found for branch '{resolved_branch}'. Returning empty DataFrame.")
             return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
 
         logger.debug(f"Prepared {len(revs)} revisions for parallel processing.")
@@ -2395,9 +2392,6 @@ class Repository:
             f"Ignore: {ignore_globs}, Include: {include_globs}"
         )
 
-        if branch is None:
-            branch = self.default_branch
-
         logger.debug("Fetching commit history for punchcard...")
         ch = self.commit_history(
             branch=branch,
@@ -2426,7 +2420,8 @@ class Repository:
             for col in ["lines", "insertions", "deletions", "net"]:
                 punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
 
-        logger.info(f"Finished generating punchcard data for '{branch}'. Result shape: {punch_card.shape}")
+        resolved_branch = self.default_branch if branch is None else branch
+        logger.info(f"Finished generating punchcard data for '{resolved_branch}'. Result shape: {punch_card.shape}")
         return punch_card
 
     @multicache(key_prefix="has_branch", key_list=["branch"])
@@ -2880,7 +2875,7 @@ class Repository:
                 - 'file_detail': Load file details
                 - 'list_files': Load file listing
                 - 'file_change_rates': Load file change statistics
-            **kwargs: Additional keyword arguments to pass to the methods.
+            **kwargs: Additional keyword arguments to pass to compatible methods unchanged.
                 Common arguments include:
                 - branch: Branch to analyze (default: repository's default branch)
                 - limit: Limit number of commits to analyze
@@ -2947,12 +2942,7 @@ class Repository:
                 # Handle special cases for method arguments
                 method_kwargs = kwargs.copy()
 
-                # For methods that might need specific arguments
-                if method_name in ["commit_history", "file_change_rates"]:
-                    # Set reasonable defaults if not provided
-                    if "limit" not in method_kwargs:
-                        method_kwargs["limit"] = 100  # Reasonable default for cache warming
-                elif method_name == "list_files":
+                if method_name == "list_files":
                     # list_files doesn't accept limit parameter, remove it if present
                     method_kwargs.pop("limit", None)
 
