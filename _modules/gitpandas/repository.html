@@ -2672,6 +2672,7 @@
         <span class="p">)</span>
 
         <span class="c1"># add in the date fields</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># Avoid mutating a cached commit_history frame</span>
         <span class="n">ch</span><span class="p">[</span><span class="s2">&quot;day_of_week&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">weekday</span><span class="p">())</span>
         <span class="n">ch</span><span class="p">[</span><span class="s2">&quot;hour_of_day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ch</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
 
