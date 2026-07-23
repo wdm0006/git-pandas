@@ -509,10 +509,9 @@
 <span class="sd">        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.</span>
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
+        <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting hours estimation for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting hours estimation for branch &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
         <span class="n">max_diff_in_minutes</span> <span class="o">=</span> <span class="n">grouping_window</span> <span class="o">*</span> <span class="mf">60.0</span>
         <span class="n">first_commit_addition_in_minutes</span> <span class="o">=</span> <span class="n">single_commit_hours</span> <span class="o">*</span> <span class="mf">60.0</span>
@@ -1539,11 +1538,10 @@
 <span class="sd">            If both ignore_globs and include_globs are provided, files must match an include</span>
 <span class="sd">            pattern and not match any ignore patterns to be included.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
+        <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Starting cumulative blame calculation for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Starting cumulative blame calculation for branch &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Limit: </span><span class="si">{</span><span class="n">limit</span><span class="si">}</span><span class="s2">, Skip: </span><span class="si">{</span><span class="n">skip</span><span class="si">}</span><span class="s2">, Num Datapoints: </span><span class="si">{</span><span class="n">num_datapoints</span><span class="si">}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Committer: </span><span class="si">{</span><span class="n">committer</span><span class="si">}</span><span class="s2">, Skip Broken: </span><span class="si">{</span><span class="n">skip_broken</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
@@ -1561,7 +1559,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fetching all committers to pre-populate columns...&quot;</span><span class="p">)</span>
         <span class="n">committers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">branch</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">iter_commits</span><span class="p">(</span><span class="n">resolved_branch</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># Determine the name based on the &#39;committer&#39; flag</span>
                     <span class="n">name</span> <span class="o">=</span> <span class="n">commit</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">committer</span> <span class="k">else</span> <span class="n">commit</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span>
@@ -1671,7 +1669,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing cumulative blame data: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([])</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">))</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished cumulative blame calculation for &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. Result shape: </span><span class="si">{</span><span class="n">revs</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished cumulative blame calculation for &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;. Result shape: </span><span class="si">{</span><span class="n">revs</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">revs</span></div>
 
 
@@ -1723,11 +1721,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame: DataFrame with blame information</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
+        <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Starting parallel cumulative blame for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Starting parallel cumulative blame for branch &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Limit: </span><span class="si">{</span><span class="n">limit</span><span class="si">}</span><span class="s2">, Skip: </span><span class="si">{</span><span class="n">skip</span><span class="si">}</span><span class="s2">, Num Datapoints: </span><span class="si">{</span><span class="n">num_datapoints</span><span class="si">}</span><span class="s2">, &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;Committer: </span><span class="si">{</span><span class="n">committer</span><span class="si">}</span><span class="s2">, Workers: </span><span class="si">{</span><span class="n">workers</span><span class="si">}</span><span class="s2">, Skip Broken: </span><span class="si">{</span><span class="n">skip_broken</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
@@ -1741,7 +1738,7 @@
 
         <span class="c1"># If revs is empty, return an empty DataFrame with proper index</span>
         <span class="k">if</span> <span class="n">revs</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No valid revisions found for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. Returning empty DataFrame.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No valid revisions found for branch &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;. Returning empty DataFrame.&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([])</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">))</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prepared </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">revs</span><span class="p">)</span><span class="si">}</span><span class="s2"> revisions for parallel processing.&quot;</span><span class="p">)</span>
@@ -2659,9 +2656,6 @@
             <span class="sa">f</span><span class="s2">&quot;Ignore: </span><span class="si">{</span><span class="n">ignore_globs</span><span class="si">}</span><span class="s2">, Include: </span><span class="si">{</span><span class="n">include_globs</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
-
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fetching commit history for punchcard...&quot;</span><span class="p">)</span>
         <span class="n">ch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
             <span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span>
@@ -2690,7 +2684,8 @@
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="s2">&quot;insertions&quot;</span><span class="p">,</span> <span class="s2">&quot;deletions&quot;</span><span class="p">,</span> <span class="s2">&quot;net&quot;</span><span class="p">]:</span>
                 <span class="n">punch_card</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">punch_card</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">/</span> <span class="n">punch_card</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="o">*</span> <span class="n">normalize</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished generating punchcard data for &#39;</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&#39;. Result shape: </span><span class="si">{</span><span class="n">punch_card</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished generating punchcard data for &#39;</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">&#39;. Result shape: </span><span class="si">{</span><span class="n">punch_card</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">punch_card</span></div>
 
 
@@ -3171,7 +3166,7 @@
 <span class="sd">                - &#39;file_detail&#39;: Load file details</span>
 <span class="sd">                - &#39;list_files&#39;: Load file listing</span>
 <span class="sd">                - &#39;file_change_rates&#39;: Load file change statistics</span>
-<span class="sd">            **kwargs: Additional keyword arguments to pass to the methods.</span>
+<span class="sd">            **kwargs: Additional keyword arguments to pass to compatible methods unchanged.</span>
 <span class="sd">                Common arguments include:</span>
 <span class="sd">                - branch: Branch to analyze (default: repository&#39;s default branch)</span>
 <span class="sd">                - limit: Limit number of commits to analyze</span>
@@ -3238,12 +3233,7 @@
                 <span class="c1"># Handle special cases for method arguments</span>
                 <span class="n">method_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-                <span class="c1"># For methods that might need specific arguments</span>
-                <span class="k">if</span> <span class="n">method_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;commit_history&quot;</span><span class="p">,</span> <span class="s2">&quot;file_change_rates&quot;</span><span class="p">]:</span>
-                    <span class="c1"># Set reasonable defaults if not provided</span>
-                    <span class="k">if</span> <span class="s2">&quot;limit&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">method_kwargs</span><span class="p">:</span>
-                        <span class="n">method_kwargs</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Reasonable default for cache warming</span>
-                <span class="k">elif</span> <span class="n">method_name</span> <span class="o">==</span> <span class="s2">&quot;list_files&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">method_name</span> <span class="o">==</span> <span class="s2">&quot;list_files&quot;</span><span class="p">:</span>
                     <span class="c1"># list_files doesn&#39;t accept limit parameter, remove it if present</span>
                     <span class="n">method_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
