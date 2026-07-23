@@ -37,6 +37,7 @@ def _branches_func(r):
 
 def _revs_func(repo, branch, limit, skip, num_datapoints):
     revs = repo.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints)
+    revs = revs.copy()  # Avoid SettingWithCopyWarning
     revs["repository"] = repo.repo_name
     return revs
 
@@ -436,6 +437,7 @@ class ProjectDirectory:
                     include_globs=include_globs,
                 )
                 if not ch.empty:
+                    ch = ch.copy()  # Avoid SettingWithCopyWarning
                     ch["repository"] = repo.repo_name
                     # Reset the index to make date a regular column before concatenation
                     ch = ch.reset_index()
@@ -692,6 +694,7 @@ class ProjectDirectory:
                         committer=committer,
                         rev=rev,
                     )
+                    df = df.copy()  # Avoid SettingWithCopyWarning
                     df["repository"] = repo.repo_name
                 else:
                     chunk = repo.file_detail(

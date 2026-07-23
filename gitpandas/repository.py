@@ -2408,6 +2408,7 @@ class Repository:
         )
 
         # add in the date fields
+        ch = ch.copy()  # Avoid mutating a cached commit_history frame
         ch["day_of_week"] = ch.index.map(lambda x: x.weekday())
         ch["hour_of_day"] = ch.index.map(lambda x: x.hour)
 
