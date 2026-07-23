@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
+import pandas as pd
 from git import Repo
 
 from gitpandas import Repository
@@ -84,7 +85,7 @@ class TestWarmCache(unittest.TestCase):
             self.assertEqual(result["errors"], [])
 
             # Verify methods were called with appropriate arguments
-            mock_commit_history.assert_called_once_with(limit=100)
+            mock_commit_history.assert_called_once_with()
             mock_branches.assert_called_once()
             mock_tags.assert_called_once()
             mock_blame.assert_called_once()
@@ -152,14 +153,13 @@ class TestWarmCache(unittest.TestCase):
             self.assertTrue(result["success"])
             mock_commit_history.assert_called_once_with(limit=50, branch="main", ignore_globs=["*.log"])
 
-    def test_warm_cache_special_method_defaults(self):
-        """Test that special methods get appropriate default arguments."""
+    def test_warm_cache_does_not_add_method_defaults(self):
+        """Test that cache warming preserves the method's own defaults."""
         with patch.object(self.repository, "file_change_rates", return_value=Mock()) as mock_file_change_rates:
             result = self.repository.warm_cache(methods=["file_change_rates"])
 
             self.assertTrue(result["success"])
-            # Should get default limit of 100 for file_change_rates
-            mock_file_change_rates.assert_called_once_with(limit=100)
+            mock_file_change_rates.assert_called_once_with()
 
     def test_warm_cache_cache_entries_tracking(self):
         """Test that cache entries created are properly tracked."""
@@ -244,6 +244,60 @@ class TestWarmCacheIntegration(unittest.TestCase):
 
         # Verify cache has entries
         self.assertGreater(len(cache._cache), 0)
+
+    def test_default_warm_cache_key_is_reused_by_history_and_punchcard(self):
+        repo_path = self._create_repository()
+        cache = EphemeralCache(max_keys=50)
+        repository = Repository(working_dir=repo_path, cache_backend=cache, default_branch="main")
+
+        repository.warm_cache(methods=["commit_history"])
+        history_keys = self._commit_history_keys(cache)
+
+        repository.commit_history()
+        self.assertEqual(self._commit_history_keys(cache), history_keys)
+
+        repository.punchcard()
+        self.assertEqual(self._commit_history_keys(cache), history_keys)
+
+    def test_explicit_limit_warms_matching_commit_history_key(self):
+        repo_path = self._create_repository()
+        cache = EphemeralCache(max_keys=50)
+        repository = Repository(working_dir=repo_path, cache_backend=cache, default_branch="main")
+
+        repository.warm_cache(methods=["commit_history"], limit=50)
+        history_keys = self._commit_history_keys(cache)
+
+        self.assertEqual(len(history_keys), 1)
+        self.assertIn("||50||", next(iter(history_keys)))
+        repository.commit_history(limit=50)
+        self.assertEqual(self._commit_history_keys(cache), history_keys)
+
+    def test_branch_passthrough_preserves_derived_method_results(self):
+        repo_path = self._create_repository()
+
+        for cache_backend in (None, EphemeralCache(max_keys=50)):
+            repository = Repository(working_dir=repo_path, cache_backend=cache_backend, default_branch="main")
+            for method_name in ("hours_estimate", "punchcard", "cumulative_blame"):
+                method = getattr(repository, method_name)
+                pd.testing.assert_frame_equal(method(), method(branch="main"))
+
+    def _create_repository(self):
+        repo_path = os.path.join(self.temp_dir, "cache_key_repo")
+        os.makedirs(repo_path)
+        git_repo = Repo.init(repo_path)
+        git_repo.config_writer().set_value("user", "name", "Test User").release()
+        git_repo.config_writer().set_value("user", "email", "test@example.com").release()
+        git_repo.git.checkout("-b", "main")
+        test_file = os.path.join(repo_path, "test.txt")
+        with open(test_file, "w") as f:
+            f.write("test content")
+        git_repo.index.add(["test.txt"])
+        git_repo.index.commit("Initial commit")
+        return repo_path
+
+    @staticmethod
+    def _commit_history_keys(cache):
+        return {key for key in cache._cache if key.startswith("commit_history||")}
 
     def test_warm_cache_disk_cache(self):
         """Test cache warming with DiskCache."""
