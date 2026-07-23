@@ -535,10 +535,6 @@
             <span class="n">commits</span> <span class="o">=</span> <span class="n">ch</span><span class="p">[</span><span class="n">ch</span><span class="p">[</span><span class="n">by</span><span class="p">]</span> <span class="o">==</span> <span class="n">person</span><span class="p">]</span>
             <span class="n">commits_ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="mf">10e-10</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">commits</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">())]</span>
 
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commits_ts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">ds</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">person</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-                <span class="k">continue</span>
-
             <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">commits_ts</span><span class="p">):</span>
                 <span class="n">next_ts</span> <span class="o">=</span> <span class="n">commits_ts</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
                 <span class="n">diff_in_minutes</span> <span class="o">=</span> <span class="n">next_ts</span> <span class="o">-</span> <span class="n">date</span>
@@ -548,7 +544,7 @@
                 <span class="k">return</span> <span class="n">first_commit_addition_in_minutes</span> <span class="o">/</span> <span class="mf">60.0</span>
 
             <span class="n">hours</span> <span class="o">=</span> <span class="p">[</span><span class="n">estimate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">commits_ts</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">commits_ts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
-            <span class="n">hours</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hours</span><span class="p">)</span>
+            <span class="n">hours</span> <span class="o">=</span> <span class="n">single_commit_hours</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hours</span><span class="p">)</span>
             <span class="n">ds</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">person</span><span class="p">,</span> <span class="n">hours</span><span class="p">])</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">by</span><span class="p">,</span> <span class="s2">&quot;hours&quot;</span><span class="p">])</span>
