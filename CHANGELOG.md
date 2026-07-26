@@ -3,6 +3,11 @@ Unreleased
 
 ## Bug Fixes
 
+### MCP Server Serialization
+ * **FIXED**: `serialize_pandas_object()` dropped every non-datetime DataFrame index during `orient="records"` conversion, so index-carried identity disappeared from tool results (e.g. a blame-shaped frame serialized as `[{"loc": 7}]` without the `committer`/`author` it belongs to). Named index levels, including `MultiIndex` levels such as `file` and `(tag_date, commit_date)`, are now materialized as columns.
+ * **FIXED**: Serialization mutated the DataFrame it was given — rewriting a `DatetimeIndex` into formatted strings and replacing datetime columns in place — which corrupted shared cached frames. Serialization now works on a copy and leaves its input untouched.
+ * **FIXED**: Serializing a frame that keeps a column and index level of the same name (e.g. `file_change_history()`'s `date`) raised `ValueError: cannot insert date, already exists`.
+
 ### Hours Estimation
  * **FIXED**: `Repository.hours_estimate()` now includes the first-commit allowance, increasing estimates by `single_commit_hours` per contributor and giving single-commit contributors a non-zero estimate.
 
