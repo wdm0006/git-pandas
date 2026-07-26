@@ -163,19 +163,30 @@ def serialize_pandas_object(obj: Any) -> Any:
         JSON-serializable version of the object
     """
     if isinstance(obj, pd.DataFrame):
-        # Handle datetime index/columns
-        if pd.api.types.is_datetime64_any_dtype(obj.index):
-            obj.index = obj.index.strftime("%Y-%m-%dT%H:%M:%SZ")
-            obj = obj.reset_index()
+        # Work on a copy: results may come from the shared repository cache.
+        df = obj.copy()
 
-        for col in obj.select_dtypes(include=["datetime64[ns, UTC]", "datetime64[ns]", "datetimetz"]).columns:
-            if col in obj.columns:
-                obj[col] = obj[col].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        # Named index levels carry identity (committer, file, tag_date, ...) that
+        # orient="records" would otherwise drop.
+        index_names = list(df.index.names)
+        named_levels = [i for i, name in enumerate(index_names) if name is not None and name not in df.columns]
+        if named_levels:
+            df = df.reset_index(level=named_levels)
+        elif (
+            all(name is None for name in index_names)
+            and not isinstance(df.index, pd.MultiIndex)
+            and pd.api.types.is_datetime64_any_dtype(df.index)
+        ):
+            df = df.reset_index()
 
-        return obj.to_dict(orient="records")
+        for col in df.select_dtypes(include=["datetime64[ns, UTC]", "datetime64[ns]", "datetimetz"]).columns:
+            df[col] = df[col].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        return df.to_dict(orient="records")
 
     elif isinstance(obj, pd.Series):
         if pd.api.types.is_datetime64_any_dtype(obj.index):
+            obj = obj.copy()
             obj.index = obj.index.strftime("%Y-%m-%dT%H:%M:%SZ")
         return obj.to_dict()
 
