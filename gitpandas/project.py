@@ -1547,6 +1547,8 @@ class GitHubProfile(ProjectDirectory):
     Note:
         This class uses the GitHub API to discover repositories. It does not require
         authentication for public repositories, but API rate limits may apply.
+        If any page of repository discovery fails, the profile is initialized empty
+        rather than using incomplete results.
     """
 
     def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False):
@@ -1561,15 +1563,19 @@ class GitHubProfile(ProjectDirectory):
         """
         logger.info(f"Initializing GitHubProfile for user '{username}'.")
         # pull the git urls from github's api
-        uri = f"https://api.github.com/users/{username}/repos"
-        logger.debug(f"Fetching repositories from GitHub API: {uri}")
+        next_uri = f"https://api.github.com/users/{username}/repos"
+        params = {"per_page": 100}
+        json_data = []
         try:
-            data = requests.get(uri)
-            data.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-            json_data = data.json()
+            while next_uri is not None:
+                logger.debug(f"Fetching repositories from GitHub API: {next_uri}")
+                data = requests.get(next_uri, params=params)
+                data.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+                json_data.extend(data.json())
+                next_uri = data.links.get("next", {}).get("url")
+                params = None
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to fetch GitHub repositories for user {username}: {e}")
-            # Initialize with empty list if API call fails
             ProjectDirectory.__init__(self, working_dir=[], ignore_repos=ignore_repos, verbose=verbose)
             return
 
