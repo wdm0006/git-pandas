@@ -1801,6 +1801,8 @@
 <span class="sd">    Note:</span>
 <span class="sd">        This class uses the GitHub API to discover repositories. It does not require</span>
 <span class="sd">        authentication for public repositories, but API rate limits may apply.</span>
+<span class="sd">        If any page of repository discovery fails, the profile is initialized empty</span>
+<span class="sd">        rather than using incomplete results.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">ignore_forks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_repos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -1815,15 +1817,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initializing GitHubProfile for user &#39;</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="c1"># pull the git urls from github&#39;s api</span>
-        <span class="n">uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.github.com/users/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/repos&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching repositories from GitHub API: </span><span class="si">{</span><span class="n">uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">next_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://api.github.com/users/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/repos&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;per_page&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
+        <span class="n">json_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Raise HTTPError for bad responses (4xx or 5xx)</span>
-            <span class="n">json_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">while</span> <span class="n">next_uri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching repositories from GitHub API: </span><span class="si">{</span><span class="n">next_uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">next_uri</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Raise HTTPError for bad responses (4xx or 5xx)</span>
+                <span class="n">json_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+                <span class="n">next_uri</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch GitHub repositories for user </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="c1"># Initialize with empty list if API call fails</span>
             <span class="n">ProjectDirectory</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">working_dir</span><span class="o">=</span><span class="p">[],</span> <span class="n">ignore_repos</span><span class="o">=</span><span class="n">ignore_repos</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
             <span class="k">return</span>
 
