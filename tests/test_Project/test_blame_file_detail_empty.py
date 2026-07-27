@@ -64,7 +64,7 @@ class TestBlameFileDetailAllReposFail:
 
         assert isinstance(blame_df, pd.DataFrame)
         assert blame_df.empty
-        assert list(blame_df.columns) == ["committer", "file", "loc"]
+        assert list(blame_df.columns) == ["committer", "file", "repository", "loc"]
 
     def test_file_detail_all_repos_fail(self, temp_repos):
         """file_detail() returns an empty DataFrame when every repo raises GitCommandError."""

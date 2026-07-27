@@ -596,9 +596,10 @@ class ProjectDirectory:
                     - committer/author (str): Name of the committer/author
                     - loc (int): Lines of code attributed to that person
                 If by='file':
-                    - committer/author (str): Name of the committer/author
-                    - file (str): File path
+                    Indexed by (committer/author, file, repository) with column:
                     - loc (int): Lines of code attributed to that person in that file
+                    The repository is part of the grouping because file paths are
+                    repository-relative and would otherwise collide across repositories.
 
         Note:
             Results are sorted by lines of code in descending order.
@@ -626,30 +627,25 @@ class ProjectDirectory:
 
         groupby_column = "committer" if committer else "author"
 
+        # File paths are repository-relative, so the repository has to stay in the
+        # grouping or same-named files from different repos get summed together.
+        group_keys = [groupby_column, "file", "repository"] if by == "file" else [groupby_column]
+        empty_columns = [*group_keys, "loc"]
+
         if df is None:
             # No repos, or every repo raised GitCommandError — return an empty
             # DataFrame matching the normal output shape.
-            columns = [groupby_column, "file", "loc"] if by == "file" else [groupby_column, "loc"]
-            return pd.DataFrame(columns=columns)
+            return pd.DataFrame(columns=empty_columns)
 
-        if groupby_column not in df.columns:
+        missing = [column for column in group_keys if column not in df.columns]
+        if missing:
             logger.warning(
-                f"Expected column '{groupby_column}' not found in blame data. Available columns: {df.columns.tolist()}"
+                f"Expected column(s) {missing} not found in blame data. Available columns: {df.columns.tolist()}"
             )
-            # Return empty DataFrame with proper structure if column is missing
-            columns = [groupby_column, "file", "loc"] if by == "file" else [groupby_column, "loc"]
-            return pd.DataFrame(columns=columns)
+            # Return empty DataFrame with proper structure if a grouping column is missing
+            return pd.DataFrame(columns=empty_columns)
 
-        if committer:
-            if by == "repository":
-                df = df.groupby("committer")["loc"].sum().to_frame()
-            elif by == "file":
-                df = df.groupby(["committer", "file"])["loc"].sum().to_frame()
-        else:
-            if by == "repository":
-                df = df.groupby("author")["loc"].sum().to_frame()
-            elif by == "file":
-                df = df.groupby(["author", "file"])["loc"].sum().to_frame()
+        df = df.groupby(group_keys)["loc"].sum().to_frame()
 
         df = df.sort_values(by=["loc"], ascending=False)
         logger.info(f"Calculated blame with {len(df)} rows.")
