@@ -12,7 +12,6 @@ import math
 import os
 import warnings
 
-import numpy as np
 import pandas as pd
 import requests
 from git import GitCommandError
@@ -1161,7 +1160,10 @@ class ProjectDirectory:
         if by is not None:
             aggs.append(by)
 
-        punch_card = df.groupby(aggs).agg({"lines": np.sum, "insertions": np.sum, "deletions": np.sum, "net": np.sum})
+        if df.empty:
+            return pd.DataFrame(columns=aggs + ["lines", "insertions", "deletions", "net"])
+
+        punch_card = df.groupby(aggs).agg({"lines": "sum", "insertions": "sum", "deletions": "sum", "net": "sum"})
         punch_card.reset_index(inplace=True)
 
         # normalize all cols
