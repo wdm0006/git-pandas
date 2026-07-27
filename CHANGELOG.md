@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### File Ownership
+ * **FIXED**: `Repository.file_owner()` always read the commit's *committer* regardless of the `committer` flag, so `committer=False` returned the top committer under a column labelled `author`. It now selects the identity to match the flag, matching `Repository.blame()`. This also fixes `Repository.file_detail(committer=False)` and `ProjectDirectory.file_detail(committer=False)`, whose `file_owner` column reported the committer on rebased, cherry-picked, squash-merged, or web-UI-committed history.
+
 ### MCP Server Serialization
  * **FIXED**: `serialize_pandas_object()` dropped every non-datetime DataFrame index during `orient="records"` conversion, so index-carried identity disappeared from tool results (e.g. a blame-shaped frame serialized as `[{"loc": 7}]` without the `committer`/`author` it belongs to). Named index levels, including `MultiIndex` levels such as `file` and `(tag_date, commit_date)`, are now materialized as columns.
  * **FIXED**: Serialization mutated the DataFrame it was given — rewriting a `DatetimeIndex` into formatted strings and replacing datetime columns in place — which corrupted shared cached frames. Serialization now works on a copy and leaves its input untouched.

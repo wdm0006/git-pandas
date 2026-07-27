@@ -2311,7 +2311,7 @@ class Repository:
             blame = self.repo.blame(rev, os.path.join(self.git_dir, filename))
             blame = (
                 DataFrame(
-                    [[x[0].committer.name, len(x[1])] for x in blame],
+                    [[(x[0].committer if committer else x[0].author).name, len(x[1])] for x in blame],
                     columns=[cm, "loc"],
                 )
                 .groupby(cm)
