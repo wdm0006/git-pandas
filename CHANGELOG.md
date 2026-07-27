@@ -20,6 +20,11 @@ Unreleased
 ### Project Blame Aggregation
  * **FIXED**: `ProjectDirectory.blame()` now preserves committer/author and file grouping keys when combining multiple repositories. Contributors are aggregated by name across repositories, `blame(by="file")` no longer raises `KeyError`, and project-level bus factors are calculated from contributors instead of row numbers.
 
+### Project File Blame Aggregation
+ * **FIXED**: `ProjectDirectory.blame(by="file")` grouped on `(committer/author, file)` only. Because `file` is a repository-relative path, files sharing a path across repositories (`README.md`, `setup.py`, `__init__.py`, ...) were silently summed into a single row reporting a line count that matched neither repository, and the originating repository was discarded entirely. The repository is now part of the grouping, so the result is indexed by `(committer/author, file, repository)` — matching the identification that `file_detail()`, `file_change_rates()`, and `bus_factor(by="file")` already carry. `blame(by="repository")` is unchanged; aggregating a contributor across repositories there remains correct.
+
+**Note**: This adds an index level to `blame(by="file")` output. Code that indexes that result by `(committer, file)` needs updating.
+
 ### Cache Correctness
  * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
    - `Repository(working_dir=<master-only repo>, cache_backend=...)` raising `ValueError: Could not detect default branch` — the internal `has_branch("main")` / `has_branch("master")` probes shared one key.
