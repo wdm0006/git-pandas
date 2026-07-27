@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### Project Punchcard Aggregation
+ * **FIXED**: `ProjectDirectory.punchcard()` now returns a well-formed empty DataFrame when no repository yields commit data and avoids pandas aggregation `FutureWarning`s.
+
 ### File Ownership
  * **FIXED**: `Repository.file_owner()` always read the commit's *committer* regardless of the `committer` flag, so `committer=False` returned the top committer under a column labelled `author`. It now selects the identity to match the flag, matching `Repository.blame()`. This also fixes `Repository.file_detail(committer=False)` and `ProjectDirectory.file_detail(committer=False)`, whose `file_owner` column reported the committer on rebased, cherry-picked, squash-merged, or web-UI-committed history.
 
