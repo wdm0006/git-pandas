@@ -550,11 +550,10 @@ Defaults to True.</p></li>
 <li><p>loc (int): Lines of code attributed to that person</p></li>
 </ul>
 </dd>
-<dt>If by=’file’:</dt><dd><ul class="simple">
-<li><p>committer/author (str): Name of the committer/author</p></li>
-<li><p>file (str): File path</p></li>
-<li><p>loc (int): Lines of code attributed to that person in that file</p></li>
-</ul>
+<dt>If by=’file’:</dt><dd><p>Indexed by (committer/author, file, repository) with column:
+- loc (int): Lines of code attributed to that person in that file
+The repository is part of the grouping because file paths are
+repository-relative and would otherwise collide across repositories.</p>
 </dd>
 </dl>
 </dd>

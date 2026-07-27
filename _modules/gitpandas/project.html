@@ -803,9 +803,10 @@
 <span class="sd">                    - committer/author (str): Name of the committer/author</span>
 <span class="sd">                    - loc (int): Lines of code attributed to that person</span>
 <span class="sd">                If by=&#39;file&#39;:</span>
-<span class="sd">                    - committer/author (str): Name of the committer/author</span>
-<span class="sd">                    - file (str): File path</span>
+<span class="sd">                    Indexed by (committer/author, file, repository) with column:</span>
 <span class="sd">                    - loc (int): Lines of code attributed to that person in that file</span>
+<span class="sd">                    The repository is part of the grouping because file paths are</span>
+<span class="sd">                    repository-relative and would otherwise collide across repositories.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Results are sorted by lines of code in descending order.</span>
@@ -833,30 +834,25 @@
 
         <span class="n">groupby_column</span> <span class="o">=</span> <span class="s2">&quot;committer&quot;</span> <span class="k">if</span> <span class="n">committer</span> <span class="k">else</span> <span class="s2">&quot;author&quot;</span>
 
+        <span class="c1"># File paths are repository-relative, so the repository has to stay in the</span>
+        <span class="c1"># grouping or same-named files from different repos get summed together.</span>
+        <span class="n">group_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;repository&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">]</span>
+        <span class="n">empty_columns</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">group_keys</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">]</span>
+
         <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># No repos, or every repo raised GitCommandError — return an empty</span>
             <span class="c1"># DataFrame matching the normal output shape.</span>
-            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">empty_columns</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">groupby_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">group_keys</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected column &#39;</span><span class="si">{</span><span class="n">groupby_column</span><span class="si">}</span><span class="s2">&#39; not found in blame data. Available columns: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected column(s) </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2"> not found in blame data. Available columns: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-            <span class="c1"># Return empty DataFrame with proper structure if column is missing</span>
-            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="n">groupby_column</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+            <span class="c1"># Return empty DataFrame with proper structure if a grouping column is missing</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">empty_columns</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">committer</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;repository&quot;</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;committer&quot;</span><span class="p">)[</span><span class="s2">&quot;loc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;committer&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">])[</span><span class="s2">&quot;loc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;repository&quot;</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;author&quot;</span><span class="p">)[</span><span class="s2">&quot;loc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;author&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">])[</span><span class="s2">&quot;loc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_keys</span><span class="p">)[</span><span class="s2">&quot;loc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;loc&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calculated blame with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows.&quot;</span><span class="p">)</span>
