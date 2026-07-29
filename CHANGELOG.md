@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### File Change History
+ * **FIXED**: `Repository.file_change_history()` now reports actual per-file insertions and deletions, including root commits, which restores non-zero churn metrics in `file_change_rates()`.
+
 ### Project Punchcard Aggregation
  * **FIXED**: `ProjectDirectory.punchcard()` now returns a well-formed empty DataFrame when no repository yields commit data and avoids pandas aggregation `FutureWarning`s.
 

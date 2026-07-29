@@ -685,7 +685,11 @@ class Repository:
 
         # Process each file in the commit
         try:
-            diffs = commit.diff(parent) if parent else commit.diff(git.NULL_TREE)
+            diffs = (
+                parent.diff(commit, create_patch=True)
+                if parent
+                else commit.diff(git.NULL_TREE, create_patch=True)
+            )
 
             for diff in diffs:
                 try:
@@ -706,30 +710,22 @@ class Repository:
                     insertions = 0
                     deletions = 0
                     try:
-                        # Check if diff has stats attribute first
-                        if hasattr(diff, "stats"):
-                            stats = diff.stats
-                            insertions = stats.get("insertions", 0)
-                            deletions = stats.get("deletions", 0)
+                        diff_content = diff.diff
+                        # Check if diff.diff is bytes or string
+                        if isinstance(diff_content, bytes):
+                            diff_lines = diff_content.decode("utf-8", errors="replace").splitlines()
+                        elif isinstance(diff_content, str):
+                            diff_lines = diff_content.splitlines()
                         else:
-                            # Alternative approach for newer GitPython versions where stats may not be available
-                            # Calculate insertions and deletions manually from the diff
-                            diff_content = diff.diff
-                            # Check if diff.diff is bytes or string
-                            if isinstance(diff_content, bytes):
-                                diff_lines = diff_content.decode("utf-8", errors="replace").splitlines()
-                            elif isinstance(diff_content, str):
-                                diff_lines = diff_content.splitlines()
-                            else:
-                                # If it's neither bytes nor string, we can't process it
-                                logger.warning(f"Diff content has unexpected type: {type(diff_content)}")
-                                continue
+                            # If it's neither bytes nor string, we can't process it
+                            logger.warning(f"Diff content has unexpected type: {type(diff_content)}")
+                            continue
 
-                            for line in diff_lines:
-                                if line.startswith("+") and not line.startswith("+++"):
-                                    insertions += 1
-                                elif line.startswith("-") and not line.startswith("---"):
-                                    deletions += 1
+                        for line in diff_lines:
+                            if line.startswith("+") and not line.startswith("+++"):
+                                insertions += 1
+                            elif line.startswith("-") and not line.startswith("---"):
+                                deletions += 1
                     except (ValueError, AttributeError, KeyError, UnicodeDecodeError) as e:
                         if skip_broken:
                             logger.warning(f"Error getting diff stats for {path} in commit {hexsha}: {e}")
