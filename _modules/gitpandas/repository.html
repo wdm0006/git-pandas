@@ -1544,6 +1544,8 @@
 
         <span class="c1"># Pass skip_broken and force_refresh to ensure robustness when getting revisions</span>
         <span class="n">revs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">revs</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="n">num_datapoints</span><span class="p">,</span> <span class="n">skip_broken</span><span class="o">=</span><span class="n">skip_broken</span><span class="p">)</span>
+        <span class="c1"># revs() may be served from the cache by reference, and this method writes into the frame</span>
+        <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># Check immediately after calling revs()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">revs</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">&quot;rev&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
