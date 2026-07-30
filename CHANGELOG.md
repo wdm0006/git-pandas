@@ -3,6 +3,9 @@ Unreleased
 
 ## Bug Fixes
 
+### Cumulative Blame
+ * **FIXED**: `Repository.cumulative_blame()` and `parallel_cumulative_blame()` no longer duplicate rows when multiple commits share a timestamp.
+
 ### File Change History
  * **FIXED**: `Repository.file_change_history()` now reports actual per-file insertions and deletions, including root commits, which restores non-zero churn metrics in `file_change_rates()`.
 

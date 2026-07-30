@@ -1426,9 +1426,9 @@ class Repository:
                     del revs[col]
 
             # drop 0 rows
-            keep_idx = []
+            keep_positions = []
             committers = [x for x in revs.columns.values if x != "date"]
-            for idx, row in revs.iterrows():
+            for position, (_, row) in enumerate(revs.iterrows()):
                 # Convert any string values to numeric, treating non-numeric strings as 0
                 row_sum = 0
                 for x in committers:
@@ -1438,13 +1438,13 @@ class Repository:
                     except (ValueError, TypeError):
                         continue
                 if row_sum > 0:
-                    keep_idx.append(idx)
+                    keep_positions.append(position)
 
-            logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
+            logger.debug(f"Filtering complete. Kept {len(keep_positions)} non-zero rows.")
 
             # Only filter if we have rows to keep
-            if keep_idx:
-                revs = revs.loc[keep_idx]
+            if keep_positions:
+                revs = revs.iloc[keep_positions]
         except Exception as e:
             logger.error(f"Error processing cumulative blame data: {e}")
             return pd.DataFrame(index=pd.to_datetime([]).tz_localize("UTC"))
@@ -1548,9 +1548,9 @@ class Repository:
                     del revs[col]
 
             # drop 0 rows
-            keep_idx = []
+            keep_positions = []
             committers = [x for x in revs.columns.values if x != "date"]
-            for idx, row in revs.iterrows():
+            for position, (_, row) in enumerate(revs.iterrows()):
                 # Convert any string values to numeric, treating non-numeric strings as 0
                 row_sum = 0
                 for x in committers:
@@ -1560,13 +1560,13 @@ class Repository:
                     except (ValueError, TypeError):
                         continue
                 if row_sum > 0:
-                    keep_idx.append(idx)
+                    keep_positions.append(position)
 
-            logger.debug(f"Filtering complete. Kept {len(keep_idx)} non-zero rows.")
+            logger.debug(f"Filtering complete. Kept {len(keep_positions)} non-zero rows.")
 
             # Only filter if we have rows to keep
-            if keep_idx:
-                revs = revs.loc[keep_idx]
+            if keep_positions:
+                revs = revs.iloc[keep_positions]
 
             logger.info(f"Finished parallel cumulative blame for '{branch}'. Result shape: {revs.shape}")
             return revs
