@@ -44,6 +44,7 @@ Unreleased
  * **FIXED**: `ProjectDirectory.cumulative_blame()` renamed each member repository's cached `cumulative_blame()` columns in place while suffixing them with the repository name, so a later per-repository call returned `Alice__repo1` instead of `Alice`. The suffixing now happens on copies.
 
 ### Cache Correctness
+ * **FIXED**: `Repository.invalidate_cache()` now targets the method-first cache key layout, processes every key when combined with a pattern, and returns accurate removal counts for in-memory and Redis backends.
  * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
    - `Repository(working_dir=<master-only repo>, cache_backend=...)` raising `ValueError: Could not detect default branch` — the internal `has_branch("main")` / `has_branch("master")` probes shared one key.
    - `file_detail()` reporting the first file's owner for every file — the internal `file_owner(rev, file_path, ...)` calls shared one key.
