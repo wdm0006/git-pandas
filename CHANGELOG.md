@@ -3,6 +3,11 @@ Unreleased
 
 ## Bug Fixes
 
+### Project Default Branch Detection
+ * **FIXED**: `ProjectDirectory` and `GitHubProfile` now let each repository auto-detect `main` or `master` by default, so mixed-branch projects include every repository in branch-based history metrics. Passing an explicit `default_branch` continues to force that branch across all repositories.
+
+**Note**: Repositories with neither a `main` nor `master` branch are now skipped with a warning during project initialization. Previously they were included but returned empty branch-based history.
+
 ### Cumulative Blame
  * **FIXED**: `Repository.cumulative_blame()` and `parallel_cumulative_blame()` no longer duplicate rows when multiple commits share a timestamp.
 

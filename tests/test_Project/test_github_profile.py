@@ -41,6 +41,7 @@ def test_discovers_repositories_from_all_pages_in_api_order(mock_get, mock_proje
         ],
         ignore_repos=None,
         verbose=False,
+        default_branch=None,
     )
 
 
@@ -64,6 +65,7 @@ def test_ignore_forks_filters_every_page(mock_get, mock_project_init):
         ],
         ignore_repos=None,
         verbose=False,
+        default_branch=None,
     )
 
 
@@ -98,4 +100,22 @@ def test_later_page_failure_discards_partial_results(mock_get, mock_project_init
         working_dir=[],
         ignore_repos=None,
         verbose=False,
+        default_branch=None,
+    )
+
+
+@patch("gitpandas.project.ProjectDirectory.__init__", autospec=True)
+@patch("gitpandas.project.requests.get")
+def test_forwards_explicit_default_branch(mock_get, mock_project_init):
+    mock_get.return_value = _response([_repo("only")])
+
+    profile = GitHubProfile("example", default_branch="master")
+    profile.repos = []
+
+    mock_project_init.assert_called_once_with(
+        profile,
+        working_dir=["git://github.com/example/only.git"],
+        ignore_repos=None,
+        verbose=False,
+        default_branch="master",
     )
