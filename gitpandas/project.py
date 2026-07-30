@@ -62,7 +62,8 @@ class ProjectDirectory:
         verbose (bool, optional): Whether to print verbose output. Defaults to True.
         tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
         cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
-        default_branch (str, optional): Name of the default branch to use. Defaults to 'main'.
+        default_branch (str, optional): Name of the branch to use for every repository. If None,
+            each repository auto-detects its default branch from `main` or `master`. Defaults to None.
 
     Attributes:
         repo_dirs (Union[set, list]): Set of repository directories or list of Repository instances
@@ -90,7 +91,7 @@ class ProjectDirectory:
         verbose=True,
         tmp_dir=None,
         cache_backend=None,
-        default_branch="main",
+        default_branch=None,
     ):
         """Initialize a ProjectDirectory instance.
 
@@ -103,7 +104,8 @@ class ProjectDirectory:
             verbose (bool, optional): Whether to print verbose output. Defaults to True.
             tmp_dir (Optional[str]): Directory to clone remote repositories into. Created if not provided.
             cache_backend (Optional[object]): Cache backend instance from gitpandas.cache
-            default_branch (str, optional): Name of the default branch to use. Defaults to 'main'.
+            default_branch (str, optional): Name of the branch to use for every repository. If None,
+                each repository auto-detects its default branch from `main` or `master`. Defaults to None.
         """
         logger.info(f"Initializing ProjectDirectory with working_dir={working_dir}, ignore_repos={ignore_repos}")
         # First get all potential repository paths
@@ -1542,6 +1544,8 @@ class GitHubProfile(ProjectDirectory):
             Defaults to False.
         ignore_repos (Optional[List[str]]): List of repository names to ignore
         verbose (bool, optional): Whether to print verbose output. Defaults to False.
+        default_branch (str, optional): Name of the branch to use for every repository. If None,
+            each repository auto-detects its default branch from `main` or `master`. Defaults to None.
 
     Note:
         This class uses the GitHub API to discover repositories. It does not require
@@ -1550,7 +1554,7 @@ class GitHubProfile(ProjectDirectory):
         rather than using incomplete results.
     """
 
-    def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False):
+    def __init__(self, username, ignore_forks=False, ignore_repos=None, verbose=False, default_branch=None):
         """Initializes a GitHubProfile object.
 
         Args:
@@ -1559,6 +1563,8 @@ class GitHubProfile(ProjectDirectory):
                 Defaults to False.
             ignore_repos (Optional[List[str]]): List of repository names to ignore
             verbose (bool, optional): Whether to print verbose output. Defaults to False.
+            default_branch (str, optional): Name of the branch to use for every repository. If None,
+                each repository auto-detects its default branch from `main` or `master`. Defaults to None.
         """
         logger.info(f"Initializing GitHubProfile for user '{username}'.")
         # pull the git urls from github's api
@@ -1575,7 +1581,13 @@ class GitHubProfile(ProjectDirectory):
                 params = None
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to fetch GitHub repositories for user {username}: {e}")
-            ProjectDirectory.__init__(self, working_dir=[], ignore_repos=ignore_repos, verbose=verbose)
+            ProjectDirectory.__init__(
+                self,
+                working_dir=[],
+                ignore_repos=ignore_repos,
+                verbose=verbose,
+                default_branch=default_branch,
+            )
             return
 
         repos = []
@@ -1588,4 +1600,10 @@ class GitHubProfile(ProjectDirectory):
                 repos.append(chunk["git_url"])
 
         logger.info(f"Found {len(repos)} repositories for user '{username}' (ignore_forks={ignore_forks}).")
-        ProjectDirectory.__init__(self, working_dir=repos, ignore_repos=ignore_repos, verbose=verbose)
+        ProjectDirectory.__init__(
+            self,
+            working_dir=repos,
+            ignore_repos=ignore_repos,
+            verbose=verbose,
+            default_branch=default_branch,
+        )

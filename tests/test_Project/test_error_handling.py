@@ -375,7 +375,7 @@ class TestProjectErrorHandling:
         git.Repo.init(bare_repo_path, bare=True)
 
         # Should handle bare repositories appropriately
-        project = ProjectDirectory(working_dir=[str(bare_repo_path)])
+        project = ProjectDirectory(working_dir=[str(bare_repo_path)], default_branch="main")
 
         # Basic operations should work with bare repos
         is_bare = project.is_bare()
