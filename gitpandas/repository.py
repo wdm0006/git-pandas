@@ -1328,6 +1328,8 @@ class Repository:
 
         # Pass skip_broken and force_refresh to ensure robustness when getting revisions
         revs = self.revs(branch=branch, limit=limit, skip=skip, num_datapoints=num_datapoints, skip_broken=skip_broken)
+        # revs() may be served from the cache by reference, and this method writes into the frame
+        revs = revs.copy()
 
         # Check immediately after calling revs()
         if not revs.empty and "rev" not in revs.columns:

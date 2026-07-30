@@ -31,6 +31,10 @@ Unreleased
 
 **Note**: This adds an index level to `blame(by="file")` output. Code that indexes that result by `(committer, file)` needs updating.
 
+### Cumulative Blame Cache Mutation
+ * **FIXED**: `Repository.cumulative_blame()` reshaped the `revs()` frame it received in place — adding a column per committer, deleting `rev`, and replacing the index with the commit dates. Because a cache backend hands out the stored DataFrame by reference, a later `revs()` call returned that wrecked frame, and a *second* `cumulative_blame()` call raised `ValueError: Internal Error: self.revs() returned DataFrame without 'rev' column.` (`parallel_cumulative_blame()` swallowed the same failure and returned an empty DataFrame). It now works on a copy.
+ * **FIXED**: `ProjectDirectory.cumulative_blame()` renamed each member repository's cached `cumulative_blame()` columns in place while suffixing them with the repository name, so a later per-repository call returned `Alice__repo1` instead of `Alice`. The suffixing now happens on copies.
+
 ### Cache Correctness
  * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
    - `Repository(working_dir=<master-only repo>, cache_backend=...)` raising `ValueError: Could not detect default branch` — the internal `has_branch("main")` / `has_branch("master")` probes shared one key.
