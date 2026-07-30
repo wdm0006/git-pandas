@@ -863,11 +863,11 @@ class ProjectDirectory:
             else:  # by == 'raw'
                 return pd.DataFrame()
 
-        global_blame = blames[0][1]
-        global_blame.columns = [x + "__" + str(blames[0][0]) for x in global_blame.columns.values]
+        # each per-repo frame may be served from the cache by reference, so rename onto copies
+        global_blame = blames[0][1].rename(columns=lambda x: f"{x}__{blames[0][0]}")
         blames = blames[1:]
         for reponame, blame in blames:
-            blame.columns = [x + "__" + reponame for x in blame.columns.values]
+            blame = blame.rename(columns=lambda x, reponame=reponame: f"{x}__{reponame}")
             global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how="outer")
 
         global_blame = global_blame.ffill()

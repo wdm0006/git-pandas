@@ -112,6 +112,60 @@ class TestCacheImmutability:
 
         _assert_unchanged(cached_repo.cache_backend, snapshot)
 
+    def test_cumulative_blame_does_not_mutate_cached_revs(self, cached_repo, default_branch):
+        """cumulative_blame() reshapes the revs() frame it borrows; the cache must keep the original."""
+        before = cached_repo.revs(branch=default_branch, skip_broken=True).copy()
+        snapshot = _snapshot(cached_repo.cache_backend)
+        assert snapshot, "expected revs to be cached"
+
+        blame = cached_repo.cumulative_blame(branch=default_branch)
+        assert not blame.empty
+
+        after = cached_repo.revs(branch=default_branch, skip_broken=True)
+        assert list(after.columns) == ["date", "rev", "repository"]
+        assert isinstance(after.index, pd.RangeIndex)
+        assert after.equals(before)
+        _assert_unchanged(cached_repo.cache_backend, snapshot)
+
+    def test_successive_cumulative_blame_calls_both_return_data(self, cached_repo, default_branch):
+        """The second call re-reads revs() from the cache, so a mutated frame breaks it outright."""
+        first = cached_repo.cumulative_blame(branch=default_branch, committer=True)
+        second = cached_repo.cumulative_blame(branch=default_branch, committer=False)
+
+        assert not first.empty
+        assert not second.empty
+        assert first.shape[0] == second.shape[0] == 4
+
+    def test_parallel_cumulative_blame_after_cumulative_blame(self, cached_repo, default_branch):
+        """parallel_cumulative_blame swallows the poisoned-revs failure and returns an empty frame."""
+        pytest.importorskip("joblib")
+
+        assert not cached_repo.cumulative_blame(branch=default_branch).empty
+
+        parallel = cached_repo.parallel_cumulative_blame(branch=default_branch)
+        assert not parallel.empty
+        assert parallel.shape[0] == 4
+
+    def test_project_cumulative_blame_does_not_rename_cached_repo_frames(self, cached_project, default_branch):
+        """The project aggregation suffixes column names per repo; the cached frames must keep theirs."""
+        before = {}
+        for repo in cached_project.repos:
+            frame = repo.cumulative_blame(branch=default_branch)
+            before[repo.repo_name] = (list(frame.columns), frame.copy())
+
+        snapshots = {repo.repo_name: _snapshot(repo.cache_backend) for repo in cached_project.repos}
+        assert all(snapshots.values()), "expected per-repo cumulative_blame to be cached"
+
+        assert not cached_project.cumulative_blame(branch=default_branch).empty
+
+        for repo in cached_project.repos:
+            columns, frame = before[repo.repo_name]
+            after = repo.cumulative_blame(branch=default_branch)
+            assert list(after.columns) == columns
+            assert not any("__" in str(col) for col in after.columns)
+            assert after.equals(frame)
+            _assert_unchanged(repo.cache_backend, snapshots[repo.repo_name])
+
     def test_project_methods_do_not_mutate_cached_repo_frames(self, cached_project, default_branch):
         """ProjectDirectory aggregation must leave each member repo's cached frames alone."""
         for repo in cached_project.repos:
