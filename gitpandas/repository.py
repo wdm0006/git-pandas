@@ -3004,15 +3004,15 @@ class Repository:
             logger.warning(f"Cache backend {type(self.cache_backend).__name__} does not support cache invalidation")
             return 0
 
-        # If specific keys provided, prefix them with repo name
+        # If specific keys provided, scope them to this repository
         prefixed_keys = None
         if keys:
-            prefixed_keys = [f"*||{self.repo_name}||*{key}*" if not key.startswith("*") else key for key in keys]
+            prefixed_keys = [f"{key}||{self.repo_name}||*" for key in keys]
 
-        # If pattern provided, include repo name in pattern
+        # If pattern provided, scope it to this repository
         repo_pattern = None
         if pattern:
-            repo_pattern = f"*||{self.repo_name}||*{pattern}*"
+            repo_pattern = f"{pattern}||{self.repo_name}||*"
         elif keys is None:
             # No keys or pattern specified, invalidate all for this repo
             repo_pattern = f"*||{self.repo_name}||*"
@@ -3021,7 +3021,7 @@ class Repository:
             if prefixed_keys and repo_pattern:
                 # Both keys and pattern specified
                 count1 = self.cache_backend.invalidate_cache(pattern=repo_pattern)
-                count2 = self.cache_backend.invalidate_cache(pattern=prefixed_keys[0] if prefixed_keys else None)
+                count2 = sum(self.cache_backend.invalidate_cache(pattern=key) for key in prefixed_keys)
                 return count1 + count2
             elif prefixed_keys:
                 # Only keys specified

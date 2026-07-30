@@ -310,9 +310,10 @@ class EphemeralCache:
 
         if keys is None and pattern is None:
             # Clear all cache entries
+            count = len(self._cache)
             self._cache.clear()
             self._key_list.clear()
-            return len(self._cache)
+            return count
 
         keys_to_remove = []
 
@@ -774,11 +775,11 @@ class RedisDFCache:
 
         if keys is None and pattern is None:
             # Clear all cache entries
-            for key in list(self._key_list):
-                if key.startswith(self.prefix):
-                    self._cache.delete(key)
+            keys_to_remove = [key for key in self._key_list if key.startswith(self.prefix)]
+            for key in keys_to_remove:
+                self._cache.delete(key)
             self._key_list = [k for k in self._key_list if not k.startswith(self.prefix)]
-            return
+            return len(keys_to_remove)
 
         keys_to_remove = []
 

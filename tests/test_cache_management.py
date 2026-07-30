@@ -35,6 +35,7 @@ class TestCacheManagement:
 
         # Test clearing all
         removed = cache.invalidate_cache()
+        assert removed == 1
         assert len(cache._cache) == 0
 
     def test_cache_stats_ephemeral(self):
@@ -85,19 +86,52 @@ class TestCacheManagement:
         # Warm cache
         repo.commit_history(limit=5)
         repo.branches()
+        repo.blame()
 
-        initial_cache_size = len(cache._cache)
-        assert initial_cache_size > 0
+        assert sorted(cache._cache) == [
+            "blame||test_repo||HEAD||True||repository||None||None",
+            "branches||test_repo||",
+            "commit_history||test_repo||None||5||None||None||None",
+        ]
 
         # Test invalidating specific cache type
         removed = repo.invalidate_cache(keys=["commit_history"])
-        assert removed >= 0  # Should find and remove commit_history cache entries
+        assert removed == 1
+        assert sorted(cache._cache) == [
+            "blame||test_repo||HEAD||True||repository||None||None",
+            "branches||test_repo||",
+        ]
 
-        # Test invalidating all repo cache
+        # Test invalidating by pattern
+        removed = repo.invalidate_cache(pattern="blame*")
+        assert removed == 1
+        assert sorted(cache._cache) == ["branches||test_repo||"]
+
+        # Test invalidating all repository cache
         removed = repo.invalidate_cache()
-        # After invalidation, we should have fewer or zero cache entries for this repo
-        final_cache_size = len(cache._cache)
-        assert final_cache_size <= initial_cache_size
+        assert removed == 1
+        assert list(cache._cache) == []
+
+    def test_repository_cache_invalidation_combines_all_keys_and_pattern(self):
+        """Test combined invalidation accounts for every requested method."""
+        cache = EphemeralCache(max_keys=10)
+        repo = MagicMock()
+        repo.cache_backend = cache
+        repo.repo_name = "test_repo"
+        repo.invalidate_cache = Repository.invalidate_cache.__get__(repo)
+
+        for key in [
+            "a||test_repo||1",
+            "b||test_repo||1",
+            "c_one||test_repo||1",
+            "other||test_repo||1",
+        ]:
+            cache.set(key, CacheEntry(key, key))
+
+        removed = repo.invalidate_cache(keys=["a", "b"], pattern="c*")
+
+        assert removed == 3
+        assert list(cache._cache) == ["other||test_repo||1"]
 
     def test_repository_cache_stats(self, tmp_path):
         """Test repository-level cache statistics."""

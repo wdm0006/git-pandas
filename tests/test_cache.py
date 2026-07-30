@@ -401,6 +401,20 @@ class TestRedisDFCache:
         mock_redis_instance.delete.assert_any_call(b"gitpandas_key1")
         mock_redis_instance.delete.assert_any_call(b"gitpandas_key2")
 
+    @patch("gitpandas.cache._HAS_REDIS", True)
+    @patch("gitpandas.cache.redis.StrictRedis")
+    def test_invalidate_cache_returns_clear_count(self, mock_redis):
+        """Test clearing Redis cache returns the number of deleted entries."""
+        mock_redis_instance = MagicMock()
+        mock_redis.return_value = mock_redis_instance
+        mock_redis_instance.keys.return_value = [b"gitpandas_key1", b"gitpandas_key2"]
+
+        cache = RedisDFCache()
+
+        assert cache.invalidate_cache() == 2
+        assert cache._key_list == []
+        assert mock_redis_instance.delete.call_count == 2
+
 
 class MockRepoMethod:
     """Class that simulates a repository object with a cached method."""
