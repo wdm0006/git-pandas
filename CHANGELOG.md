@@ -3,6 +3,12 @@ Unreleased
 
 ## Bug Fixes
 
+### Commits In Tags History Walking
+ * **FIXED**: `Repository.commits_in_tags()` never walked history. It returned exactly one row per tag — the tagged commit — rather than attributing every commit to the release that shipped it, as documented. The backwards walk now runs, so each commit is attributed to the first tag that contains it, stopping at the previous tag, at the `start`/`end` bounds, or at a root commit. The walk uses an explicit worklist, so a release spanning more commits than the interpreter's recursion limit no longer raises `RecursionError`.
+ * **FIXED**: Tag lookup used positional `Series.__getitem__`, which emitted a pandas `FutureWarning` and would become a `KeyError` on a future pandas release.
+
+**Note**: This is a user-visible output change. `commits_in_tags()` — and `ProjectDirectory.commits_in_tags()`, which aggregates it — now return one row per commit instead of one row per tag. Code that counted rows to count releases needs updating; count distinct values of the `tag` column instead.
+
 ### Project Default Branch Detection
  * **FIXED**: `ProjectDirectory` and `GitHubProfile` now let each repository auto-detect `main` or `master` by default, so mixed-branch projects include every repository in branch-based history metrics. Passing an explicit `default_branch` continues to force that branch across all repositories.
 

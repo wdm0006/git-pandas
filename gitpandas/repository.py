@@ -1704,7 +1704,17 @@ class Repository:
 
             checked_commits.add(str(commit))
             logger.debug(f"Adding commit {commit.hexsha[:7]} for tag '{tag.name}'")
-            ds.append(self._commits_per_tags_helper(commit, df_tags, tag=tag))
+            commit_meta, tag = self._commits_per_tags_helper(commit, df_tags, tag=tag)
+            ds.append(commit_meta)
+            self._commits_per_tags_recursive(
+                commit=commit,
+                df_tags=df_tags,
+                ds=ds,
+                tag=tag,
+                checked_commits=checked_commits,
+                start=start,
+                end=end,
+            )
 
         if not ds:
             logger.info("No commits found within tags for the specified range.")
@@ -1727,48 +1737,54 @@ class Repository:
         start=None,
         end=None,
     ):
-        logger.debug(f"Recursive check for commit {commit.hexsha[:7]} under tag '{tag.name if tag else None}'")
         ds = ds if ds is not None else []
         checked_commits = checked_commits if checked_commits is not None else set()
 
-        for parent_commit in commit.parents:
-            before_start = start and parent_commit.committed_date < start
-            passed_end = end and parent_commit.committed_date > end
-            already_checked = str(parent_commit) in checked_commits
-            if before_start or passed_end or already_checked:
-                logger.debug(
-                    f"Skipping parent commit {parent_commit.hexsha[:7]}: BeforeStart={before_start}, PassedEnd={passed_end}, AlreadyChecked={already_checked}"  # noqa: E501
-                )
-                continue
-            checked_commits.add(str(parent_commit))
-            commit_meta, tag = self._commits_per_tags_helper(commit=parent_commit, df_tags=df_tags, tag=tag)
-            ds.append(commit_meta)
-            self._commits_per_tags_recursive(
-                commit=parent_commit,
-                df_tags=df_tags,
-                ds=ds,
-                tag=tag,
-                checked_commits=checked_commits,
-                start=start,
-                end=end,
+        # An explicit worklist rather than Python recursion: an unbroken stretch of commits
+        # between two tags is routinely longer than the interpreter's stack allows.
+        worklist = [(commit, tag)]
+        while worklist:
+            current_commit, current_tag = worklist.pop()
+            logger.debug(
+                f"Walking parents of commit {current_commit.hexsha[:7]} "
+                f"under tag '{current_tag.name if current_tag else None}'"
             )
+            # Reversed so the first parent is popped first, keeping the walk on the mainline.
+            for parent_commit in reversed(current_commit.parents):
+                before_start = start and parent_commit.committed_date < start
+                passed_end = end and parent_commit.committed_date > end
+                already_checked = str(parent_commit) in checked_commits
+                if before_start or passed_end or already_checked:
+                    logger.debug(
+                        f"Skipping parent commit {parent_commit.hexsha[:7]}: BeforeStart={before_start}, PassedEnd={passed_end}, AlreadyChecked={already_checked}"  # noqa: E501
+                    )
+                    continue
+                checked_commits.add(str(parent_commit))
+                commit_meta, parent_tag = self._commits_per_tags_helper(
+                    commit=parent_commit, df_tags=df_tags, tag=current_tag
+                )
+                ds.append(commit_meta)
+                worklist.append((parent_commit, parent_tag))
+
+        return ds
 
     def _commits_per_tags_helper(self, commit, df_tags, tag=None):
         tag_pd = df_tags.loc[
             (df_tags["commit_sha"].str.contains(str(commit))) | (df_tags["tag_sha"].str.contains(str(commit)))
         ].tag
         if not tag_pd.empty:
-            tag = self.repo.tag(tag_pd[0])
+            tag = self.repo.tag(tag_pd.iloc[0])
         tag_date = tag.tag.tagged_date if tag and tag.tag else commit.committed_date
         tag_date = pd.to_datetime(tag_date, unit="s", utc=True)
         commit_date = pd.to_datetime(commit.committed_date, unit="s", utc=True)
 
-        return {
+        commit_meta = {
             "commit_sha": str(commit),
             "tag": str(tag),
             "tag_date": tag_date,
             "commit_date": commit_date,
         }
+        return commit_meta, tag
 
     @multicache(key_prefix="tags", key_list=["skip_broken"])
     def tags(self, skip_broken=False):
