@@ -14,6 +14,12 @@ Git-Pandas is a powerful Python library that transforms Git repository data into
 - **🌐 Remote Operations**: Safe remote fetching and bulk operations
 - **⚡ Performance Guide**: Comprehensive optimization documentation
 - **💾 Enhanced Caching**: Disk-based caching and timestamp tracking
+- **🎯 Correctness**: A large batch of fixes across the caching and multi-repository
+  aggregation layers. Several metrics — file churn, hours estimates, file ownership,
+  bus factor, and multi-repository blame — returned wrong numbers under conditions
+  described in the [changelog](CHANGELOG.md). Note that `commits_in_tags()` now returns
+  one row per commit rather than one per tag, and `ProjectDirectory.blame(by="file")`
+  gains a `repository` index level.
 
 ## Why Git-Pandas?
 
@@ -327,6 +333,6 @@ This project is BSD licensed (see [LICENSE.md](LICENSE.md))
 
 ## Version History
 
-- **v2.5.0** (2025): File-wise bus factor, cache management, remote operations, performance guide
+- **v2.5.0** (2026): File-wise bus factor, cache management, remote operations, performance guide, and a large correctness batch across caching and multi-repository aggregation
 - **v2.4.0** (2024): Enhanced caching system with timestamps
 - **v2.2.1** (2023): Stability improvements and bug fixes
