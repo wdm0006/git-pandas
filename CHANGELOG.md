@@ -1,6 +1,37 @@
 Unreleased
 ==========
 
+v2.5.0
+======
+
+## New Features
+
+### Remote Operations & Cache Warming
+ * **NEW**: `Repository.safe_fetch_remote()` - Safely fetch changes from remote repositories without modifying working directory
+   - Read-only operation with comprehensive error handling
+   - Support for dry-run preview and remote validation
+   - Configurable remote names and pruning options
+ * **NEW**: `Repository.warm_cache()` - Pre-populate repository cache for improved performance
+   - Configurable method selection with intelligent parameter handling
+   - Performance metrics and cache entry tracking
+   - Significant performance improvements (1.5-10x speedup demonstrated)
+ * **NEW**: `ProjectDirectory.bulk_fetch_and_warm()` - Efficiently process multiple repositories
+   - Parallel processing support when joblib is available
+   - Error isolation (failures in one repo don't affect others)
+   - Comprehensive summary statistics and progress tracking
+
+### Enhanced Caching System
+ * **NEW**: `CacheEntry` class with metadata tracking (timestamps, age calculation)
+ * **ENHANCED**: Thread-safe cache operations with proper locking mechanisms
+ * **ENHANCED**: Cache key consistency improvements using `||` delimiter format
+ * **ENHANCED**: Cache timestamp and metadata access methods (`get_cache_info()`, `list_cached_keys()`)
+
+### Documentation & Examples
+ * **NEW**: Comprehensive remote operations documentation (`docs/source/remote_operations.rst`)
+ * **NEW**: Cache warming and remote fetch example (`examples/remote_fetch_and_cache_warming.py`)
+ * **NEW**: Cache timestamp usage example (`examples/cache_timestamps.py`)
+ * **NEW**: Release analytics example (`examples/release_analytics.py`)
+
 ## Bug Fixes
 
 ### Commits In Tags History Walking
@@ -49,6 +80,23 @@ Unreleased
  * **FIXED**: `Repository.cumulative_blame()` reshaped the `revs()` frame it received in place — adding a column per committer, deleting `rev`, and replacing the index with the commit dates. Because a cache backend hands out the stored DataFrame by reference, a later `revs()` call returned that wrecked frame, and a *second* `cumulative_blame()` call raised `ValueError: Internal Error: self.revs() returned DataFrame without 'rev' column.` (`parallel_cumulative_blame()` swallowed the same failure and returned an empty DataFrame). It now works on a copy.
  * **FIXED**: `ProjectDirectory.cumulative_blame()` renamed each member repository's cached `cumulative_blame()` columns in place while suffixing them with the repository name, so a later per-repository call returned `Alice__repo1` instead of `Alice`. The suffixing now happens on copies.
 
+### Project Bus Factor Glob Filtering
+ * **FIXED**: `ProjectDirectory.bus_factor(by="repository")` passed the caller's `include_globs` into each repository's `ignore_globs` argument. The caller's `ignore_globs` was silently discarded and `include_globs` doubled as an exclusion list, so the bus factor was computed over the wrong set of files — typically excluding exactly the files the caller asked to include. (`by="file"` was already correct.)
+
+### Project Empty-Result Guards
+ * **FIXED**: `ProjectDirectory.blame()` and `file_detail()` raised `AttributeError: 'NoneType' object has no attribute 'reset_index'` when the project contained no repositories, or when every repository raised `GitCommandError` (repositories with no commits, or a branch that doesn't exist). Both now return a well-formed empty DataFrame matching their normal output shape, as sibling methods such as `file_change_history()` already did.
+ * **FIXED**: `ProjectDirectory.commits_in_tags()` raised `ValueError: No objects to concatenate` when no repository yielded tagged commits. It now returns an empty DataFrame carrying the usual `commit_sha`, `tag`, and `repository` columns and the `(tag_date, commit_date)` index.
+
+### Punchcard Cache Mutation
+ * **FIXED**: `Repository.punchcard()` wrote `day_of_week` and `hour_of_day` columns straight into the `commit_history()` frame it was handed. Because a cache backend returns the stored DataFrame *by reference*, every later `commit_history()` call then returned those two extra columns. The same in-place write affected `ProjectDirectory.commit_history()`, `file_detail()`, and `revs()`, which added a `repository` column to borrowed per-repository frames. All of these now copy before writing.
+
+### Cache Warming
+ * **FIXED**: `Repository.warm_cache()` silently substituted `limit=100` for `commit_history` and `file_change_rates`, so it populated a cache key that no ordinary call would ever hit — the default `warm_cache()` gave those two methods no speedup whatsoever. The injected limit is gone, so warming populates the keys callers actually use.
+ * **FIXED**: `hours_estimate()`, `punchcard()`, `cumulative_blame()`, and `parallel_cumulative_blame()` resolved `branch=None` to the default branch *before* delegating to `commit_history()`/`revs()`. The inner call therefore keyed on `"master"` while a user's own `commit_history()` keyed on `None`, storing several copies of the same history and defeating cache reuse between them. The caller's `branch` value is now passed through unchanged; resolution happens only where a branch name is genuinely needed.
+
+### Cached Method Introspection
+ * **FIXED**: `@multicache` returned a bare wrapper, so every decorated `Repository` method lost its name, docstring, and signature. `help()`, `inspect.signature()`, and any reflection over the API saw `(self, *args, **kwargs)`. The decorator now applies `functools.wraps`, which restores introspection and — because the MCP server generates its tool schemas by reflecting over `Repository` — restores the real parameter names and defaults in every MCP tool schema.
+
 ### Cache Correctness
  * **FIXED**: `Repository.invalidate_cache()` now targets the method-first cache key layout, processes every key when combined with a pattern, and returns accurate removal counts for in-memory and Redis backends.
  * **FIXED**: `@multicache` built cache keys from `kwargs` only, so any argument passed *positionally* was invisible to the key and collapsed to `None`. Keys are now resolved against the decorated method's signature (`inspect.signature().bind()` + `apply_defaults()`), so positional and keyword calls key identically. This fixes:
@@ -61,48 +109,23 @@ Unreleased
 
 **Note**: The cache key format has changed. Stale `EphemeralCache`/`DiskCache` entries simply miss and recompute, but `RedisDFCache` users sharing a cache across versions should flush it (or use a new key prefix) to avoid retaining entries under the old format.
 
-v2.5.0
-======
-
-## New Features
-
-### Remote Operations & Cache Warming
- * **NEW**: `Repository.safe_fetch_remote()` - Safely fetch changes from remote repositories without modifying working directory
-   - Read-only operation with comprehensive error handling
-   - Support for dry-run preview and remote validation
-   - Configurable remote names and pruning options
- * **NEW**: `Repository.warm_cache()` - Pre-populate repository cache for improved performance  
-   - Configurable method selection with intelligent parameter handling
-   - Performance metrics and cache entry tracking
-   - Significant performance improvements (1.5-10x speedup demonstrated)
- * **NEW**: `ProjectDirectory.bulk_fetch_and_warm()` - Efficiently process multiple repositories
-   - Parallel processing support when joblib is available
-   - Error isolation (failures in one repo don't affect others)
-   - Comprehensive summary statistics and progress tracking
-
-### Enhanced Caching System
- * **NEW**: `CacheEntry` class with metadata tracking (timestamps, age calculation)
- * **ENHANCED**: Thread-safe cache operations with proper locking mechanisms  
- * **ENHANCED**: Cache key consistency improvements using `||` delimiter format
- * **ENHANCED**: Cache timestamp and metadata access methods (`get_cache_info()`, `list_cached_keys()`)
-
-### Documentation & Examples
- * **NEW**: Comprehensive remote operations documentation (`docs/source/remote_operations.rst`)
- * **NEW**: Cache warming and remote fetch example (`examples/remote_fetch_and_cache_warming.py`)
- * **NEW**: Cache timestamp usage example (`examples/cache_timestamps.py`)
- * **NEW**: Release analytics example (`examples/release_analytics.py`)
-
 ## Testing & Quality
  * **NEW**: 38 comprehensive tests for remote operations and cache warming
  * **NEW**: Thread safety tests for cache operations
  * **NEW**: Edge case and error handling test coverage
+ * **NEW**: Regression coverage for every fix above, including cached-vs-uncached parity, multi-repository aggregation against repositories that share file paths, and cache-immutability checks that fail if a method writes into a frame it was handed
+ * **NEW**: Exact rev-to-rev regression tests pinning churn, file, elapsed-time, author, and committer values, and covering `include_globs`/`ignore_globs` through `release_tag_summary()`
  * **IMPROVED**: Overall test coverage and reliability
  * **FIXED**: Various minor bugs and future warnings
 
 ## Backward Compatibility
- * All new features are fully backward compatible
- * No breaking changes to existing APIs
- * Existing cache backends work seamlessly with new features
+ * No API was removed, renamed, or given a new required argument; every existing call still runs.
+ * Three changes are user-visible in the *data* returned, and are called out in full above:
+   - `commits_in_tags()` now returns one row per commit rather than one row per tag.
+   - `blame(by="file")` on a `ProjectDirectory` gains a `repository` index level.
+   - The cache key format changed; `RedisDFCache` users sharing a cache across versions should flush it.
+ * Beyond those, results change only where they were previously wrong — the bug fixes above return corrected numbers for churn, hours, ownership, bus factor, and blame. Analyses pinned to specific values from an earlier release should expect them to move.
+ * Existing cache backends work seamlessly with new features.
 
 v2.4.0
 ======
