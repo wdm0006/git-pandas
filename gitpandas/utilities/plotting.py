@@ -95,7 +95,9 @@ def plot_cumulative_blame(df):
     Plot cumulative blame information as a stacked area chart.
 
     Args:
-        df (pandas.DataFrame): DataFrame with dates as index and committers as columns
+        df (pandas.DataFrame): DataFrame with an ascending DatetimeIndex of dates and one
+            numeric column per contributor, as returned by ``Repository.cumulative_blame``,
+            ``Repository.parallel_cumulative_blame`` or ``ProjectDirectory.cumulative_blame``
 
     Returns:
         matplotlib.figure.Figure: The generated figure

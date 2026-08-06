@@ -1326,7 +1326,11 @@ class Repository:
             skip_broken (bool, optional): Whether to skip corrupted Git objects. Defaults to True.
 
         Returns:
-            DataFrame: DataFrame with blame information
+            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)
+                DatetimeIndex named ``date``, with one integer column per contributor
+                holding the lines blamed to them at that revision. Label columns
+                (``repository`` and any ``labels_to_add`` entries) are not included, so
+                the frame is entirely numeric and ``df.sum(axis=1)`` gives total LOC.
 
         Note:
             If both ignore_globs and include_globs are provided, files must match an include
@@ -1350,6 +1354,10 @@ class Repository:
             logger.error("DataFrame returned from self.revs() is missing the 'rev' column.")
             # Raise a specific error to make it clear.
             raise ValueError("Internal Error: self.revs() returned DataFrame without 'rev' column.")
+
+        # the label columns revs() attaches are not part of this method's contract, and a
+        # string column here would poison sum(axis=1) on the result
+        revs = revs.drop(columns=self._label_columns(), errors="ignore")
 
         # get the commit history to stub out committers (hacky and slow)
         logger.debug("Fetching all committers to pre-populate columns...")
@@ -1436,9 +1444,12 @@ class Repository:
             revs.set_index(keys=["date"], drop=True, inplace=True)
             revs = revs.fillna(0.0)
 
+            # revs() yields newest-first; a cumulative series over time must run forwards
+            revs = revs.sort_index()
+
             # drop 0 cols
-            for col in revs.columns.values:
-                if col != "col" and revs[col].sum() == 0:
+            for col in list(revs.columns):
+                if pd.to_numeric(revs[col], errors="coerce").fillna(0).sum() == 0:
                     del revs[col]
 
             # drop 0 rows
@@ -1512,7 +1523,11 @@ class Repository:
             skip_broken (bool, optional): Whether to skip corrupted Git objects. Defaults to True.
 
         Returns:
-            DataFrame: DataFrame with blame information
+            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)
+                DatetimeIndex named ``date``, with one column per contributor holding the
+                lines blamed to them at that revision. Label columns (``repository`` and any
+                ``labels_to_add`` entries) are not included, so the frame is entirely numeric
+                and ``df.sum(axis=1)`` gives total LOC.
         """
         resolved_branch = self.default_branch if branch is None else branch
 
@@ -1537,6 +1552,10 @@ class Repository:
         logger.debug(f"Prepared {len(revs)} revisions for parallel processing.")
 
         try:
+            # the label columns revs() attaches are not part of this method's contract, and a
+            # string column here would poison sum(axis=1) on the result
+            revs = revs.drop(columns=self._label_columns(), errors="ignore")
+
             revisions = json.loads(revs.to_json(orient="index"))
             revisions = [revisions[key] for key in revisions]
 
@@ -1558,9 +1577,12 @@ class Repository:
             revs.set_index(keys=["date"], drop=True, inplace=True)
             revs = revs.fillna(0.0)
 
+            # revs() yields newest-first; a cumulative series over time must run forwards
+            revs = revs.sort_index()
+
             # drop 0 cols
-            for col in revs.columns.values:
-                if col != "col" and revs[col].sum() == 0:
+            for col in list(revs.columns):
+                if pd.to_numeric(revs[col], errors="coerce").fillna(0).sum() == 0:
                     del revs[col]
 
             # drop 0 rows
@@ -1993,6 +2015,14 @@ class Repository:
         for i, label in enumerate(self._labels_to_add):
             df[f"label{i}"] = label
         return df
+
+    def _label_columns(self):
+        """Returns the column names that :meth:`_add_labels_to_df` attaches.
+
+        Returns:
+            List[str]: ``repository`` followed by one ``labelN`` per configured label.
+        """
+        return ["repository"] + [f"label{i}" for i in range(len(self._labels_to_add))]
 
     def __str__(self):
         """Returns a human-readable string representation of the repository.
