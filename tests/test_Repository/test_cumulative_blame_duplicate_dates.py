@@ -40,4 +40,11 @@ def test_cumulative_blame_preserves_each_revision(tmp_path, method_name, shared_
     )(branch="main")
 
     assert len(result) == len(revs) == 5
-    assert result["Test Author"].tolist() == [5, 4, 3, 2, 1]
+    assert result.index.is_monotonic_increasing
+
+    if shared_timestamp:
+        # every revision shares one timestamp, so sorting is a stable no-op and the
+        # revisions stay in the newest-first order revs() produced them in
+        assert result["Test Author"].tolist() == [5, 4, 3, 2, 1]
+    else:
+        assert result["Test Author"].tolist() == [1, 2, 3, 4, 5]

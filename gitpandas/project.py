@@ -831,7 +831,10 @@ class ProjectDirectory:
             include_globs (Optional[List[str]]): List of glob patterns for files to include
 
         Returns:
-            DataFrame: DataFrame with cumulative blame information
+            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)
+                DatetimeIndex named ``date``, with one numeric column per contributor
+                (``by='committer'``) or per repository (``by='project'``). Label columns
+                are not included, so ``df.sum(axis=1)`` gives total LOC.
         """
         logger.info(f"Calculating cumulative blame for branch '{branch or self.default_branch}' grouped by '{by}'.")
         if branch is None:
@@ -872,6 +875,10 @@ class ProjectDirectory:
             blame = blame.rename(columns=lambda x, reponame=reponame: f"{x}__{reponame}")
             global_blame = pd.merge(global_blame, blame, left_index=True, right_index=True, how="outer")
 
+        # the outer merge above sorts, but a single-repo project never reaches it, and the
+        # ffill below only carries a repo's last known blame forward on an ascending index
+        global_blame = global_blame.sort_index()
+
         global_blame = global_blame.ffill()
         global_blame.fillna(0.0, inplace=True)
 
@@ -907,7 +914,9 @@ class ProjectDirectory:
 
             global_blame = global_blame.reindex(columns=list(project_mapping.keys()))
 
-        global_blame = global_blame[~global_blame.index.duplicated()]
+        # keep="last" on an ascending index selects the same row the pre-sort code did:
+        # the newest revision sharing a timestamp
+        global_blame = global_blame[~global_blame.index.duplicated(keep="last")]
 
         logger.info(f"Calculated cumulative blame with {len(global_blame)} time points.")
         return global_blame

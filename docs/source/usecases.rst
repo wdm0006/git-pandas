@@ -96,12 +96,16 @@ Track code ownership over time:
 
 .. code-block:: python
 
-    # Get cumulative blame
+    # Get cumulative blame: an ascending DatetimeIndex, one column per contributor
     blame_df = repo.cumulative_blame()
-    
+
+    # Total LOC over time, and growth per revision
+    blame_df.sum(axis=1)
+    blame_df.sum(axis=1).diff()
+
     # Plot cumulative blame using pandas plotting
     import matplotlib.pyplot as plt
-    blame_df.plot(x='date', y='loc', title='Cumulative Blame Over Time')
+    blame_df.plot(kind='area', stacked=True, title='Cumulative Blame Over Time')
     plt.show()
 
 Bus Factor Analysis
