@@ -1050,7 +1050,10 @@
 <span class="sd">            include_globs (Optional[List[str]]): List of glob patterns for files to include</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            DataFrame: DataFrame with cumulative blame information</span>
+<span class="sd">            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)</span>
+<span class="sd">                DatetimeIndex named ``date``, with one numeric column per contributor</span>
+<span class="sd">                (``by=&#39;committer&#39;``) or per repository (``by=&#39;project&#39;``). Label columns</span>
+<span class="sd">                are not included, so ``df.sum(axis=1)`` gives total LOC.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calculating cumulative blame for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span><span class="si">}</span><span class="s2">&#39; grouped by &#39;</span><span class="si">{</span><span class="n">by</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1091,6 +1094,10 @@
             <span class="n">blame</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">reponame</span><span class="o">=</span><span class="n">reponame</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">__</span><span class="si">{</span><span class="n">reponame</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">global_blame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">global_blame</span><span class="p">,</span> <span class="n">blame</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;outer&quot;</span><span class="p">)</span>
 
+        <span class="c1"># the outer merge above sorts, but a single-repo project never reaches it, and the</span>
+        <span class="c1"># ffill below only carries a repo&#39;s last known blame forward on an ascending index</span>
+        <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
         <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
         <span class="n">global_blame</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -1126,7 +1133,9 @@
 
             <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">project_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
-        <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="p">[</span><span class="o">~</span><span class="n">global_blame</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()]</span>
+        <span class="c1"># keep=&quot;last&quot; on an ascending index selects the same row the pre-sort code did:</span>
+        <span class="c1"># the newest revision sharing a timestamp</span>
+        <span class="n">global_blame</span> <span class="o">=</span> <span class="n">global_blame</span><span class="p">[</span><span class="o">~</span><span class="n">global_blame</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)]</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calculated cumulative blame with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">global_blame</span><span class="p">)</span><span class="si">}</span><span class="s2"> time points.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">global_blame</span></div>

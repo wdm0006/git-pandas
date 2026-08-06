@@ -256,12 +256,16 @@
 <section id="cumulative-blame-analysis">
 <h3>Cumulative Blame Analysis<a class="headerlink" href="#cumulative-blame-analysis" title="Link to this heading">¶</a></h3>
 <p>Track code ownership over time:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cumulative blame</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cumulative blame: an ascending DatetimeIndex, one column per contributor</span>
 <span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">cumulative_blame</span><span class="p">()</span>
+
+<span class="c1"># Total LOC over time, and growth per revision</span>
+<span class="n">blame_df</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">blame_df</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
 
 <span class="c1"># Plot cumulative blame using pandas plotting</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Cumulative Blame Over Time&#39;</span><span class="p">)</span>
+<span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Cumulative Blame Over Time&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>

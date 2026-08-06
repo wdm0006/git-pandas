@@ -736,7 +736,14 @@ num_datapoints evenly spaced revs will be used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with blame information</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame indexed by an ascending (monotonically increasing)</dt><dd><p>DatetimeIndex named <code class="docutils literal notranslate"><span class="pre">date</span></code>, with one integer column per contributor
+holding the lines blamed to them at that revision. Label columns
+(<code class="docutils literal notranslate"><span class="pre">repository</span></code> and any <code class="docutils literal notranslate"><span class="pre">labels_to_add</span></code> entries) are not included, so
+the frame is entirely numeric and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> gives total LOC.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
@@ -771,7 +778,14 @@ num_datapoints evenly spaced revs will be used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with blame information</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame indexed by an ascending (monotonically increasing)</dt><dd><p>DatetimeIndex named <code class="docutils literal notranslate"><span class="pre">date</span></code>, with one column per contributor holding the
+lines blamed to them at that revision. Label columns (<code class="docutils literal notranslate"><span class="pre">repository</span></code> and any
+<code class="docutils literal notranslate"><span class="pre">labels_to_add</span></code> entries) are not included, so the frame is entirely numeric
+and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> gives total LOC.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
@@ -961,6 +975,20 @@ This ensures consistent labeling across all DataFrame outputs.</p>
 <p>This is an internal helper method used by all public methods that
 return DataFrames.</p>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.repository.Repository._label_columns">
+<span class="sig-name descname"><span class="pre">_label_columns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository._label_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository._label_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the column names that <a class="reference internal" href="#gitpandas.repository.Repository._add_labels_to_df" title="gitpandas.repository.Repository._add_labels_to_df"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_add_labels_to_df()</span></code></a> attaches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">repository</span></code> followed by one <code class="docutils literal notranslate"><span class="pre">labelN</span></code> per configured label.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1705,6 +1733,20 @@ return DataFrames.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.repository.GitFlowRepository._label_columns">
+<span class="sig-name descname"><span class="pre">_label_columns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository._label_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the column names that <a class="reference internal" href="#gitpandas.repository.GitFlowRepository._add_labels_to_df" title="gitpandas.repository.GitFlowRepository._add_labels_to_df"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_add_labels_to_df()</span></code></a> attaches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">repository</span></code> followed by one <code class="docutils literal notranslate"><span class="pre">labelN</span></code> per configured label.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.repository.GitFlowRepository._process_commit_for_file_history">
 <span class="sig-name descname"><span class="pre">_process_commit_for_file_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_broken</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository._process_commit_for_file_history" title="Link to this definition">¶</a></dt>
 <dd><p>Helper method to process a commit for file change history.</p>
@@ -2041,7 +2083,14 @@ num_datapoints evenly spaced revs will be used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with blame information</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame indexed by an ascending (monotonically increasing)</dt><dd><p>DatetimeIndex named <code class="docutils literal notranslate"><span class="pre">date</span></code>, with one integer column per contributor
+holding the lines blamed to them at that revision. Label columns
+(<code class="docutils literal notranslate"><span class="pre">repository</span></code> and any <code class="docutils literal notranslate"><span class="pre">labels_to_add</span></code> entries) are not included, so
+the frame is entirely numeric and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> gives total LOC.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
@@ -2560,7 +2609,14 @@ num_datapoints evenly spaced revs will be used</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with blame information</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame indexed by an ascending (monotonically increasing)</dt><dd><p>DatetimeIndex named <code class="docutils literal notranslate"><span class="pre">date</span></code>, with one column per contributor holding the
+lines blamed to them at that revision. Label columns (<code class="docutils literal notranslate"><span class="pre">repository</span></code> and any
+<code class="docutils literal notranslate"><span class="pre">labels_to_add</span></code> entries) are not included, so the frame is entirely numeric
+and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> gives total LOC.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>

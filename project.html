@@ -680,7 +680,13 @@ in the project directory.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with cumulative blame information</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame indexed by an ascending (monotonically increasing)</dt><dd><p>DatetimeIndex named <code class="docutils literal notranslate"><span class="pre">date</span></code>, with one numeric column per contributor
+(<code class="docutils literal notranslate"><span class="pre">by='committer'</span></code>) or per repository (<code class="docutils literal notranslate"><span class="pre">by='project'</span></code>). Label columns
+are not included, so <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)</span></code> gives total LOC.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>

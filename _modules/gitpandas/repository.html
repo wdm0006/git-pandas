@@ -1542,7 +1542,11 @@
 <span class="sd">            skip_broken (bool, optional): Whether to skip corrupted Git objects. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            DataFrame: DataFrame with blame information</span>
+<span class="sd">            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)</span>
+<span class="sd">                DatetimeIndex named ``date``, with one integer column per contributor</span>
+<span class="sd">                holding the lines blamed to them at that revision. Label columns</span>
+<span class="sd">                (``repository`` and any ``labels_to_add`` entries) are not included, so</span>
+<span class="sd">                the frame is entirely numeric and ``df.sum(axis=1)`` gives total LOC.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            If both ignore_globs and include_globs are provided, files must match an include</span>
@@ -1566,6 +1570,10 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;DataFrame returned from self.revs() is missing the &#39;rev&#39; column.&quot;</span><span class="p">)</span>
             <span class="c1"># Raise a specific error to make it clear.</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Internal Error: self.revs() returned DataFrame without &#39;rev&#39; column.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># the label columns revs() attaches are not part of this method&#39;s contract, and a</span>
+        <span class="c1"># string column here would poison sum(axis=1) on the result</span>
+        <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_columns</span><span class="p">(),</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
         <span class="c1"># get the commit history to stub out committers (hacky and slow)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fetching all committers to pre-populate columns...&quot;</span><span class="p">)</span>
@@ -1652,9 +1660,12 @@
             <span class="n">revs</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
+            <span class="c1"># revs() yields newest-first; a cumulative series over time must run forwards</span>
+            <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
             <span class="c1"># drop 0 cols</span>
-            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;col&quot;</span> <span class="ow">and</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">del</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
 
             <span class="c1"># drop 0 rows</span>
@@ -1731,7 +1742,11 @@
 <span class="sd">            skip_broken (bool, optional): Whether to skip corrupted Git objects. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            DataFrame: DataFrame with blame information</span>
+<span class="sd">            DataFrame: A DataFrame indexed by an ascending (monotonically increasing)</span>
+<span class="sd">                DatetimeIndex named ``date``, with one column per contributor holding the</span>
+<span class="sd">                lines blamed to them at that revision. Label columns (``repository`` and any</span>
+<span class="sd">                ``labels_to_add`` entries) are not included, so the frame is entirely numeric</span>
+<span class="sd">                and ``df.sum(axis=1)`` gives total LOC.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
 
@@ -1756,6 +1771,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prepared </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">revs</span><span class="p">)</span><span class="si">}</span><span class="s2"> revisions for parallel processing.&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># the label columns revs() attaches are not part of this method&#39;s contract, and a</span>
+            <span class="c1"># string column here would poison sum(axis=1) on the result</span>
+            <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_columns</span><span class="p">(),</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
             <span class="n">revisions</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">revs</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">))</span>
             <span class="n">revisions</span> <span class="o">=</span> <span class="p">[</span><span class="n">revisions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">revisions</span><span class="p">]</span>
 
@@ -1777,9 +1796,12 @@
             <span class="n">revs</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
+            <span class="c1"># revs() yields newest-first; a cumulative series over time must run forwards</span>
+            <span class="n">revs</span> <span class="o">=</span> <span class="n">revs</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
             <span class="c1"># drop 0 cols</span>
-            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s2">&quot;col&quot;</span> <span class="ow">and</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">revs</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">del</span> <span class="n">revs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
 
             <span class="c1"># drop 0 rows</span>
@@ -2230,6 +2252,17 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels_to_add</span><span class="p">):</span>
             <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;label</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
         <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="Repository._label_columns">
+<a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository._label_columns">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_label_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the column names that :meth:`_add_labels_to_df` attaches.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[str]: ``repository`` followed by one ``labelN`` per configured label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;repository&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;label</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels_to_add</span><span class="p">))]</span></div>
 
 
 <div class="viewcode-block" id="Repository.__str__">
