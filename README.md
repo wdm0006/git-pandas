@@ -99,7 +99,10 @@ For enhanced functionality, install additional packages:
 pip install joblib
 
 # For Redis caching
-pip install redis
+pip install "git-pandas[redis]"
+
+# For Repository.coverage() / .coverage file parsing
+pip install "git-pandas[coverage]"
 
 # For visualization
 pip install matplotlib seaborn
