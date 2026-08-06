@@ -220,7 +220,8 @@
 </section>
 <section id="redis-cache-redisdfcache">
 <h3>Redis Cache (RedisDFCache)<a class="headerlink" href="#redis-cache-redisdfcache" title="Link to this heading">¶</a></h3>
-<p>For persistent caching across sessions, use Redis:</p>
+<p>For persistent caching across sessions, use Redis. The Redis client is an optional
+dependency, installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;git-pandas[redis]&quot;</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisDFCache</span>
 

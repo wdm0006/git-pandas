@@ -421,13 +421,23 @@
 
 <span class="sd">        Note:</span>
 <span class="sd">            Returns an empty DataFrame if no coverage data exists or can&#39;t be read.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ImportError: If the optional ``coverage`` package is not installed but the</span>
+<span class="sd">                repository does have a ``.coverage`` file to parse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_coverage</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="s2">&quot;lines_covered&quot;</span><span class="p">,</span> <span class="s2">&quot;total_lines&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">])</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">coverage</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Need coverage installed to parse .coverage files. &quot;</span>
+                <span class="s1">&#39;Install it with: pip install &quot;git-pandas[coverage]&quot;&#39;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
+        <span class="k">try</span><span class="p">:</span>
             <span class="n">cov</span> <span class="o">=</span> <span class="n">coverage</span><span class="o">.</span><span class="n">Coverage</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">,</span> <span class="s2">&quot;.coverage&quot;</span><span class="p">))</span>
             <span class="n">cov</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">cov</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
@@ -1183,6 +1193,10 @@
                     <span class="s2">&quot;repository&quot;</span><span class="p">,</span>
                 <span class="p">]</span>
             <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="c1"># coverage=True with the optional coverage package missing: surface it rather than</span>
+            <span class="c1"># returning an empty frame that reads as &quot;no coverage data&quot;.</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error calculating file change rates: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
