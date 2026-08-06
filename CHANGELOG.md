@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## Bug Fixes
+
+### Optional Redis & Coverage Dependencies
+ * **CHANGED** (user-visible): `redis` and `coverage` are no longer installed by `pip install git-pandas`. Neither is used by the core library — `redis` is imported behind a guard in `gitpandas.cache` and `coverage` is imported lazily inside `Repository.coverage()` — so a plain install no longer pulls in a Redis client and a test-coverage tool. They are now optional extras: install `git-pandas[redis]` to use `RedisDFCache`, and `git-pandas[coverage]` to use `Repository.coverage()` / `Repository.file_change_rates(coverage=True)`. Both are included in the `all` and `dev` extras. **Anyone relying on `RedisDFCache` after a bare `pip install git-pandas` must now install `git-pandas[redis]`**; the failure mode is the existing explicit `ImportError("Need redis installed to use redis cache")`.
+ * **FIXED**: `Repository.coverage()` swallowed a missing `coverage` package. The `import coverage` sat inside a `try` whose final handler is a broad `except Exception`, so on a repository that *does* have a `.coverage` file the result was an empty DataFrame — indistinguishable from "no coverage data". The import now happens outside that block and raises an `ImportError` naming the `git-pandas[coverage]` extra. `Repository.file_change_rates(coverage=True)` re-raises it rather than returning an empty frame. Genuine "no coverage data" cases still return the empty DataFrame as before.
+
 v2.5.0
 ======
 

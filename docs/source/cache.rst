@@ -56,7 +56,8 @@ For persistent caching that survives between sessions:
 Redis Cache (RedisDFCache)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For persistent caching across sessions, use Redis:
+For persistent caching across sessions, use Redis. The Redis client is an optional
+dependency, installed with ``pip install "git-pandas[redis]"``:
 
 .. code-block:: python
 

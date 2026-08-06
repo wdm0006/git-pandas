@@ -24,8 +24,6 @@ dependencies = [
     "numpy>=1.9.0",
     "pandas>=2.0.0,<3.0.0",
     "requests",
-    "redis",
-    "coverage>=5.0.0",
     "importlib-metadata>=1.0; python_version<'3.8'",
 ]
 
@@ -39,6 +37,12 @@ examples = [
     "matplotlib",
     "lifelines",
 ]
+redis = [
+    "redis",
+]
+coverage = [
+    "coverage>=5.0.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -46,11 +50,15 @@ dev = [
     "ruff>=0.1.0",
     "matplotlib",
     "joblib",
-    "pytest-mock"
+    "pytest-mock",
+    "redis",
+    "coverage>=5.0.0",
 ]
 all = [
     "matplotlib",
     "lifelines",
+    "redis",
+    "coverage>=5.0.0",
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "sphinx>=7.0.0",

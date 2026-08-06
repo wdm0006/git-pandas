@@ -21,6 +21,9 @@ Install Git-Pandas using pip:
 
     pip install git-pandas
 
+Optional features live in extras: ``pip install "git-pandas[redis]"`` for the Redis cache
+backend and ``pip install "git-pandas[coverage]"`` for ``Repository.coverage()``.
+
 Basic Usage
 ~~~~~~~~~~~
 

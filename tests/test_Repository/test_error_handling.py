@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import Mock, patch
 
 import git
@@ -51,6 +52,10 @@ class TestRepositoryErrorHandling:
         coverage_file = temp_repo / ".coverage"
         coverage_file.write_text("test coverage data")
 
+        # Import coverage up front so the patched os.path.join below only affects the
+        # data-file path join, not the coverage package's own import machinery.
+        import coverage  # noqa: F401
+
         # Since the coverage handling is built-in to repository.py, test by creating
         # a file that exists but simulating permission error via OS error
         with patch("os.path.join") as mock_join:
@@ -94,6 +99,44 @@ class TestRepositoryErrorHandling:
 
             assert isinstance(coverage_df, pd.DataFrame)
             assert coverage_df.empty
+
+    def test_coverage_missing_coverage_package(self, temp_repo, default_branch):
+        """A missing coverage package must surface, not look like 'no coverage data'."""
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
+
+        coverage_file = temp_repo / ".coverage"
+        coverage_file.write_text("test coverage data")
+        assert repo.has_coverage()
+
+        # A None entry in sys.modules makes `import coverage` raise ImportError,
+        # simulating an install without the git-pandas[coverage] extra.
+        with patch.dict(sys.modules, {"coverage": None}), pytest.raises(ImportError) as excinfo:
+            repo.coverage()
+
+        assert "git-pandas[coverage]" in str(excinfo.value)
+
+    def test_coverage_missing_package_without_coverage_file(self, temp_repo, default_branch):
+        """Without a .coverage file the empty-frame result is kept, package present or not."""
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
+
+        with patch.dict(sys.modules, {"coverage": None}):
+            coverage_df = repo.coverage()
+
+        assert isinstance(coverage_df, pd.DataFrame)
+        assert coverage_df.empty
+        assert list(coverage_df.columns) == ["filename", "lines_covered", "total_lines", "coverage"]
+
+    def test_file_change_rates_missing_coverage_package(self, temp_repo, default_branch):
+        """file_change_rates(coverage=True) must not swallow the missing-extra error."""
+        repo = Repository(working_dir=str(temp_repo), default_branch=default_branch)
+
+        coverage_file = temp_repo / ".coverage"
+        coverage_file.write_text("test coverage data")
+
+        with patch.dict(sys.modules, {"coverage": None}), pytest.raises(ImportError) as excinfo:
+            repo.file_change_rates(branch=default_branch, coverage=True)
+
+        assert "git-pandas[coverage]" in str(excinfo.value)
 
     def test_file_change_history_git_errors(self, temp_repo, default_branch):
         """Test file_change_history when Git commands fail."""

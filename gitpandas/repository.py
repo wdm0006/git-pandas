@@ -229,13 +229,23 @@ class Repository:
 
         Note:
             Returns an empty DataFrame if no coverage data exists or can't be read.
+
+        Raises:
+            ImportError: If the optional ``coverage`` package is not installed but the
+                repository does have a ``.coverage`` file to parse.
         """
         if not self.has_coverage():
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
         try:
             import coverage
+        except ImportError as e:
+            raise ImportError(
+                "Need coverage installed to parse .coverage files. "
+                'Install it with: pip install "git-pandas[coverage]"'
+            ) from e
 
+        try:
             cov = coverage.Coverage(data_file=os.path.join(self.git_dir, ".coverage"))
             cov.load()
             data = cov.get_data()
@@ -976,6 +986,10 @@ class Repository:
                     "repository",
                 ]
             )
+        except ImportError:
+            # coverage=True with the optional coverage package missing: surface it rather than
+            # returning an empty frame that reads as "no coverage data".
+            raise
         except Exception as e:
             logger.error(f"Unexpected error calculating file change rates: {e}", exc_info=True)
             return pd.DataFrame(
