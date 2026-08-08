@@ -347,7 +347,10 @@ class Repository:
         ds = []
         for person in people:
             commits = ch[ch[by] == person]
-            commits_ts = [x * 10e-10 for x in sorted(commits.index.values.tolist())]
+            # Seconds relative to this contributor's first commit. Only differences are used below,
+            # and the datetime64 resolution of the index varies by pandas major, so neither raw
+            # integers nor a fixed nanosecond scale factor are portable here.
+            commits_ts = sorted((commits.index - commits.index[0]).total_seconds())
 
             def estimate(index, date, commits_ts):
                 next_ts = commits_ts[index + 1]

@@ -493,7 +493,7 @@ class TestProjectDataValidation:
             string_columns = ["message", "author", "committer", "repository"]
             for col in string_columns:
                 if col in history.columns:
-                    assert history[col].dtype == object, f"Column {col} should be string/object type"
+                    assert pd.api.types.is_string_dtype(history[col]), f"Column {col} should be string/object type"
 
     def test_aggregated_blame_consistency(self, validation_project):
         """Test that aggregated blame data is consistent."""
