@@ -162,8 +162,7 @@ def plot_lifeline(changes, ownership_changes, refactoring):
     fig, ax = plt.subplots(figsize=(12, 6))
 
     # Get unique files and sort them
-    files = changes.filename.unique()
-    files.sort()
+    files = sorted(changes.filename.unique())
 
     # Create y-axis positions for each file
     file_positions = {file: i for i, file in enumerate(files)}
