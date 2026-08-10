@@ -1178,11 +1178,15 @@ class Repository:
             skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
                 revision, None for no skipping.
             num_datapoints (Optional[int]): If limit and skip are none, and this isn't, then
-                num_datapoints evenly spaced revs will be used
+                exactly this many evenly distributed revs will be returned (or every rev,
+                if the branch has fewer than num_datapoints of them). Must be positive.
             skip_broken (bool): Whether to skip corrupted commit objects. Defaults to False.
 
         Returns:
             DataFrame: DataFrame with revision information
+
+        Raises:
+            ValueError: If num_datapoints is not a positive integer.
         """
         if branch is None:
             branch = self.default_branch
@@ -1192,24 +1196,14 @@ class Repository:
             f"Num Datapoints: {num_datapoints}, Skip Broken: {skip_broken}"
         )
 
-        if limit is None and skip is None and num_datapoints is not None:
-            logger.debug("Calculating skip based on num_datapoints")
-            try:
-                # Safely count commits
-                commit_count = 0
-                for _ in self.repo.iter_commits(branch):
-                    commit_count += 1
-                limit = commit_count
-                skip = int(float(limit) / num_datapoints) if commit_count > 0 else 1
-                logger.debug(f"Calculated limit={limit}, skip={skip} from {commit_count} commits")
-            except git.exc.GitCommandError as e:
-                logger.error(f"Error counting commits for branch '{branch}': {e}")
-                return pd.DataFrame(columns=["date", "rev"])
-        else:
-            if limit is None:
-                limit = None  # Let Git handle unlimited commits naturally
-            elif skip is not None:
-                limit = limit * skip
+        if num_datapoints is not None and num_datapoints < 1:
+            raise ValueError(f"num_datapoints must be a positive integer, got {num_datapoints}")
+
+        # num_datapoints only takes effect when neither limit nor skip was given explicitly.
+        sample_datapoints = num_datapoints if (limit is None and skip is None) else None
+
+        if sample_datapoints is None and limit is not None and skip is not None:
+            limit = limit * skip
 
         ds = []
         skipped_count = 0
@@ -1265,7 +1259,16 @@ class Repository:
 
         df = DataFrame(ds, columns=["date", "rev"])
 
-        if skip is not None:
+        if sample_datapoints is not None:
+            # Pick exactly min(num_datapoints, len(df)) evenly distributed positions, keeping
+            # the newest-first order and always including both the newest and oldest revision.
+            count = min(sample_datapoints, df.shape[0])
+            logger.debug(f"Sampling {count} of {df.shape[0]} revisions for num_datapoints={sample_datapoints}")
+            # linspace with count == 1 yields [0], i.e. the newest revision.
+            positions = np.linspace(0, df.shape[0] - 1, count).round().astype(int).tolist()
+            df = df.iloc[positions]
+            df.reset_index(drop=True, inplace=True)
+        elif skip is not None:
             logger.debug(f"Applying skip ({skip}) to revisions.")
             if skip == 0:
                 skip = 1
@@ -1322,7 +1325,7 @@ class Repository:
             skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
                 revision, None for no skipping.
             num_datapoints (Optional[int]): If limit and skip are none, and this isn't, then
-                num_datapoints evenly spaced revs will be used
+                exactly this many evenly distributed revs will be sampled
             committer (bool, optional): True if committer should be reported, false if author
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
@@ -1518,7 +1521,7 @@ class Repository:
             skip (Optional[int]): Number of revisions to skip. Ex: skip=2 returns every other
                 revision, None for no skipping.
             num_datapoints (Optional[int]): If limit and skip are none, and this isn't, then
-                num_datapoints evenly spaced revs will be used
+                exactly this many evenly distributed revs will be sampled
             committer (bool, optional): True if committer should be reported, false if author
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include

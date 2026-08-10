@@ -3,6 +3,17 @@ Unreleased
 
 ## Bug Fixes
 
+### Revision Sampling (`num_datapoints`)
+
+**This is a user-visible change to the output of `revs`, `cumulative_blame` and
+`parallel_cumulative_blame` whenever `num_datapoints` is used: they now return the number
+of rows that was asked for, which is generally fewer than before.**
+
+ * **FIXED**: `Repository.revs(num_datapoints=N)` returned more than `N` revisions. It derived `skip = int(commit_count / N)` and then kept every `skip`th row, so integer truncation inflated the result — on a 10-commit history `num_datapoints=4` returned 5 rows and `num_datapoints=6` returned all 10. It now selects exactly `min(N, commit_count)` evenly distributed revisions, keeping the existing newest-first order and always including both the newest and the oldest revision. `Repository.cumulative_blame()` and `Repository.parallel_cumulative_blame()` delegate `num_datapoints` to `revs()`, so they no longer perform (and report) more blame work than requested.
+ * **CHANGED**: A non-positive `num_datapoints` now raises `ValueError` from `Repository.revs()` and `ProjectDirectory.revs()`. Previously `num_datapoints=0` raised `ZeroDivisionError` from the internal skip calculation and negative values produced an arbitrary slice.
+ * **FIXED**: `ProjectDirectory.revs(num_datapoints=N)` divides `N` across the member repositories, which floored to zero datapoints per repository whenever `N` was smaller than the repository count. Each repository now contributes at least one revision.
+ * Explicit `limit` and `skip` arguments are unaffected; `num_datapoints` still applies only when neither is supplied.
+
 ### pandas 3 Compatibility
 
  * **CHANGED**: The `pandas>=2.0.0,<3.0.0` requirement is now `pandas>=2.0.0`. pandas 3 has been out for a while, so the upper cap meant `pip install git-pandas` either downgraded pandas or failed to resolve in any environment that already wanted pandas 3. pandas 3 requires Python >= 3.11, so resolvers on this package's declared 3.10 floor keep selecting pandas 2.x without needing an environment marker. CI now runs the suite against both majors.
