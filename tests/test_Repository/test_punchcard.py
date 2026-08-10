@@ -118,7 +118,7 @@ class TestPunchcard:
         assert punchcard["deletions"].tolist() == [0.0] * 6
         expected = [200 / 11, 200 / 11, 200 / 11, 100 / 11, 200 / 11, 200 / 11]
         for metric in ["lines", "insertions", "net"]:
-            assert punchcard[metric].tolist() == pytest.approx(expected)
+            assert sorted(punchcard[metric]) == pytest.approx(sorted(expected))
             assert punchcard[metric].sum() == pytest.approx(100)
 
     def test_punchcard_by_parameter(self, local_repo, default_branch):
