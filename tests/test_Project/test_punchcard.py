@@ -2,11 +2,13 @@ import warnings
 from unittest.mock import Mock
 
 import git
+import numpy as np
 import pandas as pd
 import pytest
 from git.exc import GitCommandError
 
 from gitpandas import ProjectDirectory
+from tests.test_Repository.test_punchcard import build_add_only_repo
 
 METRICS = ["lines", "insertions", "deletions", "net"]
 
@@ -78,3 +80,18 @@ def test_punchcard_aggregates_values_without_future_warning():
         {"hour_of_day": 9, "day_of_week": 1, "lines": 22, "insertions": 17, "deletions": 5, "net": 12},
         {"hour_of_day": 14, "day_of_week": 3, "lines": 20, "insertions": 15, "deletions": 5, "net": 10},
     ]
+
+
+def test_punchcard_normalizes_add_only_repository_to_finite_values(tmp_path, default_branch):
+    add_only_repo = build_add_only_repo(tmp_path, default_branch)
+    project = ProjectDirectory(working_dir=[], default_branch=default_branch, verbose=False)
+    project.repos = [add_only_repo]
+
+    punchcard = project.punchcard(normalize=100)
+
+    assert np.isfinite(punchcard[METRICS].to_numpy()).all()
+    assert punchcard["deletions"].tolist() == [0.0] * 6
+    expected = [200 / 11, 200 / 11, 200 / 11, 100 / 11, 200 / 11, 200 / 11]
+    for metric in ["lines", "insertions", "net"]:
+        assert punchcard[metric].tolist() == pytest.approx(expected)
+        assert punchcard[metric].sum() == pytest.approx(100)

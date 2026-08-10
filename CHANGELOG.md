@@ -3,6 +3,10 @@ Unreleased
 
 ## Bug Fixes
 
+### Punchcard Normalization
+
+ * **FIXED**: `Repository.punchcard()` and `ProjectDirectory.punchcard()` now preserve finite zeros when normalizing an all-zero metric instead of producing `NaN` values through division by zero.
+
 ### pandas 3 Compatibility
 
  * **CHANGED**: The `pandas>=2.0.0,<3.0.0` requirement is now `pandas>=2.0.0`. pandas 3 has been out for a while, so the upper cap meant `pip install git-pandas` either downgraded pandas or failed to resolve in any environment that already wanted pandas 3. pandas 3 requires Python >= 3.11, so resolvers on this package's declared 3.10 floor keep selecting pandas 2.x without needing an environment marker. CI now runs the suite against both majors.

@@ -2479,7 +2479,9 @@ class Repository:
         if normalize is not None:
             logger.debug(f"Normalizing punchcard data to max value: {normalize}")
             for col in ["lines", "insertions", "deletions", "net"]:
-                punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
+                total = punch_card[col].sum()
+                if total != 0:
+                    punch_card[col] = (punch_card[col] / total) * normalize
 
         resolved_branch = self.default_branch if branch is None else branch
         logger.info(f"Finished generating punchcard data for '{resolved_branch}'. Result shape: {punch_card.shape}")

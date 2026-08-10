@@ -1,13 +1,14 @@
 import git
+import numpy as np
 import pandas as pd
 import pytest
 
 from gitpandas import Repository
 
+METRICS = ["lines", "insertions", "deletions", "net"]
 
-@pytest.fixture
-def local_repo(tmp_path, default_branch):
-    """Fixture for a local repository with commits at different times."""
+
+def build_add_only_repo(tmp_path, default_branch):
     # Create a temporary directory
     repo_dir = tmp_path / "repository1"
     repo_dir.mkdir()
@@ -65,7 +66,13 @@ def local_repo(tmp_path, default_branch):
         grepo.git.commit(m=f"adding file_{idx}.py", env=env)
 
     # Create the Repository object
-    git_pandas_repo = Repository(working_dir=str(repo_dir), verbose=True, default_branch=default_branch)
+    return Repository(working_dir=str(repo_dir), verbose=True, default_branch=default_branch)
+
+
+@pytest.fixture
+def local_repo(tmp_path, default_branch):
+    """Fixture for a local repository with commits at different times."""
+    git_pandas_repo = build_add_only_repo(tmp_path, default_branch)
 
     yield git_pandas_repo
 
@@ -105,22 +112,14 @@ class TestPunchcard:
 
     def test_punchcard_normalize(self, local_repo, default_branch):
         """Test the normalize parameter of the punchcard method."""
-        # Get punchcard without normalization
-        local_repo.punchcard(branch=default_branch)
+        punchcard = local_repo.punchcard(branch=default_branch, normalize=100)
 
-        # Get punchcard with normalization by value
-        punchcard_norm = local_repo.punchcard(branch=default_branch, normalize=1.0)
-
-        # Check that the normalized values are between 0 and 1
-        assert punchcard_norm["net"].max() <= 1.0
-        assert punchcard_norm["net"].min() >= 0.0
-
-        # Check that the row normalization works correctly
-        for day in range(7):
-            day_rows = punchcard_norm[punchcard_norm["day_of_week"] == day]
-            if len(day_rows) > 0 and day_rows["net"].sum() > 0:
-                # If there are commits on this day, the max value should be 1.0 or close to it
-                assert day_rows["net"].max() <= 1.0
+        assert np.isfinite(punchcard[METRICS].to_numpy()).all()
+        assert punchcard["deletions"].tolist() == [0.0] * 6
+        expected = [200 / 11, 200 / 11, 200 / 11, 100 / 11, 200 / 11, 200 / 11]
+        for metric in ["lines", "insertions", "net"]:
+            assert punchcard[metric].tolist() == pytest.approx(expected)
+            assert punchcard[metric].sum() == pytest.approx(100)
 
     def test_punchcard_by_parameter(self, local_repo, default_branch):
         """Test the 'by' parameter of the punchcard method."""

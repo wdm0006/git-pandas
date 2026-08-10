@@ -1177,7 +1177,9 @@ class ProjectDirectory:
         # normalize all cols
         if normalize is not None:
             for col in ["lines", "insertions", "deletions", "net"]:
-                punch_card[col] = (punch_card[col] / punch_card[col].sum()) * normalize
+                total = punch_card[col].sum()
+                if total != 0:
+                    punch_card[col] = (punch_card[col] / total) * normalize
             logger.info(f"Normalized punchcard data to max value {normalize}.")
 
         logger.info(f"Generated punchcard data with {len(punch_card)} entries.")
