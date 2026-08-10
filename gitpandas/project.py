@@ -761,20 +761,28 @@ class ProjectDirectory:
             branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.
             limit (Optional[int]): Maximum number of revisions to return
             skip (Optional[int]): Number of revisions to skip between samples
-            num_datapoints (Optional[int]): If provided, evenly sample this many revisions
+            num_datapoints (Optional[int]): If provided, evenly sample this many revisions,
+                divided across the repositories in the project. Must be positive.
 
         Returns:
             DataFrame: DataFrame with revision information
+
+        Raises:
+            ValueError: If num_datapoints is not a positive integer.
         """
         logger.info(f"Fetching revisions for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
 
+        if num_datapoints is not None and num_datapoints < 1:
+            raise ValueError(f"num_datapoints must be a positive integer, got {num_datapoints}")
+
         if limit is not None:
             limit = math.floor(float(limit) / len(self.repos))
 
         if num_datapoints is not None:
-            num_datapoints = math.floor(float(num_datapoints) / len(self.repos))
+            # Never round a positive request down to zero; each repo contributes at least one rev.
+            num_datapoints = max(1, math.floor(float(num_datapoints) / len(self.repos)))
 
         df = pd.DataFrame(columns=["repository", "rev"])
 
