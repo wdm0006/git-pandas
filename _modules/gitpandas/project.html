@@ -977,20 +977,28 @@
 <span class="sd">            branch (Optional[str]): Branch to analyze. Defaults to default_branch if None.</span>
 <span class="sd">            limit (Optional[int]): Maximum number of revisions to return</span>
 <span class="sd">            skip (Optional[int]): Number of revisions to skip between samples</span>
-<span class="sd">            num_datapoints (Optional[int]): If provided, evenly sample this many revisions</span>
+<span class="sd">            num_datapoints (Optional[int]): If provided, evenly sample this many revisions,</span>
+<span class="sd">                divided across the repositories in the project. Must be positive.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame: DataFrame with revision information</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If num_datapoints is not a positive integer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching revisions for branch &#39;</span><span class="si">{</span><span class="n">branch</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
 
+        <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">num_datapoints</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;num_datapoints must be a positive integer, got </span><span class="si">{</span><span class="n">num_datapoints</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">limit</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">num_datapoints</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">num_datapoints</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
+            <span class="c1"># Never round a positive request down to zero; each repo contributes at least one rev.</span>
+            <span class="n">num_datapoints</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">num_datapoints</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">)))</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span> <span class="s2">&quot;rev&quot;</span><span class="p">])</span>
 

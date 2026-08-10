@@ -702,7 +702,8 @@ and not match any ignore patterns to be included.</p>
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be returned (or every rev,
+if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
 <li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
 </ul>
 </dd>
@@ -711,6 +712,9 @@ num_datapoints evenly spaced revs will be used</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -728,7 +732,7 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be sampled</p></li>
 <li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
 <li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
 <li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
@@ -769,7 +773,7 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be sampled</p></li>
 <li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
 <li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
 <li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
@@ -2075,7 +2079,7 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be sampled</p></li>
 <li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
 <li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
 <li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
@@ -2600,7 +2604,7 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be sampled</p></li>
 <li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
 <li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
 <li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
@@ -2731,7 +2735,8 @@ Tag filtering uses fnmatch and supports multiple globs.</p>
 <li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
 <li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
-num_datapoints evenly spaced revs will be used</p></li>
+exactly this many evenly distributed revs will be returned (or every rev,
+if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
 <li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
 </ul>
 </dd>
@@ -2740,6 +2745,9 @@ num_datapoints evenly spaced revs will be used</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
 </dd>
 </dl>
 </dd></dl>
