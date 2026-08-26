@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+v2.6.0
+======
+
 ## Bug Fixes
 
 ### Punchcard Normalization

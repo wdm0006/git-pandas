@@ -7,19 +7,23 @@ Git-Pandas is a powerful Python library that transforms Git repository data into
 
 ![Cumulative Blame](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png)
 
-## What's New in v2.5.0
+## What's New in v2.6.0
 
-- **🗂️ File-wise Bus Factor**: Calculate bus factor at the individual file level
-- **🗄️ Cache Management**: Advanced cache invalidation and statistics 
-- **🌐 Remote Operations**: Safe remote fetching and bulk operations
-- **⚡ Performance Guide**: Comprehensive optimization documentation
-- **💾 Enhanced Caching**: Disk-based caching and timestamp tracking
-- **🎯 Correctness**: A large batch of fixes across the caching and multi-repository
-  aggregation layers. Several metrics — file churn, hours estimates, file ownership,
-  bus factor, and multi-repository blame — returned wrong numbers under conditions
-  described in the [changelog](CHANGELOG.md). Note that `commits_in_tags()` now returns
-  one row per commit rather than one per tag, and `ProjectDirectory.blame(by="file")`
-  gains a `repository` index level.
+- **📦 Smaller Default Install**: `redis` and `coverage` are no longer installed by
+  `pip install git-pandas`. Use `pip install "git-pandas[redis]"` for `RedisDFCache`
+  and `pip install "git-pandas[coverage]"` for `Repository.coverage()`.
+- **🐼 pandas 3 Support**: The `pandas<3` cap is gone; the suite runs green against
+  pandas 2 and pandas 3.
+- **📈 Usable Cumulative Blame**: `cumulative_blame()` and `parallel_cumulative_blame()`
+  now return only contributor columns on an ascending `DatetimeIndex`, so `df.sum(axis=1)`,
+  date slicing, and `.diff()` work as expected.
+- **🎯 Exact `num_datapoints`**: `revs(num_datapoints=N)` returns exactly `N` evenly
+  spaced revisions instead of over-sampling.
+- **🔢 Finite Punchcards**: `punchcard(normalize=...)` no longer emits `NaN` for an
+  all-zero metric.
+
+See the [changelog](CHANGELOG.md) for the full list, including the migration notes for
+the `cumulative_blame` and `revs` output changes.
 
 ## Why Git-Pandas?
 
@@ -336,6 +340,7 @@ This project is BSD licensed (see [LICENSE.md](LICENSE.md))
 
 ## Version History
 
+- **v2.6.0** (2026): pandas 3 support, optional `redis`/`coverage` extras, and correctness fixes to cumulative blame output shape, `revs(num_datapoints=...)`, and punchcard normalization
 - **v2.5.0** (2026): File-wise bus factor, cache management, remote operations, performance guide, and a large correctness batch across caching and multi-repository aggregation
 - **v2.4.0** (2024): Enhanced caching system with timestamps
 - **v2.2.1** (2023): Stability improvements and bug fixes
