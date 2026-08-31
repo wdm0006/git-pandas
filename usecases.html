@@ -180,7 +180,7 @@
 <h3>Repository Attributes<a class="headerlink" href="#repository-attributes" title="Link to this heading">¶</a></h3>
 <p>Get basic information about a repository:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">)</span>
 
 <span class="c1"># Get repository name</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">repo_name</span><span class="p">)</span>
@@ -198,7 +198,7 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">revs</span><span class="p">())</span>
 
 <span class="c1"># Get blame information</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">]))</span>
 </pre></div>
 </div>
 </section>
@@ -212,10 +212,10 @@
 <span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
 
 <span class="c1"># Filter by file extension</span>
-<span class="n">python_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">])</span>
+<span class="n">python_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">])</span>
 
 <span class="c1"># Filter by directory</span>
-<span class="n">src_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;src/*&#39;</span><span class="p">])</span>
+<span class="n">src_changes</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'src/*'</span><span class="p">])</span>
 
 <span class="c1"># Get commits in tags</span>
 <span class="n">tag_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commits_in_tags</span><span class="p">()</span>
@@ -232,8 +232,8 @@
 
 <span class="c1"># Create project from multiple repositories</span>
 <span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">([</span>
-    <span class="s1">&#39;git://github.com/user/repo1.git&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;git://github.com/user/repo2.git&#39;</span>
+    <span class="s1">'git://github.com/user/repo1.git'</span><span class="p">,</span>
+    <span class="s1">'git://github.com/user/repo2.git'</span>
 <span class="p">])</span>
 
 <span class="c1"># Get repository information</span>
@@ -265,7 +265,7 @@
 
 <span class="c1"># Plot cumulative blame using pandas plotting</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Cumulative Blame Over Time&#39;</span><span class="p">)</span>
+<span class="n">blame_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">'area'</span><span class="p">,</span> <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Cumulative Blame Over Time'</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -277,13 +277,13 @@
 <span class="n">bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">()</span>
 
 <span class="c1"># Calculate file-wise bus factor (new in v2.5.0)</span>
-<span class="n">file_bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>
+<span class="n">file_bus_factor</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'file'</span><span class="p">)</span>
 
 <span class="c1"># Get detailed blame information</span>
-<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">)</span>  <span class="c1"># Get file-level blame details</span>
+<span class="n">blame_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'file'</span><span class="p">)</span>  <span class="c1"># Get file-level blame details</span>
 
 <span class="c1"># Analyze ownership patterns</span>
-<span class="n">ownership_patterns</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s1">&#39;repository&#39;</span><span class="p">)</span>
+<span class="n">ownership_patterns</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s1">'repository'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -298,20 +298,20 @@
 
 <span class="c1"># Use in-memory caching</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Use persistent disk caching (new in v2.5.0)</span>
-<span class="n">disk_cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/gitpandas_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">disk_cache</span><span class="p">)</span>
+<span class="n">disk_cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/tmp/gitpandas_cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">disk_cache</span><span class="p">)</span>
 
 <span class="c1"># Or use Redis for distributed caching</span>
 <span class="n">redis_cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span>
-    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">'localhost'</span><span class="p">,</span>
     <span class="n">port</span><span class="o">=</span><span class="mi">6379</span><span class="p">,</span>
     <span class="n">db</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
     <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span>  <span class="c1"># Cache entries expire after 1 hour</span>
 <span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">redis_cache</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">redis_cache</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -320,17 +320,17 @@
 <p>Manage cache performance and contents:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache usage: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">][</span><span class="s1">&#39;cache_usage_percent&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache usage: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'global_cache_stats'</span><span class="p">][</span><span class="s1">'cache_usage_percent'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 
 <span class="c1"># Invalidate specific cache entries</span>
-<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">])</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">])</span>
 
 <span class="c1"># Clear all cache for this repository</span>
 <span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">()</span>
 
 <span class="c1"># Warm cache for better performance</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">,</span> <span class="s1">'blame'</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'cache_entries_created'</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -344,9 +344,9 @@
 <span class="n">commit_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>
 
 <span class="c1"># Plot commits over time using pandas</span>
-<span class="n">commit_df</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Commits per Day&#39;</span>
+<span class="n">commit_df</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">'D'</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">'bar'</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Commits per Day'</span>
 <span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -359,9 +359,9 @@
 <span class="n">changes_df</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">()</span>
 
 <span class="c1"># Plot changes over time using pandas</span>
-<span class="n">changes_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">)[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Lines Added by File&#39;</span>
+<span class="n">changes_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'filename'</span><span class="p">)[</span><span class="s1">'insertions'</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">'bar'</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Lines Added by File'</span>
 <span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>

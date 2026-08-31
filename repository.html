@@ -193,9 +193,9 @@
 <p>Create a Repository from a local Git repository:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;/path/to/repo/&#39;</span><span class="p">,</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="s1">'/path/to/repo/'</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">'main'</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -206,9 +206,9 @@
 <p>Create a Repository from a remote Git repository:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="n">working_dir</span><span class="o">=</span><span class="s1">&#39;git://github.com/user/repo.git&#39;</span><span class="p">,</span>
+    <span class="n">working_dir</span><span class="o">=</span><span class="s1">'git://github.com/user/repo.git'</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">'main'</span>  <span class="c1"># Optional, will auto-detect if not specified</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -239,16 +239,16 @@
 
 <span class="c1"># Blame analysis</span>
 <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
-    <span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">,</span>          <span class="c1"># Revision to analyze</span>
+    <span class="n">rev</span><span class="o">=</span><span class="s2">"HEAD"</span><span class="p">,</span>          <span class="c1"># Revision to analyze</span>
     <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># Group by committer (False for author)</span>
-    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># Group by &#39;repository&#39; or &#39;file&#39;</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">"repository"</span><span class="p">,</span>     <span class="c1"># Group by 'repository' or 'file'</span>
     <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">)</span>
 
 <span class="c1"># Bus factor analysis</span>
 <span class="n">repo</span><span class="o">.</span><span class="n">bus_factor</span><span class="p">(</span>
-    <span class="n">by</span><span class="o">=</span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>     <span class="c1"># How to group results (&#39;repository&#39; or &#39;file&#39;)</span>
+    <span class="n">by</span><span class="o">=</span><span class="s2">"repository"</span><span class="p">,</span>     <span class="c1"># How to group results ('repository' or 'file')</span>
     <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">)</span>
@@ -269,7 +269,7 @@
 <section id="repository-information">
 <h3>Repository Information<a class="headerlink" href="#repository-information" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># List files in repository</span>
-<span class="n">repo</span><span class="o">.</span><span class="n">list_files</span><span class="p">(</span><span class="n">rev</span><span class="o">=</span><span class="s2">&quot;HEAD&quot;</span><span class="p">)</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">list_files</span><span class="p">(</span><span class="n">rev</span><span class="o">=</span><span class="s2">"HEAD"</span><span class="p">)</span>
 
 <span class="c1"># Check branch existence</span>
 <span class="n">repo</span><span class="o">.</span><span class="n">has_branch</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
@@ -346,11 +346,11 @@ analyzing commit history, blame information, file changes, and other git metrics
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create from local repository</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create from remote repository</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;git://github.com/user/repo.git&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'git://github.com/user/repo.git'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -227,28 +227,28 @@ rebases, or checkouts.</p>
 
 <span class="c1"># Create repository with caching</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Perform a dry run to see what would be fetched</span>
 <span class="n">dry_result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">dry_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Would fetch from: </span><span class="si">{</span><span class="n">dry_result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Would fetch from: </span><span class="si">{</span><span class="n">dry_result</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Safely fetch changes</span>
-<span class="k">if</span> <span class="n">dry_result</span><span class="p">[</span><span class="s1">&#39;remote_exists&#39;</span><span class="p">]:</span>
+<span class="k">if</span> <span class="n">dry_result</span><span class="p">[</span><span class="s1">'remote_exists'</span><span class="p">]:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch completed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;changes_available&#39;</span><span class="p">]:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New changes are available!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetch completed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">'changes_available'</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"New changes are available!"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'error'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="advanced-options">
 <h4>Advanced Options<a class="headerlink" href="#advanced-options" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch from a specific remote</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">remote_name</span><span class="o">=</span><span class="s1">&#39;upstream&#39;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">remote_name</span><span class="o">=</span><span class="s1">'upstream'</span><span class="p">)</span>
 
 <span class="c1"># Fetch and prune deleted remote branches</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">(</span><span class="n">prune</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -333,14 +333,14 @@ success status but no methods executed.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
 
 <span class="c1"># Create repository with persistent cache</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/my_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/tmp/my_cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Warm cache with default methods</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache warming completed in </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Methods executed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_executed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache warming completed in </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'execution_time'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Created </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'cache_entries_created'</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Methods executed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'methods_executed'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -348,17 +348,17 @@ success status but no methods executed.</p>
 <h4>Custom Cache Warming<a class="headerlink" href="#custom-cache-warming" title="Link to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warm specific methods with custom parameters</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span>
-    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">,</span> <span class="s1">&#39;file_detail&#39;</span><span class="p">],</span>
+    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">,</span> <span class="s1">'blame'</span><span class="p">,</span> <span class="s1">'file_detail'</span><span class="p">],</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">,</span> <span class="s1">&#39;*.tmp&#39;</span><span class="p">]</span>
+    <span class="n">branch</span><span class="o">=</span><span class="s1">'main'</span><span class="p">,</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.log'</span><span class="p">,</span> <span class="s1">'*.tmp'</span><span class="p">]</span>
 <span class="p">)</span>
 
 <span class="c1"># Check results</span>
-<span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully warmed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_executed&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> methods&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Successfully warmed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">'methods_executed'</span><span class="p">])</span><span class="si">}</span><span class="s2"> methods"</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Errors occurred: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Errors occurred: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'errors'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -386,7 +386,7 @@ success status but no methods executed.</p>
 <span class="n">cold_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 
 <span class="c1"># Warm the cache</span>
-<span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 
 <span class="c1"># Test warm performance</span>
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -394,7 +394,7 @@ success status but no methods executed.</p>
 <span class="n">warm_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 
 <span class="n">speedup</span> <span class="o">=</span> <span class="n">cold_time</span> <span class="o">/</span> <span class="n">warm_time</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache warming provided </span><span class="si">{</span><span class="n">speedup</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x speedup!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache warming provided </span><span class="si">{</span><span class="n">speedup</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x speedup!"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -463,8 +463,8 @@ are read-only and will not modify working directories or current branches.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">DiskCache</span>
 
 <span class="c1"># Create project directory with shared cache</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/project_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">&#39;/path/to/repos&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/tmp/project_cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">'/path/to/repos'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Perform bulk operations</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span>
@@ -473,9 +473,9 @@ are read-only and will not modify working directories or current branches.</p>
     <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;repositories_processed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> repositories&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;fetch_successful&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;cache_successful&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processed </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'repositories_processed'</span><span class="p">]</span><span class="si">}</span><span class="s2"> repositories"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetch summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'summary'</span><span class="p">][</span><span class="s1">'fetch_successful'</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache summary: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'summary'</span><span class="p">][</span><span class="s1">'cache_successful'</span><span class="p">]</span><span class="si">}</span><span class="s2"> successful"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -486,21 +486,21 @@ are read-only and will not modify working directories or current branches.</p>
     <span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">remote_name</span><span class="o">=</span><span class="s1">&#39;upstream&#39;</span><span class="p">,</span>
+    <span class="n">remote_name</span><span class="o">=</span><span class="s1">'upstream'</span><span class="p">,</span>
     <span class="n">prune</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">cache_methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">],</span>
+    <span class="n">cache_methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">,</span> <span class="s1">'blame'</span><span class="p">],</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">]</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.log'</span><span class="p">]</span>
 <span class="p">)</span>
 
 <span class="c1"># Check individual repository results</span>
-<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">fetch_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;fetch_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">fetch_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed for </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">fetch_result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">fetch_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">'fetch_results'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fetch_result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetch failed for </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">fetch_result</span><span class="p">[</span><span class="s1">'error'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">cache_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">cache_result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">cache_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">'cache_results'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">cache_result</span><span class="p">[</span><span class="s1">'cache_entries_created'</span><span class="p">]</span><span class="si">}</span><span class="s2"> cache entries"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -551,24 +551,24 @@ are read-only and will not modify working directories or current branches.</p>
 <p>All remote operations and cache warming methods provide comprehensive error information:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Safe fetch error handling</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">safe_fetch_remote</span><span class="p">()</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;remote_exists&#39;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s1">'remote_exists'</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetch failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'error'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No remote configured: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No remote configured: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Cache warming error handling</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">()</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed methods: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;methods_failed&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed methods: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'methods_failed'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">'errors'</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Bulk operation error handling</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">bulk_fetch_and_warm</span><span class="p">(</span><span class="n">fetch_remote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warm_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">repo_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;fetch_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">repo_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repository </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">repo_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unknown error&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">repo_result</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s1">'fetch_results'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">repo_result</span><span class="p">[</span><span class="s1">'success'</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Repository </span><span class="si">{</span><span class="n">repo_name</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">repo_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Unknown error'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

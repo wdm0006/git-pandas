@@ -222,15 +222,15 @@
 
 <span class="c1"># In-memory cache (fastest for single session)</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="n">EphemeralCache</span><span class="p">(</span><span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Persistent cache (best for repeated analysis)</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/gitpandas_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/tmp/gitpandas_cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 
 <span class="c1"># Redis cache (best for shared environments)</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">RedisDFCache</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">'localhost'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">3600</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -239,13 +239,13 @@
 <p>Pre-populate cache for better performance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Warm cache with commonly used methods</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">warm_cache</span><span class="p">(</span>
-    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">,</span> <span class="s1">&#39;branches&#39;</span><span class="p">,</span> <span class="s1">&#39;blame&#39;</span><span class="p">,</span> <span class="s1">&#39;file_detail&#39;</span><span class="p">],</span>
+    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">,</span> <span class="s1">'branches'</span><span class="p">,</span> <span class="s1">'blame'</span><span class="p">,</span> <span class="s1">'file_detail'</span><span class="p">],</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># Reasonable limit for cache warming</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.log&#39;</span><span class="p">,</span> <span class="s1">&#39;*.tmp&#39;</span><span class="p">]</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.log'</span><span class="p">,</span> <span class="s1">'*.tmp'</span><span class="p">]</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache entries created: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;cache_entries_created&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution time: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;execution_time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache entries created: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'cache_entries_created'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Execution time: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'execution_time'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -254,17 +254,17 @@
 <p>Monitor and manage cache performance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get cache statistics</span>
 <span class="n">stats</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repository entries: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;repository_entries&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">]:</span>
-    <span class="n">global_stats</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s1">&#39;global_cache_stats&#39;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache usage: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">&#39;cache_usage_percent&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average entry age: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">&#39;average_entry_age_hours&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> hours&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Repository entries: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">'repository_entries'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">stats</span><span class="p">[</span><span class="s1">'global_cache_stats'</span><span class="p">]:</span>
+    <span class="n">global_stats</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[</span><span class="s1">'global_cache_stats'</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cache usage: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">'cache_usage_percent'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Average entry age: </span><span class="si">{</span><span class="n">global_stats</span><span class="p">[</span><span class="s1">'average_entry_age_hours'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> hours"</span><span class="p">)</span>
 
 <span class="c1"># Invalidate specific cache entries</span>
-<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;commit_history&#39;</span><span class="p">])</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'commit_history'</span><span class="p">])</span>
 
 <span class="c1"># Clear old cache entries by pattern</span>
-<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;blame*&#39;</span><span class="p">)</span>
+<span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">'blame*'</span><span class="p">)</span>
 
 <span class="c1"># Clear all cache for repository</span>
 <span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">()</span>
@@ -320,15 +320,15 @@
 <h3>Glob Patterns<a class="headerlink" href="#glob-patterns" title="Link to this heading">¶</a></h3>
 <p>Use glob patterns to focus analysis on relevant files:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Analyze only Python files</span>
-<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">])</span>
+<span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">])</span>
 
 <span class="c1"># Exclude test and build files</span>
-<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;test_*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;build/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*.pyc&#39;</span><span class="p">])</span>
+<span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span><span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'test_*.py'</span><span class="p">,</span> <span class="s1">'build/*'</span><span class="p">,</span> <span class="s1">'*.pyc'</span><span class="p">])</span>
 
 <span class="c1"># Multiple patterns</span>
 <span class="n">rates</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_rates</span><span class="p">(</span>
-    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">,</span> <span class="s1">&#39;*.html&#39;</span><span class="p">],</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/tests/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/node_modules/*&#39;</span><span class="p">]</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">,</span> <span class="s1">'*.js'</span><span class="p">,</span> <span class="s1">'*.html'</span><span class="p">],</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*/tests/*'</span><span class="p">,</span> <span class="s1">'*/node_modules/*'</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -345,7 +345,7 @@
 <span class="c1"># Combine limits with filtering</span>
 <span class="n">python_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -354,10 +354,10 @@
 <h3>Branch-Specific Analysis<a class="headerlink" href="#branch-specific-analysis" title="Link to this heading">¶</a></h3>
 <p>Analyze specific branches for better performance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Analyze main development branch only</span>
-<span class="n">main_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">)</span>
+<span class="n">main_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">'main'</span><span class="p">)</span>
 
 <span class="c1"># Compare specific branches</span>
-<span class="n">feature_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">&#39;feature/new-ui&#39;</span><span class="p">)</span>
+<span class="n">feature_commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="s1">'feature/new-ui'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -377,7 +377,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
 
 <span class="c1"># Parallel analysis across repositories</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">&#39;/path/to/projects&#39;</span><span class="p">)</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">'/path/to/projects'</span><span class="p">)</span>
 
 <span class="c1"># These operations run in parallel when joblib is available:</span>
 <span class="n">commits</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">commit_history</span><span class="p">()</span>  <span class="c1"># Parallel across repos</span>
@@ -403,14 +403,14 @@
 
 <span class="c1"># Check memory usage</span>
 <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory usage: </span><span class="si">{</span><span class="n">commits</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Memory usage: </span><span class="si">{</span><span class="n">commits</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
 
 <span class="c1"># Optimize data types</span>
-<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;insertions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
-<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;deletions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;deletions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">'insertions'</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">'insertions'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int32'</span><span class="p">)</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">'deletions'</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">'deletions'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int32'</span><span class="p">)</span>
 
 <span class="c1"># Use categorical for repeated strings</span>
-<span class="n">commits</span><span class="p">[</span><span class="s1">&#39;committer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">&#39;committer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">commits</span><span class="p">[</span><span class="s1">'committer'</span><span class="p">]</span> <span class="o">=</span> <span class="n">commits</span><span class="p">[</span><span class="s1">'committer'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'category'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -418,7 +418,7 @@
 <h3>Chunked Processing<a class="headerlink" href="#chunked-processing" title="Link to this heading">¶</a></h3>
 <p>Process large datasets in chunks:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">analyze_in_chunks</span><span class="p">(</span><span class="n">repo</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Analyze repository in chunks to manage memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Analyze repository in chunks to manage memory."""</span>
     <span class="n">all_results</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -436,7 +436,7 @@
 
         <span class="c1"># Optional: Clear cache periodically</span>
         <span class="k">if</span> <span class="n">offset</span> <span class="o">%</span> <span class="mi">10000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;commit_history*&#39;</span><span class="p">)</span>
+            <span class="n">repo</span><span class="o">.</span><span class="n">invalidate_cache</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">'commit_history*'</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">all_results</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
@@ -478,19 +478,19 @@
 <section id="configuration-for-large-repositories">
 <h3>Configuration for Large Repositories<a class="headerlink" href="#configuration-for-large-repositories" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Large repository configuration</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/fast/disk/cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/fast/disk/cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 <span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span>
-    <span class="s1">&#39;/path/to/large/repo&#39;</span><span class="p">,</span>
+    <span class="s1">'/path/to/large/repo'</span><span class="p">,</span>
     <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
-    <span class="n">default_branch</span><span class="o">=</span><span class="s1">&#39;main&#39;</span>
+    <span class="n">default_branch</span><span class="o">=</span><span class="s1">'main'</span>
 <span class="p">)</span>
 
 <span class="c1"># Use aggressive filtering</span>
 <span class="n">analysis</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>  <span class="c1"># Reasonable limit</span>
     <span class="n">days</span><span class="o">=</span><span class="mi">365</span><span class="p">,</span>    <span class="c1"># Last year only</span>
-    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">],</span>  <span class="c1"># Core files only</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/tests/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/vendor/*&#39;</span><span class="p">]</span>  <span class="c1"># Exclude bulk dirs</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">,</span> <span class="s1">'*.js'</span><span class="p">],</span>  <span class="c1"># Core files only</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*/tests/*'</span><span class="p">,</span> <span class="s1">'*/vendor/*'</span><span class="p">]</span>  <span class="c1"># Exclude bulk dirs</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -501,7 +501,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">benchmark_operation</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Benchmark any git-pandas operation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Benchmark any git-pandas operation."""</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">start_memory</span> <span class="o">=</span> <span class="n">get_memory_usage</span><span class="p">()</span>
 
@@ -510,9 +510,9 @@
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">end_memory</span> <span class="o">=</span> <span class="n">get_memory_usage</span><span class="p">()</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Execution time: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Memory delta: </span><span class="si">{</span><span class="n">end_memory</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_memory</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">MB&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Result size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Execution time: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Memory delta: </span><span class="si">{</span><span class="n">end_memory</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_memory</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">MB"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Result size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2"> rows"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result</span>
 
@@ -520,7 +520,7 @@
 <span class="n">commits</span> <span class="o">=</span> <span class="n">benchmark_operation</span><span class="p">(</span>
     <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">,</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">]</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -531,16 +531,16 @@
 <p>Avoid these common performance issues:</p>
 <p>❌ <strong>No Caching</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Slow: No cache means repeated expensive Git operations</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">)</span>  <span class="c1"># No cache_backend</span>
-<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;develop&#39;</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">]:</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">)</span>  <span class="c1"># No cache_backend</span>
+<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'main'</span><span class="p">,</span> <span class="s1">'develop'</span><span class="p">,</span> <span class="s1">'feature'</span><span class="p">]:</span>
     <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>  <span class="c1"># Repeated work</span>
 </pre></div>
 </div>
 <p>✅ <strong>With Caching</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fast: Cache reuses expensive operations</span>
-<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">&#39;/tmp/analysis_cache.gz&#39;</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">&#39;/path/to/repo&#39;</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;develop&#39;</span><span class="p">,</span> <span class="s1">&#39;feature&#39;</span><span class="p">]:</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">DiskCache</span><span class="p">(</span><span class="s1">'/tmp/analysis_cache.gz'</span><span class="p">,</span> <span class="n">max_keys</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">repo</span> <span class="o">=</span> <span class="n">Repository</span><span class="p">(</span><span class="s1">'/path/to/repo'</span><span class="p">,</span> <span class="n">cache_backend</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'main'</span><span class="p">,</span> <span class="s1">'develop'</span><span class="p">,</span> <span class="s1">'feature'</span><span class="p">]:</span>
     <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>  <span class="c1"># Cached after first</span>
 </pre></div>
 </div>
@@ -552,8 +552,8 @@
 <p>✅ <strong>With Filtering</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fast: Only analyzes relevant source files</span>
 <span class="n">blame</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
-    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*.py&#39;</span><span class="p">,</span> <span class="s1">&#39;*.js&#39;</span><span class="p">,</span> <span class="s1">&#39;*.html&#39;</span><span class="p">],</span>
-    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*/build/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*/logs/*&#39;</span><span class="p">,</span> <span class="s1">&#39;*.pyc&#39;</span><span class="p">]</span>
+    <span class="n">include_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*.py'</span><span class="p">,</span> <span class="s1">'*.js'</span><span class="p">,</span> <span class="s1">'*.html'</span><span class="p">],</span>
+    <span class="n">ignore_globs</span><span class="o">=</span><span class="p">[</span><span class="s1">'*/build/*'</span><span class="p">,</span> <span class="s1">'*/logs/*'</span><span class="p">,</span> <span class="s1">'*.pyc'</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -584,8 +584,8 @@
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
     <span class="n">commits</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Smaller chunks</span>
     <span class="n">total_commits</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">commits</span><span class="p">)</span>
-    <span class="c1"># Don&#39;t accumulate DataFrames</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total commits processed: </span><span class="si">{</span><span class="n">total_commits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Don't accumulate DataFrames</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total commits processed: </span><span class="si">{</span><span class="n">total_commits</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
