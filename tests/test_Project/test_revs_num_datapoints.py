@@ -7,6 +7,7 @@ repository case.
 
 import pytest
 
+import gitpandas.project as project_module
 from gitpandas import ProjectDirectory
 from gitpandas.cache import EphemeralCache
 from tests.test_Repository.test_revs_num_datapoints import COMMIT_COUNT, build_revs_repo
@@ -58,3 +59,41 @@ class TestProjectRevsNumDatapoints:
     def test_non_positive_num_datapoints_raises(self, project, num_datapoints):
         with pytest.raises(ValueError, match="num_datapoints must be a positive integer"):
             project.revs(num_datapoints=num_datapoints)
+
+
+class TestProjectRevsLimit:
+    @pytest.mark.parametrize(
+        ("limit", "expected_counts"),
+        [
+            (1, [1, 0]),
+            (2, [1, 1]),
+            (3, [2, 1]),
+            (4, [2, 2]),
+        ],
+    )
+    def test_distributes_limit_in_repository_order(self, project, limit, expected_counts):
+        df = project.revs(limit=limit)
+
+        assert df.shape[0] == limit
+        for repo, expected_count in zip(project.repos, expected_counts, strict=True):
+            actual = df.loc[df["repository"] == repo.repo_name, "rev"].tolist()
+            expected = repo.revs(limit=expected_count)["rev"].tolist()
+            assert actual == expected
+
+    def test_limit_beyond_combined_history_returns_each_revision_once(self, project):
+        df = project.revs(limit=COMMIT_COUNT * REPO_COUNT * 3)
+
+        assert df.shape[0] == COMMIT_COUNT * REPO_COUNT
+        assert not df.duplicated(subset=["repository", "rev"]).any()
+        for repo in project.repos:
+            actual = df.loc[df["repository"] == repo.repo_name, "rev"].tolist()
+            assert actual == repo.revs()["rev"].tolist()
+
+    def test_sequential_path_uses_the_same_allocation(self, project, monkeypatch):
+        monkeypatch.setattr(project_module, "_has_joblib", False)
+
+        df = project.revs(limit=3)
+
+        for repo, expected_count in zip(project.repos, [2, 1], strict=True):
+            actual = df.loc[df["repository"] == repo.repo_name, "rev"].tolist()
+            assert actual == repo.revs(limit=expected_count)["rev"].tolist()

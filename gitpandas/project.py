@@ -777,8 +777,10 @@ class ProjectDirectory:
         if num_datapoints is not None and num_datapoints < 1:
             raise ValueError(f"num_datapoints must be a positive integer, got {num_datapoints}")
 
-        if limit is not None:
-            limit = math.floor(float(limit) / len(self.repos))
+        limits = [None] * len(self.repos)
+        if limit is not None and self.repos:
+            quotient, remainder = divmod(math.floor(float(limit)), len(self.repos))
+            limits = [quotient + (index < remainder) for index in range(len(self.repos))]
 
         if num_datapoints is not None:
             # Never round a positive request down to zero; each repo contributes at least one rev.
@@ -788,17 +790,20 @@ class ProjectDirectory:
 
         if _has_joblib:
             ds = Parallel(n_jobs=-1, backend="threading", verbose=0)(
-                [delayed(_revs_func)(repo, branch, limit, skip, num_datapoints) for repo in self.repos]
+                [
+                    delayed(_revs_func)(repo, branch, repo_limit, skip, num_datapoints)
+                    for repo, repo_limit in zip(self.repos, limits, strict=True)
+                ]
             )
             for d in ds:
                 if not d.empty:
                     df = pd.concat([df, d], ignore_index=True)
         else:
-            for repo in self.repos:
+            for repo, repo_limit in zip(self.repos, limits, strict=True):
                 try:
                     revs = repo.revs(
                         branch=branch,
-                        limit=limit,
+                        limit=repo_limit,
                         skip=skip,
                         num_datapoints=num_datapoints,
                     )

@@ -3,6 +3,10 @@ Unreleased
 
 ## Bug Fixes
 
+### Project Revision Limits
+
+ * **FIXED**: `ProjectDirectory.revs(limit=N)` now distributes remainder revisions to repositories in project order instead of discarding them, so populated projects return up to the requested limit for values smaller than or not evenly divisible by the repository count.
+
 ### Punchcard Normalization
 
  * **FIXED**: `Repository.punchcard()` and `ProjectDirectory.punchcard()` now preserve finite zeros when normalizing an all-zero metric instead of producing `NaN` values through division by zero.
