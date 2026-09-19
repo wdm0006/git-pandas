@@ -3,6 +3,15 @@ Unreleased
 
 ## Bug Fixes
 
+### Project-Wide Limit Allocation
+
+**This is a user-visible change to the output of `ProjectDirectory.hours_estimate()`,
+`commit_history()` and `file_change_history()` whenever `limit` is used: they now return
+the number of rows that was asked for, which is generally more than before.**
+
+ * **FIXED**: `ProjectDirectory.hours_estimate()`, `ProjectDirectory.commit_history()` and `ProjectDirectory.file_change_history()` divided a project-wide `limit` with `int(limit / len(self.repo_dirs))` and handed the same truncated value to every repository. Three defects followed: any `limit` below the repository count floored to zero and silently returned an empty frame (`commit_history(limit=1)` over two repositories returned no rows at all), the remainder was discarded (`limit=3` returned 2 rows, `limit=5` returned 4), and the divisor was `repo_dirs`, which is not filtered by `ignore_repos` when the project is built from `Repository` instances, so an ignored repository still consumed a share of the limit. All three now use the same quotient-plus-remainder allocation `revs()` already used: the first `limit % len(repos)` repositories receive one extra commit, and the shares are taken over the `ignore_repos`-filtered `repos`.
+ * **FIXED**: Those three methods raised `ZeroDivisionError` on a project with no repositories, as did `ProjectDirectory.revs(num_datapoints=N)`. They now return the same empty DataFrame an all-failing project returns.
+
 ### Project Revision Limits
 
  * **FIXED**: `ProjectDirectory.revs(limit=N)` now distributes remainder revisions to repositories in project order instead of discarding them, so populated projects return up to the requested limit for values smaller than or not evenly divisible by the repository count.

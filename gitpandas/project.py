@@ -182,6 +182,27 @@ class ProjectDirectory:
         logger.debug("Generated repository name DataFrame.")
         return df
 
+    def _allocate_limit(self, limit):
+        """
+        Splits a project-wide limit across the member repositories.
+
+        Args:
+            limit (Optional[int]): The project-wide maximum, or None for no limit.
+
+        Returns:
+            List[Optional[int]]: One share per repository, in repository order. The first
+                ``limit % len(self.repos)`` repositories receive one extra so the shares
+                sum to ``limit`` rather than dropping the remainder. Returns an empty list
+                when the project has no repositories.
+        """
+        if limit is None:
+            return [None] * len(self.repos)
+        if not self.repos:
+            return []
+
+        quotient, remainder = divmod(math.floor(float(limit)), len(self.repos))
+        return [quotient + (index < remainder) for index in range(len(self.repos))]
+
     def is_bare(self):
         """
         Returns a dataframe of repo names and whether or not they are bare.
@@ -359,20 +380,19 @@ class ProjectDirectory:
         if branch is None:
             branch = self.default_branch
 
-        if limit is not None:
-            limit = int(limit / len(self.repo_dirs))
+        limits = self._allocate_limit(limit)
 
         com = "committer" if committer else "author"
 
         df = pd.DataFrame(columns=[com, "hours", "repository"])
 
-        for repo in self.repos:
+        for repo, repo_limit in zip(self.repos, limits, strict=True):
             try:
                 ch = repo.hours_estimate(
                     branch=branch,
                     grouping_window=grouping_window,
                     single_commit_hours=single_commit_hours,
-                    limit=limit,
+                    limit=repo_limit,
                     days=days,
                     committer=committer,
                     ignore_globs=ignore_globs,
@@ -422,17 +442,16 @@ class ProjectDirectory:
         if branch is None:
             branch = self.default_branch
 
-        if limit is not None:
-            limit = int(limit / len(self.repo_dirs))
+        limits = self._allocate_limit(limit)
 
         # Initialize empty DataFrame with all required columns
         df = None
 
-        for repo in self.repos:
+        for repo, repo_limit in zip(self.repos, limits, strict=True):
             try:
                 ch = repo.commit_history(
                     branch,
-                    limit=limit,
+                    limit=repo_limit,
                     days=days,
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
@@ -507,17 +526,16 @@ class ProjectDirectory:
         if branch is None:
             branch = self.default_branch
 
-        if limit is not None:
-            limit = int(limit / len(self.repo_dirs))
+        limits = self._allocate_limit(limit)
 
         # Initialize empty DataFrame with all required columns
         df = None
 
-        for repo in self.repos:
+        for repo, repo_limit in zip(self.repos, limits, strict=True):
             try:
                 ch = repo.file_change_history(
                     branch,
-                    limit=limit,
+                    limit=repo_limit,
                     days=days,
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
@@ -777,12 +795,9 @@ class ProjectDirectory:
         if num_datapoints is not None and num_datapoints < 1:
             raise ValueError(f"num_datapoints must be a positive integer, got {num_datapoints}")
 
-        limits = [None] * len(self.repos)
-        if limit is not None and self.repos:
-            quotient, remainder = divmod(math.floor(float(limit)), len(self.repos))
-            limits = [quotient + (index < remainder) for index in range(len(self.repos))]
+        limits = self._allocate_limit(limit)
 
-        if num_datapoints is not None:
+        if num_datapoints is not None and self.repos:
             # Never round a positive request down to zero; each repo contributes at least one rev.
             num_datapoints = max(1, math.floor(float(num_datapoints) / len(self.repos)))
 
