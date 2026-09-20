@@ -366,6 +366,30 @@
         <span class="k">return</span> <span class="n">df</span></div>
 
 
+<div class="viewcode-block" id="ProjectDirectory._allocate_limit">
+<a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory._allocate_limit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_allocate_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Splits a project-wide limit across the member repositories.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            limit (Optional[int]): The project-wide maximum, or None for no limit.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Optional[int]]: One share per repository, in repository order. The first</span>
+<span class="sd">                ``limit % len(self.repos)`` repositories receive one extra so the shares</span>
+<span class="sd">                sum to ``limit`` rather than dropping the remainder. Returns an empty list</span>
+<span class="sd">                when the project has no repositories.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">quotient</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">quotient</span> <span class="o">+</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">remainder</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))]</span></div>
+
+
 <div class="viewcode-block" id="ProjectDirectory.is_bare">
 <a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.is_bare">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_bare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -557,20 +581,19 @@
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
 
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_dirs</span><span class="p">))</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allocate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
         <span class="n">com</span> <span class="o">=</span> <span class="s2">"committer"</span> <span class="k">if</span> <span class="n">committer</span> <span class="k">else</span> <span class="s2">"author"</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">com</span><span class="p">,</span> <span class="s2">"hours"</span><span class="p">,</span> <span class="s2">"repository"</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">repo</span><span class="p">,</span> <span class="n">repo_limit</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ch</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">hours_estimate</span><span class="p">(</span>
                     <span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span>
                     <span class="n">grouping_window</span><span class="o">=</span><span class="n">grouping_window</span><span class="p">,</span>
                     <span class="n">single_commit_hours</span><span class="o">=</span><span class="n">single_commit_hours</span><span class="p">,</span>
-                    <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">repo_limit</span><span class="p">,</span>
                     <span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">,</span>
                     <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">,</span>
                     <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span>
@@ -623,17 +646,16 @@
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
 
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_dirs</span><span class="p">))</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allocate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
         <span class="c1"># Initialize empty DataFrame with all required columns</span>
         <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">repo</span><span class="p">,</span> <span class="n">repo_limit</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ch</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span>
                     <span class="n">branch</span><span class="p">,</span>
-                    <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">repo_limit</span><span class="p">,</span>
                     <span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">,</span>
                     <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span>
                     <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span><span class="p">,</span>
@@ -711,17 +733,16 @@
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
 
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">limit</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_dirs</span><span class="p">))</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allocate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
         <span class="c1"># Initialize empty DataFrame with all required columns</span>
         <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">repo</span><span class="p">,</span> <span class="n">repo_limit</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">ch</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">file_change_history</span><span class="p">(</span>
                     <span class="n">branch</span><span class="p">,</span>
-                    <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="n">repo_limit</span><span class="p">,</span>
                     <span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">,</span>
                     <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span>
                     <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span><span class="p">,</span>
@@ -993,12 +1014,9 @@
         <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">num_datapoints</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"num_datapoints must be a positive integer, got </span><span class="si">{</span><span class="n">num_datapoints</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">limits</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
-            <span class="n">quotient</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
-            <span class="n">limits</span> <span class="o">=</span> <span class="p">[</span><span class="n">quotient</span> <span class="o">+</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">remainder</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))]</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allocate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">num_datapoints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
             <span class="c1"># Never round a positive request down to zero; each repo contributes at least one rev.</span>
             <span class="n">num_datapoints</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">num_datapoints</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">)))</span>
 
