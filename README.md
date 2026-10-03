@@ -19,6 +19,9 @@ Git-Pandas is a powerful Python library that transforms Git repository data into
   date slicing, and `.diff()` work as expected.
 - **🎯 Exact `num_datapoints`**: `revs(num_datapoints=N)` returns exactly `N` evenly
   spaced revisions instead of over-sampling.
+- **🧮 Honest Project Limits**: `ProjectDirectory.commit_history()`, `file_change_history()`,
+  `hours_estimate()` and `revs()` now split a project-wide `limit` across repositories without
+  dropping the remainder, so small limits no longer return empty or short frames.
 - **🔢 Finite Punchcards**: `punchcard(normalize=...)` no longer emits `NaN` for an
   all-zero metric.
 
@@ -340,7 +343,7 @@ This project is BSD licensed (see [LICENSE.md](LICENSE.md))
 
 ## Version History
 
-- **v2.6.0** (2026): pandas 3 support, optional `redis`/`coverage` extras, and correctness fixes to cumulative blame output shape, `revs(num_datapoints=...)`, and punchcard normalization
+- **v2.6.0** (2026): pandas 3 support, optional `redis`/`coverage` extras, and correctness fixes to cumulative blame output shape, `revs(num_datapoints=...)`, punchcard normalization, and project-wide `limit` allocation
 - **v2.5.0** (2026): File-wise bus factor, cache management, remote operations, performance guide, and a large correctness batch across caching and multi-repository aggregation
 - **v2.4.0** (2024): Enhanced caching system with timestamps
 - **v2.2.1** (2023): Stability improvements and bug fixes
