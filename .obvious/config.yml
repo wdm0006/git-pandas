@@ -1,0 +1,6 @@
+# Repo policy for obvious workers.
+# Auto-detected from GitHub repo settings (wdm0006/git-pandas) on 2026-09-06.
+defaultBranch: master
+# All three merge methods are enabled on this repo; squash keeps setup PRs to one commit.
+mergeMethod: squash
+requireHumanMerge: true
