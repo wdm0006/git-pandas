@@ -7,6 +7,12 @@ Unreleased
 
  * **NEW**: `Repository.commit_history()`, `Repository.hours_estimate()` and the matching `ProjectDirectory` methods accept `date_source="committer"` (default) or `"author"`. With `"author"` the `date` index, the `days` cutoff and the session grouping in `hours_estimate` use the author timestamp, so rebased, cherry-picked or squash-merged history (where every rewritten commit shares one committer timestamp) no longer collapses into a single session. Any other value raises `ValueError`. Default output is unchanged. `date_source` is part of the cache key, so `RedisDFCache` entries written by earlier versions are simply not matched; flush them if you share a cache across versions.
 
+## Bug Fixes
+
+### Blame and Bus Factor Validation
+
+* **FIXED**: Repository and project blame/bus-factor methods reject invalid `by` values with a `ValueError` naming the allowed values before accessing Git or caches.
+
 v2.6.0
 ======
 

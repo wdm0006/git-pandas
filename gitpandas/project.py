@@ -628,11 +628,16 @@ class ProjectDirectory:
                     The repository is part of the grouping because file paths are
                     repository-relative and would otherwise collide across repositories.
 
+        Raises:
+            ValueError: If by is not one of the supported grouping values.
+
         Note:
             Results are sorted by lines of code in descending order.
             If both ignore_globs and include_globs are provided, files must match an include pattern
             and not match any ignore patterns to be included.
         """
+        if by not in ("repository", "file"):
+            raise ValueError(f"by must be one of ('repository', 'file'); got {by!r}")
         logger.info(f"Calculating blame grouped by {'committer' if committer else 'author'} and '{by}'.")
         df = None
 
@@ -1094,10 +1099,15 @@ class ProjectDirectory:
                     - bus factor (int): Bus factor for that file
                     - repository (str): Repository name
 
+        Raises:
+            ValueError: If by is not one of the supported grouping values.
+
         Note:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
             few contributors. A higher bus factor indicates knowledge is better distributed.
         """
+        if by not in ("projectd", "repository", "file"):
+            raise ValueError(f"by must be one of ('projectd', 'repository', 'file'); got {by!r}")
         logger.info(f"Calculating bus factor grouped by '{by}'.")
         if by == "file":
             # Calculate file-wise bus factor across all repositories

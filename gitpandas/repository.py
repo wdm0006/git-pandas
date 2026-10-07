@@ -10,6 +10,7 @@
 
 import fnmatch
 import functools
+
 import inspect
 import json
 import logging
@@ -17,6 +18,7 @@ import os
 import shutil
 import tempfile
 import time
+from functools import wraps
 
 import git  # Import the full git module
 import numpy as np
@@ -56,6 +58,23 @@ def _validates_date_source(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def _validates_by(*allowed):
+    def decorate(func):
+        signature = inspect.signature(func)
+
+        @wraps(func)
+        def validate(self, *args, **kwargs):
+            arguments = signature.bind(self, *args, **{k: v for k, v in kwargs.items() if k != "force_refresh"})
+            arguments.apply_defaults()
+            if arguments.arguments["by"] not in allowed:
+                raise ValueError(f"by must be one of {allowed!r}; got {arguments.arguments['by']!r}")
+            return func(self, *args, **kwargs)
+
+        return validate
+
+    return decorate
 
 
 def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_globs):
@@ -1083,6 +1102,7 @@ class Repository:
         logger.debug(f"Finished checking extensions. Filtered files count: {len(out)}")
         return out
 
+    @_validates_by("repository", "file")
     @multicache(key_prefix="blame", key_list=["rev", "committer", "by", "ignore_globs", "include_globs"])
     def blame(
         self,
@@ -1117,6 +1137,9 @@ class Repository:
                     - committer/author (str): Name of the committer/author
                     - file (str): File path
                     - loc (int): Lines of code attributed to that person in that file
+
+        Raises:
+            ValueError: If by is not one of the supported grouping values.
 
         Note:
             Results are sorted by lines of code in descending order.
@@ -2302,6 +2325,7 @@ class Repository:
         """
         return str(self.git_dir)
 
+    @_validates_by("repository", "file")
     @multicache(key_prefix="bus_factor", key_list=["by", "ignore_globs", "include_globs"])
     def bus_factor(self, by="repository", ignore_globs=None, include_globs=None):
         """Calculates the "bus factor" for the repository.
@@ -2326,6 +2350,9 @@ class Repository:
                     - file (str): File path
                     - bus factor (int): Bus factor for that file
                     - repository (str): Repository name
+
+        Raises:
+            ValueError: If by is not one of the supported grouping values.
 
         Note:
             A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among
