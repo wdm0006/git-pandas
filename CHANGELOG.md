@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## Bug Fixes
+
+### Blame and Bus Factor Validation
+
+* **FIXED**: Repository and project blame/bus-factor methods reject invalid `by` values with a `ValueError` naming the allowed values before accessing Git or caches.
+
 v2.6.0
 ======
 
