@@ -16,7 +16,7 @@
     
     <title>gitpandas.repository &#8212; git-pandas 2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=30d13653" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/wabi.css?v=c49ddd0e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/wabi.css?v=9adde7c3" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e5d61e22" />
     <script src="../../_static/documentation_options.js?v=3c4615cf"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -185,12 +185,14 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">git</span>  <span class="c1"># Import the full git module</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -209,6 +211,23 @@
     <span class="n">_has_joblib</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">"willmcginnis"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validates_by</span><span class="p">(</span><span class="o">*</span><span class="n">allowed</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorate</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">arguments</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"force_refresh"</span><span class="p">})</span>
+            <span class="n">arguments</span><span class="o">.</span><span class="n">apply_defaults</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">arguments</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s2">"by"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"by must be one of </span><span class="si">{</span><span class="n">allowed</span><span class="si">!r}</span><span class="s2">; got </span><span class="si">{</span><span class="n">arguments</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s1">'by'</span><span class="p">]</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">validate</span>
+
+    <span class="k">return</span> <span class="n">decorate</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parallel_cumulative_blame_func</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">committer</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="p">,</span> <span class="n">include_globs</span><span class="p">):</span>
@@ -1254,6 +1273,7 @@
 
 <div class="viewcode-block" id="Repository.blame">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.blame">[docs]</a>
+    <span class="nd">@_validates_by</span><span class="p">(</span><span class="s2">"repository"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">)</span>
     <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">"blame"</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"rev"</span><span class="p">,</span> <span class="s2">"committer"</span><span class="p">,</span> <span class="s2">"by"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">blame</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1288,6 +1308,9 @@
 <span class="sd">                    - committer/author (str): Name of the committer/author</span>
 <span class="sd">                    - file (str): File path</span>
 <span class="sd">                    - loc (int): Lines of code attributed to that person in that file</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If by is not one of the supported grouping values.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Results are sorted by lines of code in descending order.</span>
@@ -2521,6 +2544,7 @@
 
 <div class="viewcode-block" id="Repository.bus_factor">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.bus_factor">[docs]</a>
+    <span class="nd">@_validates_by</span><span class="p">(</span><span class="s2">"repository"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">)</span>
     <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">"bus_factor"</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"by"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">"repository"</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Calculates the "bus factor" for the repository.</span>
@@ -2545,6 +2569,9 @@
 <span class="sd">                    - file (str): File path</span>
 <span class="sd">                    - bus factor (int): Bus factor for that file</span>
 <span class="sd">                    - repository (str): Repository name</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If by is not one of the supported grouping values.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among</span>
@@ -3463,7 +3490,10 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<h3><a href="../../index.html">Table of Contents</a></h3>
+
+
+<h3 class="sr-only">Table of Contents</h3>
+
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../repository.html">Repository</a></li>

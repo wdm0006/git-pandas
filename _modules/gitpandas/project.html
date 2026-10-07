@@ -16,7 +16,7 @@
     
     <title>gitpandas.project &#8212; git-pandas 2.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=30d13653" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/wabi.css?v=c49ddd0e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/wabi.css?v=9adde7c3" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e5d61e22" />
     <script src="../../_static/documentation_options.js?v=3c4615cf"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -830,11 +830,16 @@
 <span class="sd">                    The repository is part of the grouping because file paths are</span>
 <span class="sd">                    repository-relative and would otherwise collide across repositories.</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If by is not one of the supported grouping values.</span>
+
 <span class="sd">        Note:</span>
 <span class="sd">            Results are sorted by lines of code in descending order.</span>
 <span class="sd">            If both ignore_globs and include_globs are provided, files must match an include pattern</span>
 <span class="sd">            and not match any ignore patterns to be included.</span>
 <span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">by</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"repository"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"by must be one of ('repository', 'file'); got </span><span class="si">{</span><span class="n">by</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Calculating blame grouped by </span><span class="si">{</span><span class="s1">'committer'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">committer</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'author'</span><span class="si">}</span><span class="s2"> and '</span><span class="si">{</span><span class="n">by</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1320,10 +1325,15 @@
 <span class="sd">                    - bus factor (int): Bus factor for that file</span>
 <span class="sd">                    - repository (str): Repository name</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If by is not one of the supported grouping values.</span>
+
 <span class="sd">        Note:</span>
 <span class="sd">            A low bus factor (e.g. 1-2) indicates high risk as knowledge is concentrated among</span>
 <span class="sd">            few contributors. A higher bus factor indicates knowledge is better distributed.</span>
 <span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">by</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"projectd"</span><span class="p">,</span> <span class="s2">"repository"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"by must be one of ('projectd', 'repository', 'file'); got </span><span class="si">{</span><span class="n">by</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Calculating bus factor grouped by '</span><span class="si">{</span><span class="n">by</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">by</span> <span class="o">==</span> <span class="s2">"file"</span><span class="p">:</span>
             <span class="c1"># Calculate file-wise bus factor across all repositories</span>
@@ -1911,7 +1921,10 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-<h3><a href="../../index.html">Table of Contents</a></h3>
+
+
+<h3 class="sr-only">Table of Contents</h3>
+
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../repository.html">Repository</a></li>

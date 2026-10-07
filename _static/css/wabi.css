@@ -13,7 +13,7 @@
 
   --color-text: #2d2a26;
   --color-text-muted: #6b6560;
-  --color-text-subtle: #9a948d;
+  --color-text-subtle: #726c66;
 
   --color-accent: #b8574c;
   --color-accent-hover: #a04a40;
@@ -756,6 +756,28 @@ pre code {
   margin-top: 0;
 }
 
+/* Group captions (toctree sections) - small-caps mono eyebrows.
+   Rendered by Sphinx for every `:caption:` group in the global toctree. */
+.sphinxsidebar p.caption {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* The first group opens the list: no divider, no extra gap above */
+.sphinxsidebar p.caption:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 .sphinxsidebar ul {
   list-style: none;
   padding: 0;
@@ -772,6 +794,19 @@ pre code {
   display: block;
   padding: var(--space-1) 0;
   transition: color var(--transition-fast);
+  overflow-wrap: anywhere;  /* long labels break instead of overflowing the rail */
+}
+
+/* Top-level entries carry the section voice */
+.sphinxsidebar .toctree-l1 > a {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* Nested entries step down in color; indent and size come from the ul ul rules.
+   Kept before a:hover / a.current so those states keep winning. */
+.sphinxsidebar .toctree-l2 > a {
+  color: var(--color-text-subtle);
 }
 
 .sphinxsidebar a:hover {
