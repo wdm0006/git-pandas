@@ -9,6 +9,8 @@
 """
 
 import fnmatch
+import functools
+import inspect
 import json
 import logging
 import os
@@ -33,6 +35,27 @@ except ImportError:
     _has_joblib = False
 
 __author__ = "willmcginnis"
+
+DATE_SOURCES = ("committer", "author")
+
+
+def _validate_date_source(date_source):
+    if date_source not in DATE_SOURCES:
+        raise ValueError(f"date_source must be one of {DATE_SOURCES}, got {date_source!r}")
+    return date_source
+
+
+def _validates_date_source(func):
+    """Reject an invalid ``date_source`` before the cache layer reads or stores anything."""
+    sig = inspect.signature(func)
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        bound = sig.bind(*args, **{k: v for k, v in kwargs.items() if k != "force_refresh"})
+        _validate_date_source(bound.arguments.get("date_source", "committer"))
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_globs):
@@ -283,6 +306,7 @@ class Repository:
             logger.error(f"Unexpected error analyzing coverage data: {e}", exc_info=True)
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
 
+    @_validates_date_source
     @multicache(
         key_prefix="hours_estimate",
         key_list=[
@@ -294,6 +318,7 @@ class Repository:
             "committer",
             "ignore_globs",
             "include_globs",
+            "date_source",
         ],
     )
     def hours_estimate(
@@ -306,6 +331,7 @@ class Repository:
         committer=True,
         ignore_globs=None,
         include_globs=None,
+        date_source="committer",
     ):
         """
         inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143
@@ -322,6 +348,9 @@ class Repository:
         :param committer: (optional, default=True) whether to use committer vs. author
         :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing
         :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.
+        :param date_source: (optional, default="committer") which timestamp orders and groups commits, "committer" or
+             "author". Use "author" for rebased, cherry-picked or squash-merged history, where every rewritten commit
+             shares one committer timestamp.
         :return: DataFrame
         """
         resolved_branch = self.default_branch if branch is None else branch
@@ -338,6 +367,7 @@ class Repository:
             days=days,
             ignore_globs=ignore_globs,
             include_globs=include_globs,
+            date_source=date_source,
         )
 
         # split by committer|author
@@ -370,7 +400,11 @@ class Repository:
         logger.info(f"Finished hours estimation for branch '{branch}'. Found data for {len(df)} contributors.")
         return df
 
-    @multicache(key_prefix="commit_history", key_list=["branch", "limit", "days", "ignore_globs", "include_globs"])
+    @_validates_date_source
+    @multicache(
+        key_prefix="commit_history",
+        key_list=["branch", "limit", "days", "ignore_globs", "include_globs", "date_source"],
+    )
     def commit_history(
         self,
         branch=None,
@@ -378,6 +412,7 @@ class Repository:
         days=None,
         ignore_globs=None,
         include_globs=None,
+        date_source="committer",
     ):
         """
         Returns a DataFrame containing the commit history for a branch.
@@ -391,6 +426,8 @@ class Repository:
             days (Optional[int]): If provided, only return commits from the last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
+            date_source (str): Timestamp used for the ``date`` index and the ``days`` cutoff: "committer"
+                (default) or "author". Raises ValueError for anything else.
 
         Returns:
             DataFrame: A DataFrame with columns:
@@ -412,6 +449,8 @@ class Repository:
         if branch is None:
             branch = self.default_branch
 
+        date_attr = "authored_date" if date_source == "author" else "committed_date"
+
         logger.info(f"Fetching commit history for branch '{branch}'. Limit: {limit}, Days: {days}")
 
         # setup the data-set of commits
@@ -422,7 +461,7 @@ class Repository:
                     [
                         x.author.name,
                         x.committer.name,
-                        x.committed_date,
+                        getattr(x, date_attr),
                         x.message,
                         x.hexsha,
                         self.__check_extension(
@@ -443,7 +482,7 @@ class Repository:
                         x = next(commits)
                     except StopIteration:
                         break
-                    c_date = x.committed_date
+                    c_date = getattr(x, date_attr)
                     if c_date > dlim:
                         commit_count += 1
                         if logger.isEnabledFor(logging.DEBUG) and commit_count % 1000 == 0:
@@ -452,7 +491,7 @@ class Repository:
                             [
                                 x.author.name,
                                 x.committer.name,
-                                x.committed_date,
+                                getattr(x, date_attr),
                                 x.message,
                                 x.hexsha,
                                 self.__check_extension(
@@ -468,7 +507,7 @@ class Repository:
                 [
                     x.author.name,
                     x.committer.name,
-                    x.committed_date,
+                    getattr(x, date_attr),
                     x.message,
                     x.hexsha,
                     self.__check_extension(

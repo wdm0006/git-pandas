@@ -16,6 +16,7 @@ def test_cached_repository_methods_preserve_signatures():
             inspect.Parameter("days", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None),
             inspect.Parameter("ignore_globs", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None),
             inspect.Parameter("include_globs", inspect.Parameter.POSITIONAL_OR_KEYWORD, default=None),
+            inspect.Parameter("date_source", inspect.Parameter.POSITIONAL_OR_KEYWORD, default="committer"),
         ]
     )
     assert list(inspect.signature(Repository.blame).parameters) == [
@@ -60,6 +61,7 @@ def test_mcp_wrapper_preserves_cached_method_signature(monkeypatch):
         "days",
         "ignore_globs",
         "include_globs",
+        "date_source",
     ]
     assert signature.parameters["repo_name"].annotation is str
     assert all(parameter.kind is not inspect.Parameter.VAR_POSITIONAL for parameter in signature.parameters.values())

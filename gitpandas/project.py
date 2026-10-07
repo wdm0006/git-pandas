@@ -17,7 +17,7 @@ import requests
 from git import GitCommandError
 
 from gitpandas.logging import logger  # Import the logger
-from gitpandas.repository import Repository
+from gitpandas.repository import Repository, _validate_date_source
 
 try:
     from joblib import Parallel, delayed
@@ -357,6 +357,7 @@ class ProjectDirectory:
         by=None,
         ignore_globs=None,
         include_globs=None,
+        date_source="committer",
     ):
         """
         Returns a DataFrame containing the estimated hours spent by each committer/author.
@@ -372,10 +373,12 @@ class ProjectDirectory:
             by (Optional[str]): How to group results. One of None, 'committer', 'author'
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
+            date_source (str): Timestamp used to order and group commits: "committer" (default) or "author"
 
         Returns:
             DataFrame: DataFrame with hours estimates
         """
+        _validate_date_source(date_source)
         logger.info(f"Estimating hours for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
@@ -397,6 +400,7 @@ class ProjectDirectory:
                     committer=committer,
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
+                    date_source=date_source,
                 )
                 if not ch.empty:
                     ch = ch.copy()  # Avoid SettingWithCopyWarning
@@ -424,6 +428,7 @@ class ProjectDirectory:
         days=None,
         ignore_globs=None,
         include_globs=None,
+        date_source="committer",
     ):
         """
         Returns a DataFrame containing the commit history for all repositories.
@@ -434,10 +439,12 @@ class ProjectDirectory:
             days (Optional[int]): If provided, only return commits from last N days
             ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore
             include_globs (Optional[List[str]]): List of glob patterns for files to include
+            date_source (str): Timestamp used for the date index and ``days`` cutoff: "committer" (default) or "author"
 
         Returns:
             DataFrame: DataFrame with commit history
         """
+        _validate_date_source(date_source)
         logger.info(f"Generating commit history for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
@@ -455,6 +462,7 @@ class ProjectDirectory:
                     days=days,
                     ignore_globs=ignore_globs,
                     include_globs=include_globs,
+                    date_source=date_source,
                 )
                 if not ch.empty:
                     ch = ch.copy()  # Avoid SettingWithCopyWarning
