@@ -308,7 +308,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gitpandas.repository.Repository">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">gitpandas.repository.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_to_add</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A class for analyzing a single git repository.</p>
 <p>This class provides functionality to analyze a git repository, whether it is a local
 repository or a remote repository that needs to be cloned. It offers methods for
@@ -316,31 +316,31 @@ analyzing commit history, blame information, file changes, and other git metrics
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Path to the git repository:
+<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Path to the git repository:
 - If None: Uses current working directory
 - If local path: Path must contain a .git directory
 - If git URL: Repository will be cloned to a temporary directory</p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
-<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
-<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
-<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
-<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
+<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
+<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
+<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
+<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
 ‘main’ or ‘master’, and if neither exists, will raise ValueError.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Variables<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether verbose output is enabled</p></li>
-<li><p><strong>git_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the git repository</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether verbose output is enabled</p></li>
+<li><p><strong>git_dir</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the git repository</p></li>
 <li><p><strong>repo</strong> (<em>git.Repo</em>) – GitPython Repo instance</p></li>
-<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Cache backend being used</p></li>
-<li><p><strong>_labels_to_add</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Labels to add to DataFrames</p></li>
-<li><p><strong>_git_repo_name</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Repository name for remote repos</p></li>
-<li><p><strong>default_branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the default branch</p></li>
+<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a><em>]</em>) – Cache backend being used</p></li>
+<li><p><strong>_labels_to_add</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Labels to add to DataFrames</p></li>
+<li><p><strong>_git_repo_name</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Repository name for remote repos</p></li>
+<li><p><strong>default_branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the default branch</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
 </dd>
 </dl>
 <div class="admonition-examples admonition">
@@ -366,20 +366,20 @@ This can be slow for large repositories.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Path to the git repository:
+<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Path to the git repository:
 - If None: Uses current working directory
 - If local path: Path must contain a .git directory
 - If git URL: Repository will be cloned to a temporary directory</p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
-<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
-<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
-<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
-<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
+<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
+<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
+<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
+<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
 ‘main’ or ‘master’, and if neither exists, will raise ValueError.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
 </dd>
 </dl>
 </dd></dl>
@@ -402,7 +402,7 @@ repository.</p>
 <dd class="field-odd"><p>True if this is a bare repository, False otherwise</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -418,7 +418,7 @@ The file must be in a valid format that can be parsed as JSON.</p>
 <dd class="field-odd"><p>True if a valid .coverage file exists, False otherwise</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -454,7 +454,7 @@ using the coverage.py API. Returns coverage statistics for each file.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.14)"><strong>ImportError</strong></a> – If the optional <code class="docutils literal notranslate"><span class="pre">coverage</span></code> package is not installed but the
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.15)"><strong>ImportError</strong></a> – If the optional <code class="docutils literal notranslate"><span class="pre">coverage</span></code> package is not installed but the
     repository does have a <code class="docutils literal notranslate"><span class="pre">.coverage</span></code> file to parse.</p>
 </dd>
 </dl>
@@ -462,7 +462,7 @@ using the coverage.py API. Returns coverage statistics for each file.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.repository.Repository.hours_estimate">
-<span class="sig-name descname"><span class="pre">hours_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grouping_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_commit_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">committer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.hours_estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.hours_estimate" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hours_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grouping_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_commit_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">committer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'committer'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.hours_estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.hours_estimate" title="Link to this definition">¶</a></dt>
 <dd><p>inspired by: <a class="reference external" href="https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143">https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</a></p>
 <p>Iterates through the commit history of repo to estimate the time commitement of each author or committer over
 the course of time indicated by limit/extensions/days/etc.</p>
@@ -478,6 +478,9 @@ consider them part of one coding session</p></li>
 <li><p><strong>committer</strong> – (optional, default=True) whether to use committer vs. author</p></li>
 <li><p><strong>ignore_globs</strong> – (optional, default=None) a list of globs to ignore, default none excludes nothing</p></li>
 <li><p><strong>include_globs</strong> – (optinal, default=None) a list of globs to include, default of None includes everything.</p></li>
+<li><p><strong>date_source</strong> – (optional, default=”committer”) which timestamp orders and groups commits, “committer” or
+“author”. Use “author” for rebased, cherry-picked or squash-merged history, where every rewritten commit
+shares one committer timestamp.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -488,18 +491,20 @@ consider them part of one coding session</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.repository.Repository.commit_history">
-<span class="sig-name descname"><span class="pre">commit_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">commit_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'committer'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/repository.html#Repository.commit_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.repository.Repository.commit_history" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame containing the commit history for a branch.</p>
 <p>Retrieves the commit history for the specified branch, with options to limit
 the number of commits or time range, and filter which files to include.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If provided, only return commits from the last N days</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If provided, only return commits from the last N days</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>date_source</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Timestamp used for the <code class="docutils literal notranslate"><span class="pre">date</span></code> index and the <code class="docutils literal notranslate"><span class="pre">days</span></code> cutoff: “committer”
+(default) or “author”. Raises ValueError for anything else.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -540,12 +545,12 @@ information about insertions, deletions, and commit metadata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -600,13 +605,13 @@ also calculate test coverage statistics for python source files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Which branch to analyze. If None, uses default_branch.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – How many commits to go back in history. None for all.</p></li>
-<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to calculate test coverage stats. Defaults to False.</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If not None, only consider changes in the last x days.</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Which branch to analyze. If None, uses default_branch.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – How many commits to go back in history. None for all.</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to calculate test coverage stats. Defaults to False.</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If not None, only consider changes in the last x days.</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -643,14 +648,14 @@ repository or file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, group by committer name. If False, group by author name.
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, group by committer name. If False, group by author name.
 Defaults to True.</p></li>
-<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – How to group the results. One of:
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – How to group the results. One of:
 - ‘repository’: Group by repository (default)
 - ‘file’: Group by individual file</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -676,7 +681,7 @@ Defaults to True.</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)">pandas.DataFrame</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -700,14 +705,14 @@ and not match any ignore patterns to be included.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be returned (or every rev,
 if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -717,7 +722,7 @@ if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
 <dd class="field-odd"><p>DataFrame</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -730,16 +735,16 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be sampled</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -771,17 +776,17 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be sampled</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>workers</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of workers to use in the threadpool, -1 for one per core.</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>workers</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of workers to use in the threadpool, -1 for one per core.</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -830,7 +835,7 @@ and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)<
 <dd><p>Finds all branches containing a specific commit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>commit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Commit hash to look up</p>
+<dd class="field-odd"><p><strong>commit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Commit hash to look up</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -896,7 +901,7 @@ of changes between tagged releases.</p>
 and annotated tags.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted tag objects. Defaults to False.</p>
+<dd class="field-odd"><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to skip corrupted tag objects. Defaults to False.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -943,7 +948,7 @@ For remote repositories, extracts the name from the URL.</p>
 <dd class="field-odd"><p>Name of the repository, or ‘unknown_repo’ if name can’t be determined</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -993,7 +998,7 @@ return DataFrames.</p>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">repository</span></code> followed by one <code class="docutils literal notranslate"><span class="pre">labelN</span></code> per configured label.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1007,7 +1012,7 @@ return DataFrames.</p>
 <dd class="field-odd"><p>String in format ‘git repository: {name} at: {path}’</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1021,9 +1026,9 @@ including added and removed lines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision (commit hash) to analyze</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision (commit hash) to analyze</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1062,8 +1067,8 @@ tree (respecting .gitignore) before attempting to read it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to get file from. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to get file from. Defaults to ‘HEAD’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1074,7 +1079,7 @@ tree (respecting .gitignore) before attempting to read it.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1093,7 +1098,7 @@ which automatically respects .gitignore rules since untracked and ignored
 files are not in git’s tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to list files from. Defaults to ‘HEAD’.</p>
+<dd class="field-odd"><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to list files from. Defaults to ‘HEAD’.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -1129,7 +1134,7 @@ files matched by .gitignore patterns are not included.</p>
 <dd class="field-odd"><p>The absolute path to the repository</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1144,11 +1149,11 @@ contributions account for at least 50% of the codebase’s lines of code.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – How to calculate the bus factor. One of:
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – How to calculate the bus factor. One of:
 - ‘repository’: Calculate for entire repository (default)
 - ‘file’: Calculate for each individual file</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1174,7 +1179,7 @@ contributions account for at least 50% of the codebase’s lines of code.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)">pandas.DataFrame</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1193,9 +1198,9 @@ to the file according to git blame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision to analyze</p></li>
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision to analyze</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
 Defaults to True.</p></li>
 </ul>
 </dd>
@@ -1210,7 +1215,7 @@ Defaults to True.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1226,8 +1231,8 @@ Defaults to True.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision to check</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision to check</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1257,15 +1262,15 @@ Defaults to True.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
-<li><p><strong>by</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Agg by options, None for no aggregation (just a high level punchcard), or
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
+<li><p><strong>by</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Agg by options, None for no aggregation (just a high level punchcard), or
 ‘committer’, ‘author’</p></li>
-<li><p><strong>normalize</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If an integer, returns the data normalized to max value of
+<li><p><strong>normalize</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If an integer, returns the data normalized to max value of
 that (for plotting)</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1283,13 +1288,13 @@ that (for plotting)</p></li>
 <dd><p>Checks if a branch exists in the repository.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the branch to check</p>
+<dd class="field-odd"><p><strong>branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the branch to check</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if the branch exists, False otherwise</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1307,10 +1312,10 @@ size, ownership, and last modification.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
 Defaults to True.</p></li>
 </ul>
 </dd>
@@ -1348,15 +1353,15 @@ in the current version of the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The first revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The second revision (commit hash or tag).</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The first revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The second revision (commit hash or tag).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The absolute time difference in days between the two revisions.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1374,10 +1379,10 @@ between two arbitrary revisions (commits or tags). Optionally filters files usin
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1394,7 +1399,7 @@ between two arbitrary revisions (commits or tags). Optionally filters files usin
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1414,10 +1419,10 @@ and returns the unique committers and authors who contributed, filtered by file 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1431,7 +1436,7 @@ and returns the unique committers and authors who contributed, filtered by file 
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1450,17 +1455,17 @@ optionally filtered by glob patterns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Sorted list of file paths changed between the two revisions.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1480,10 +1485,10 @@ per tag and columns for all computed metrics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tag_glob</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em><em>]</em>) – Glob pattern(s) to filter tags (e.g., ‘v*’ or
+<li><p><strong>tag_glob</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em><em>]</em>) – Glob pattern(s) to filter tags (e.g., ‘v*’ or
 [‘v*’, ‘release-<a href="#id1"><span class="problematic" id="id2">*</span></a>’]). If None, all tags are included.</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore in diff/commit analysis.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include in diff/commit analysis.</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore in diff/commit analysis.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include in diff/commit analysis.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1525,10 +1530,10 @@ This is a read-only operation that only updates remote-tracking branches.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
-<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist on remote.
+<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
+<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist on remote.
 Defaults to False.</p></li>
-<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
 Defaults to False.</p></li>
 </ul>
 </dd>
@@ -1546,7 +1551,7 @@ Defaults to False.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1567,7 +1572,7 @@ will be executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of method names to pre-warm. If None,
+<li><p><strong>methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of method names to pre-warm. If None,
 uses a default set of commonly used methods. Available methods:
 - ‘commit_history’: Load commit history
 - ‘branches’: Load branch information
@@ -1599,7 +1604,7 @@ Common arguments include:
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1617,15 +1622,15 @@ success status but no methods executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>keys</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of specific cache keys to invalidate</p></li>
-<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Pattern to match cache keys (supports * wildcard)</p></li>
+<li><p><strong>keys</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of specific cache keys to invalidate</p></li>
+<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Pattern to match cache keys (supports * wildcard)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Number of cache entries invalidated</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1644,7 +1649,7 @@ Cache keys are automatically prefixed with repository name.</p>
 <dd class="field-odd"><p>Cache statistics including repository-specific and global cache information</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1672,7 +1677,7 @@ Cache keys are automatically prefixed with repository name.</p>
 <dd class="field-odd"><p>The absolute path to the repository</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1686,7 +1691,7 @@ Cache keys are automatically prefixed with repository name.</p>
 <dd class="field-odd"><p>String in format ‘git repository: {name} at: {path}’</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1729,8 +1734,8 @@ return DataFrames.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision to check</p></li>
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision to check</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1751,7 +1756,7 @@ return DataFrames.</p>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">repository</span></code> followed by one <code class="docutils literal notranslate"><span class="pre">labelN</span></code> per configured label.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1784,7 +1789,7 @@ For remote repositories, extracts the name from the URL.</p>
 <dd class="field-odd"><p>Name of the repository, or ‘unknown_repo’ if name can’t be determined</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1804,14 +1809,14 @@ repository or file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, group by committer name. If False, group by author name.
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, group by committer name. If False, group by author name.
 Defaults to True.</p></li>
-<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – How to group the results. One of:
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – How to group the results. One of:
 - ‘repository’: Group by repository (default)
 - ‘file’: Group by individual file</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1837,7 +1842,7 @@ Defaults to True.</p></li>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)">pandas.DataFrame</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1882,11 +1887,11 @@ contributions account for at least 50% of the codebase’s lines of code.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – How to calculate the bus factor. One of:
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – How to calculate the bus factor. One of:
 - ‘repository’: Calculate for entire repository (default)
 - ‘file’: Calculate for each individual file</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1912,7 +1917,7 @@ contributions account for at least 50% of the codebase’s lines of code.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.6)">pandas.DataFrame</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If by is not one of the supported grouping values.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -1924,18 +1929,20 @@ few contributors. A higher bus factor indicates knowledge is better distributed.
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.repository.GitFlowRepository.commit_history">
-<span class="sig-name descname"><span class="pre">commit_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository.commit_history" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">commit_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'committer'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository.commit_history" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame containing the commit history for a branch.</p>
 <p>Retrieves the commit history for the specified branch, with options to limit
 the number of commits or time range, and filter which files to include.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If provided, only return commits from the last N days</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If provided, only return commits from the last N days</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>date_source</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Timestamp used for the <code class="docutils literal notranslate"><span class="pre">date</span></code> index and the <code class="docutils literal notranslate"><span class="pre">days</span></code> cutoff: “committer”
+(default) or “author”. Raises ValueError for anything else.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2014,10 +2021,10 @@ and returns the unique committers and authors who contributed, filtered by file 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2031,7 +2038,7 @@ and returns the unique committers and authors who contributed, filtered by file 
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2072,7 +2079,7 @@ using the coverage.py API. Returns coverage statistics for each file.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.14)"><strong>ImportError</strong></a> – If the optional <code class="docutils literal notranslate"><span class="pre">coverage</span></code> package is not installed but the
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.15)"><strong>ImportError</strong></a> – If the optional <code class="docutils literal notranslate"><span class="pre">coverage</span></code> package is not installed but the
     repository does have a <code class="docutils literal notranslate"><span class="pre">.coverage</span></code> file to parse.</p>
 </dd>
 </dl>
@@ -2086,16 +2093,16 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be sampled</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2128,10 +2135,10 @@ between two arbitrary revisions (commits or tags). Optionally filters files usin
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2148,7 +2155,7 @@ between two arbitrary revisions (commits or tags). Optionally filters files usin
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2168,12 +2175,12 @@ information about insertions, deletions, and commit metadata.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2211,13 +2218,13 @@ also calculate test coverage statistics for python source files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Which branch to analyze. If None, uses default_branch.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – How many commits to go back in history. None for all.</p></li>
-<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to calculate test coverage stats. Defaults to False.</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If not None, only consider changes in the last x days.</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Which branch to analyze. If None, uses default_branch.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – How many commits to go back in history. None for all.</p></li>
+<li><p><strong>coverage</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to calculate test coverage stats. Defaults to False.</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If not None, only consider changes in the last x days.</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2253,10 +2260,10 @@ size, ownership, and last modification.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to analyze. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
 Defaults to True.</p></li>
 </ul>
 </dd>
@@ -2296,9 +2303,9 @@ to the file according to git blame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision to analyze</p></li>
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision to analyze</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, use committer info. If False, use author.
 Defaults to True.</p></li>
 </ul>
 </dd>
@@ -2313,7 +2320,7 @@ Defaults to True.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2331,17 +2338,17 @@ optionally filtered by glob patterns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The base revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The target revision (commit hash or tag).</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Sorted list of file paths changed between the two revisions.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2357,7 +2364,7 @@ and not match any ignore patterns to be included.</p>
 <dd><p>Finds all branches containing a specific commit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>commit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Commit hash to look up</p>
+<dd class="field-odd"><p><strong>commit</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Commit hash to look up</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -2386,7 +2393,7 @@ and not match any ignore patterns to be included.</p>
 <dd class="field-odd"><p>Cache statistics including repository-specific and global cache information</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2400,9 +2407,9 @@ including added and removed lines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Revision (commit hash) to analyze</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Revision (commit hash) to analyze</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2441,8 +2448,8 @@ tree (respecting .gitignore) before attempting to read it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
-<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to get file from. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Path to the file relative to repository root</p></li>
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to get file from. Defaults to ‘HEAD’.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2453,7 +2460,7 @@ tree (respecting .gitignore) before attempting to read it.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a>]</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2469,13 +2476,13 @@ files matched by .gitignore patterns cannot be read.</p>
 <dd><p>Checks if a branch exists in the repository.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of the branch to check</p>
+<dd class="field-odd"><p><strong>branch</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Name of the branch to check</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if the branch exists, False otherwise</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2495,14 +2502,14 @@ The file must be in a valid format that can be parsed as JSON.</p>
 <dd class="field-odd"><p>True if a valid .coverage file exists, False otherwise</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.repository.GitFlowRepository.hours_estimate">
-<span class="sig-name descname"><span class="pre">hours_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grouping_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_commit_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">committer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository.hours_estimate" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hours_estimate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grouping_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_commit_hours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">committer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'committer'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitpandas.repository.GitFlowRepository.hours_estimate" title="Link to this definition">¶</a></dt>
 <dd><p>inspired by: <a class="reference external" href="https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143">https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</a></p>
 <p>Iterates through the commit history of repo to estimate the time commitement of each author or committer over
 the course of time indicated by limit/extensions/days/etc.</p>
@@ -2518,6 +2525,9 @@ consider them part of one coding session</p></li>
 <li><p><strong>committer</strong> – (optional, default=True) whether to use committer vs. author</p></li>
 <li><p><strong>ignore_globs</strong> – (optional, default=None) a list of globs to ignore, default none excludes nothing</p></li>
 <li><p><strong>include_globs</strong> – (optinal, default=None) a list of globs to include, default of None includes everything.</p></li>
+<li><p><strong>date_source</strong> – (optional, default=”committer”) which timestamp orders and groups commits, “committer” or
+“author”. Use “author” for rebased, cherry-picked or squash-merged history, where every rewritten commit
+shares one committer timestamp.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2533,15 +2543,15 @@ consider them part of one coding session</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>keys</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of specific cache keys to invalidate</p></li>
-<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Pattern to match cache keys (supports * wildcard)</p></li>
+<li><p><strong>keys</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of specific cache keys to invalidate</p></li>
+<li><p><strong>pattern</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Pattern to match cache keys (supports * wildcard)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Number of cache entries invalidated</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)">int</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2562,7 +2572,7 @@ repository.</p>
 <dd class="field-odd"><p>True if this is a bare repository, False otherwise</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2576,7 +2586,7 @@ which automatically respects .gitignore rules since untracked and ignored
 files are not in git’s tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to list files from. Defaults to ‘HEAD’.</p>
+<dd class="field-odd"><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to list files from. Defaults to ‘HEAD’.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -2611,17 +2621,17 @@ committer, with number of lines blamed to each committer at each timestamp as da
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be sampled</p></li>
-<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
-<li><p><strong>workers</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of workers to use in the threadpool, -1 for one per core.</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – True if committer should be reported, false if author</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>workers</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of workers to use in the threadpool, -1 for one per core.</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to skip corrupted Git objects. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2658,15 +2668,15 @@ and <code class="docutils literal notranslate"><span class="pre">df.sum(axis=1)<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
-<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
-<li><p><strong>by</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Agg by options, None for no aggregation (just a high level punchcard), or
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of commits to return, None for no limit</p></li>
+<li><p><strong>days</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of days to return if limit is None</p></li>
+<li><p><strong>by</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Agg by options, None for no aggregation (just a high level punchcard), or
 ‘committer’, ‘author’</p></li>
-<li><p><strong>normalize</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If an integer, returns the data normalized to max value of
+<li><p><strong>normalize</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If an integer, returns the data normalized to max value of
 that (for plotting)</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2688,10 +2698,10 @@ per tag and columns for all computed metrics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tag_glob</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em><em>]</em>) – Glob pattern(s) to filter tags (e.g., ‘v*’ or
+<li><p><strong>tag_glob</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em><em>]</em>) – Glob pattern(s) to filter tags (e.g., ‘v*’ or
 [‘v*’, ‘release-<a href="#id3"><span class="problematic" id="id4">*</span></a>’]). If None, all tags are included.</p></li>
-<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore in diff/commit analysis.</p></li>
-<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include in diff/commit analysis.</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to ignore in diff/commit analysis.</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of glob patterns for files to include in diff/commit analysis.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2742,14 +2752,14 @@ Tag filtering uses fnmatch and supports multiple globs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
-<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
-<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch to analyze. Defaults to default_branch if None.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Maximum number of revisions to return, None for no limit</p></li>
+<li><p><strong>skip</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Number of revisions to skip. Ex: skip=2 returns every other
 revision, None for no skipping.</p></li>
-<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
+<li><p><strong>num_datapoints</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – If limit and skip are none, and this isn’t, then
 exactly this many evenly distributed revs will be returned (or every rev,
 if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
-<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
+<li><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to skip corrupted commit objects. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2759,7 +2769,7 @@ if the branch has fewer than num_datapoints of them). Must be positive.</p></li>
 <dd class="field-odd"><p>DataFrame</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If num_datapoints is not a positive integer.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2773,10 +2783,10 @@ This is a read-only operation that only updates remote-tracking branches.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
-<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist on remote.
+<li><p><strong>remote_name</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Name of remote to fetch from. Defaults to ‘origin’.</p></li>
+<li><p><strong>prune</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Remove remote-tracking branches that no longer exist on remote.
 Defaults to False.</p></li>
-<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Show what would be fetched without actually fetching.
 Defaults to False.</p></li>
 </ul>
 </dd>
@@ -2794,7 +2804,7 @@ Defaults to False.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2813,7 +2823,7 @@ rebases, or checkouts.</p>
 and annotated tags.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to skip corrupted tag objects. Defaults to False.</p>
+<dd class="field-odd"><p><strong>skip_broken</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – Whether to skip corrupted tag objects. Defaults to False.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl>
@@ -2851,15 +2861,15 @@ and annotated tags.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The first revision (commit hash or tag).</p></li>
-<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The second revision (commit hash or tag).</p></li>
+<li><p><strong>rev1</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The first revision (commit hash or tag).</p></li>
+<li><p><strong>rev2</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – The second revision (commit hash or tag).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The absolute time difference in days between the two revisions.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)">float</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2878,7 +2888,7 @@ will be executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – List of method names to pre-warm. If None,
+<li><p><strong>methods</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – List of method names to pre-warm. If None,
 uses a default set of commonly used methods. Available methods:
 - ‘commit_history’: Load commit history
 - ‘branches’: Load branch information
@@ -2910,7 +2920,7 @@ Common arguments include:
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -2928,20 +2938,20 @@ success status but no methods executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Path to the git repository:
+<li><p><strong>working_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Path to the git repository:
 - If None: Uses current working directory
 - If local path: Path must contain a .git directory
 - If git URL: Repository will be cloned to a temporary directory</p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
-<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
-<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
-<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
-<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
+<li><p><strong>tmp_dir</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Directory to clone remote repositories into. Created if not provided.</p></li>
+<li><p><strong>cache_backend</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a><em>]</em>) – Cache backend instance from gitpandas.cache</p></li>
+<li><p><strong>labels_to_add</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – Extra labels to add to output DataFrames</p></li>
+<li><p><strong>default_branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Name of the default branch to use. If None, will try to detect
 ‘main’ or ‘master’, and if neither exists, will raise ValueError.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If default_branch is None and neither ‘main’ nor ‘master’ branch exists</p>
 </dd>
 </dl>
 </dd></dl>

@@ -185,6 +185,7 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -211,6 +212,27 @@
     <span class="n">_has_joblib</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">"willmcginnis"</span>
+
+<span class="n">DATE_SOURCES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"committer"</span><span class="p">,</span> <span class="s2">"author"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_date_source</span><span class="p">(</span><span class="n">date_source</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">date_source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DATE_SOURCES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"date_source must be one of </span><span class="si">{</span><span class="n">DATE_SOURCES</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">date_source</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">date_source</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validates_date_source</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject an invalid ``date_source`` before the cache layer reads or stores anything."""</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"force_refresh"</span><span class="p">})</span>
+        <span class="n">_validate_date_source</span><span class="p">(</span><span class="n">bound</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date_source"</span><span class="p">,</span> <span class="s2">"committer"</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validates_by</span><span class="p">(</span><span class="o">*</span><span class="n">allowed</span><span class="p">):</span>
@@ -497,6 +519,7 @@
 
 <div class="viewcode-block" id="Repository.hours_estimate">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.hours_estimate">[docs]</a>
+    <span class="nd">@_validates_date_source</span>
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"hours_estimate"</span><span class="p">,</span>
         <span class="n">key_list</span><span class="o">=</span><span class="p">[</span>
@@ -508,6 +531,7 @@
             <span class="s2">"committer"</span><span class="p">,</span>
             <span class="s2">"ignore_globs"</span><span class="p">,</span>
             <span class="s2">"include_globs"</span><span class="p">,</span>
+            <span class="s2">"date_source"</span><span class="p">,</span>
         <span class="p">],</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hours_estimate</span><span class="p">(</span>
@@ -520,6 +544,7 @@
         <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">date_source</span><span class="o">=</span><span class="s2">"committer"</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        inspired by: https://github.com/kimmobrunfeldt/git-hours/blob/8aaeee237cb9d9028e7a2592a25ad8468b1f45e4/index.js#L114-L143</span>
@@ -536,6 +561,9 @@
 <span class="sd">        :param committer: (optional, default=True) whether to use committer vs. author</span>
 <span class="sd">        :param ignore_globs: (optional, default=None) a list of globs to ignore, default none excludes nothing</span>
 <span class="sd">        :param include_globs: (optinal, default=None) a list of globs to include, default of None includes everything.</span>
+<span class="sd">        :param date_source: (optional, default="committer") which timestamp orders and groups commits, "committer" or</span>
+<span class="sd">             "author". Use "author" for rebased, cherry-picked or squash-merged history, where every rewritten commit</span>
+<span class="sd">             shares one committer timestamp.</span>
 <span class="sd">        :return: DataFrame</span>
 <span class="sd">        """</span>
         <span class="n">resolved_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span> <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">branch</span>
@@ -552,6 +580,7 @@
             <span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">,</span>
             <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span>
             <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span><span class="p">,</span>
+            <span class="n">date_source</span><span class="o">=</span><span class="n">date_source</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># split by committer|author</span>
@@ -587,7 +616,11 @@
 
 <div class="viewcode-block" id="Repository.commit_history">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.commit_history">[docs]</a>
-    <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">"commit_history"</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"days"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">])</span>
+    <span class="nd">@_validates_date_source</span>
+    <span class="nd">@multicache</span><span class="p">(</span>
+        <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"commit_history"</span><span class="p">,</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"days"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">,</span> <span class="s2">"date_source"</span><span class="p">],</span>
+    <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">commit_history</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -595,6 +628,7 @@
         <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">date_source</span><span class="o">=</span><span class="s2">"committer"</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns a DataFrame containing the commit history for a branch.</span>
@@ -608,6 +642,8 @@
 <span class="sd">            days (Optional[int]): If provided, only return commits from the last N days</span>
 <span class="sd">            ignore_globs (Optional[List[str]]): List of glob patterns for files to ignore</span>
 <span class="sd">            include_globs (Optional[List[str]]): List of glob patterns for files to include</span>
+<span class="sd">            date_source (str): Timestamp used for the ``date`` index and the ``days`` cutoff: "committer"</span>
+<span class="sd">                (default) or "author". Raises ValueError for anything else.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame: A DataFrame with columns:</span>
@@ -629,6 +665,8 @@
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
 
+        <span class="n">date_attr</span> <span class="o">=</span> <span class="s2">"authored_date"</span> <span class="k">if</span> <span class="n">date_source</span> <span class="o">==</span> <span class="s2">"author"</span> <span class="k">else</span> <span class="s2">"committed_date"</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetching commit history for branch '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">'. Limit: </span><span class="si">{</span><span class="n">limit</span><span class="si">}</span><span class="s2">, Days: </span><span class="si">{</span><span class="n">days</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># setup the data-set of commits</span>
@@ -639,7 +677,7 @@
                     <span class="p">[</span>
                         <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                         <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                        <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">date_attr</span><span class="p">),</span>
                         <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
                         <span class="n">x</span><span class="o">.</span><span class="n">hexsha</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span>
@@ -660,7 +698,7 @@
                         <span class="n">x</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">commits</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
                         <span class="k">break</span>
-                    <span class="n">c_date</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span>
+                    <span class="n">c_date</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">date_attr</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">c_date</span> <span class="o">&gt;</span> <span class="n">dlim</span><span class="p">:</span>
                         <span class="n">commit_count</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span> <span class="ow">and</span> <span class="n">commit_count</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -669,7 +707,7 @@
                             <span class="p">[</span>
                                 <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
+                                <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">date_attr</span><span class="p">),</span>
                                 <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
                                 <span class="n">x</span><span class="o">.</span><span class="n">hexsha</span><span class="p">,</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span>
@@ -685,7 +723,7 @@
                 <span class="p">[</span>
                     <span class="n">x</span><span class="o">.</span><span class="n">author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">x</span><span class="o">.</span><span class="n">committer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">x</span><span class="o">.</span><span class="n">committed_date</span><span class="p">,</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">date_attr</span><span class="p">),</span>
                     <span class="n">x</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
                     <span class="n">x</span><span class="o">.</span><span class="n">hexsha</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__check_extension</span><span class="p">(</span>
