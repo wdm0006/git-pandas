@@ -124,6 +124,7 @@ class TestProjectDirectoryAdvanced:
                 committer=True,
                 ignore_globs=None,
                 include_globs=None,
+                date_source="committer",
             )
 
     def test_bus_factor(self, repo_directories):

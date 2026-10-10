@@ -91,7 +91,7 @@ class TestCacheManagement:
         assert sorted(cache._cache) == [
             "blame||test_repo||HEAD||True||repository||None||None",
             "branches||test_repo||",
-            "commit_history||test_repo||None||5||None||None||None",
+            "commit_history||test_repo||None||5||None||None||None||committer",
         ]
 
         # Test invalidating specific cache type
