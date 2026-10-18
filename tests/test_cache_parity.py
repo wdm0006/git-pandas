@@ -74,7 +74,12 @@ def build_parity_repo(repo_dir, default_branch, unique_file):
     for index, spec in enumerate(COMMITS):
         _commit(repo_dir, spec, unique_file, index)
         if index == 1:
-            _git(repo_dir, "tag", "-a", "v1.0", "-m", "first release", env={"GIT_COMMITTER_DATE": f"{spec[2]} +0000"})
+            tagger = {
+                "GIT_COMMITTER_NAME": spec[0],
+                "GIT_COMMITTER_EMAIL": f"{spec[0].lower()}@example.com",
+                "GIT_COMMITTER_DATE": f"{spec[2]} +0000",
+            }
+            _git(repo_dir, "tag", "-a", "v1.0", "-m", "first release", env=tagger)
         if index == 3:
             _git(repo_dir, "tag", "v2.0")
     _git(repo_dir, "checkout", "-b", FEATURE)
