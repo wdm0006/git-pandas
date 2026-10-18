@@ -17,7 +17,7 @@ import requests
 from git import GitCommandError
 
 from gitpandas.logging import logger  # Import the logger
-from gitpandas.repository import Repository, _validate_date_source
+from gitpandas.repository import Repository, _validate_date_source, _validate_limit
 
 try:
     from joblib import Parallel, delayed
@@ -195,12 +195,13 @@ class ProjectDirectory:
                 sum to ``limit`` rather than dropping the remainder. Returns an empty list
                 when the project has no repositories.
         """
+        _validate_limit(limit)
         if limit is None:
             return [None] * len(self.repos)
         if not self.repos:
             return []
 
-        quotient, remainder = divmod(math.floor(float(limit)), len(self.repos))
+        quotient, remainder = divmod(limit, len(self.repos))
         return [quotient + (index < remainder) for index in range(len(self.repos))]
 
     def is_bare(self):
@@ -297,6 +298,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with file change statistics and optionally coverage data
         """
+        _validate_limit(limit)
         logger.info(f"Calculating file change rates for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch
@@ -877,6 +879,7 @@ class ProjectDirectory:
                 (``by='committer'``) or per repository (``by='project'``). Label columns
                 are not included, so ``df.sum(axis=1)`` gives total LOC.
         """
+        _validate_limit(limit)
         logger.info(f"Calculating cumulative blame for branch '{branch or self.default_branch}' grouped by '{by}'.")
         if branch is None:
             branch = self.default_branch
@@ -1182,6 +1185,7 @@ class ProjectDirectory:
         Returns:
             DataFrame: DataFrame with punchcard data
         """
+        _validate_limit(limit)
         logger.info(f"Generating punchcard data for branch '{branch or self.default_branch}'.")
         if branch is None:
             branch = self.default_branch

@@ -13,6 +13,7 @@ import functools
 import inspect
 import json
 import logging
+import numbers
 import os
 import shutil
 import tempfile
@@ -57,6 +58,28 @@ def _validates_date_source(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def _validate_limit(limit):
+    if limit is None:
+        return limit
+    if isinstance(limit, bool) or not isinstance(limit, numbers.Integral) or limit < 0:
+        raise ValueError(f"limit must be None or a non-negative integer; got {limit!r}")
+    return limit
+
+
+def _validates_limit(func):
+    """Reject an invalid ``limit`` before the cache layer reads or stores anything."""
+    signature = inspect.signature(func)
+
+    @wraps(func)
+    def validate(self, *args, **kwargs):
+        arguments = signature.bind(self, *args, **{k: v for k, v in kwargs.items() if k != "force_refresh"})
+        arguments.apply_defaults()
+        _validate_limit(arguments.arguments["limit"])
+        return func(self, *args, **kwargs)
+
+    return validate
 
 
 def _validates_by(*allowed):
@@ -323,6 +346,7 @@ class Repository:
         except Exception as e:
             logger.error(f"Unexpected error analyzing coverage data: {e}", exc_info=True)
             return DataFrame(columns=["filename", "lines_covered", "total_lines", "coverage"])
+    @_validates_limit
 
     @_validates_date_source
     @multicache(
@@ -417,6 +441,7 @@ class Repository:
 
         logger.info(f"Finished hours estimation for branch '{branch}'. Found data for {len(df)} contributors.")
         return df
+    @_validates_limit
 
     @_validates_date_source
     @multicache(
@@ -578,6 +603,7 @@ class Repository:
 
         logger.info(f"Finished fetching commit history for branch '{branch}'. Found {len(df)} relevant commits.")
         return df
+    @_validates_limit
 
     @multicache(
         key_prefix="file_change_history",
@@ -834,6 +860,7 @@ class Repository:
                 return
             else:
                 raise
+    @_validates_limit
 
     @multicache(
         key_prefix="file_change_rates",
@@ -1224,6 +1251,7 @@ class Repository:
 
         logger.info(f"Finished calculating blame for rev '{rev}'. Found {len(blames_df)} blame entries.")
         return blames_df
+    @_validates_limit
 
     @multicache(key_prefix="revs", key_list=["branch", "limit", "skip", "num_datapoints", "skip_broken"])
     def revs(self, branch=None, limit=None, skip=None, num_datapoints=None, skip_broken=False):
@@ -1351,6 +1379,7 @@ class Repository:
         else:
             logger.info(f"Finished fetching revisions for '{branch}'. Found {len(df)} revisions.")
         return df
+    @_validates_limit
 
     @multicache(
         key_prefix="cumulative_blame",
@@ -1545,6 +1574,7 @@ class Repository:
 
         logger.info(f"Finished cumulative blame calculation for '{resolved_branch}'. Result shape: {revs.shape}")
         return revs
+    @_validates_limit
 
     @multicache(
         key_prefix="parallel_cumulative_blame",
@@ -2476,6 +2506,7 @@ class Repository:
         except Exception as e:
             logger.warning(f"Error getting last edit date for {file_path}: {e}")
             return pd.NaT
+    @_validates_limit
 
     @multicache(
         key_prefix="punchcard", key_list=["branch", "limit", "days", "by", "normalize", "ignore_globs", "include_globs"]

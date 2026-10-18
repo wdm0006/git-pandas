@@ -210,15 +210,14 @@ class TestProjectEdgeCases:
         assert file_change_history.empty
 
     def test_project_with_negative_limit(self, multi_repo_project):
-        """Test project operations with negative limit."""
+        """A negative limit is rejected rather than meaning unlimited on some methods."""
         project = ProjectDirectory(working_dir=multi_repo_project)
 
-        # Test with negative limit - should handle gracefully
-        commit_history = project.commit_history(limit=-1)
-        assert isinstance(commit_history, pd.DataFrame)
+        with pytest.raises(ValueError, match="limit must be None or a non-negative integer"):
+            project.commit_history(limit=-1)
 
-        file_change_history = project.file_change_history(limit=-1)
-        assert isinstance(file_change_history, pd.DataFrame)
+        with pytest.raises(ValueError, match="limit must be None or a non-negative integer"):
+            project.file_change_history(limit=-1)
 
     def test_project_with_very_large_limit(self, multi_repo_project):
         """Test project operations with very large limit."""
