@@ -7,23 +7,13 @@ Git-Pandas is a powerful Python library that transforms Git repository data into
 
 ![Cumulative Blame](https://raw.githubusercontent.com/wdm0006/git-pandas/master/examples/img/githubblame.png)
 
-## What's New in v2.6.0
+## What's New in v2.7.0
 
-- **📦 Smaller Default Install**: `redis` and `coverage` are no longer installed by
-  `pip install git-pandas`. Use `pip install "git-pandas[redis]"` for `RedisDFCache`
-  and `pip install "git-pandas[coverage]"` for `Repository.coverage()`.
-- **🐼 pandas 3 Support**: The `pandas<3` cap is gone; the suite runs green against
-  pandas 2 and pandas 3.
-- **📈 Usable Cumulative Blame**: `cumulative_blame()` and `parallel_cumulative_blame()`
-  now return only contributor columns on an ascending `DatetimeIndex`, so `df.sum(axis=1)`,
-  date slicing, and `.diff()` work as expected.
-- **🎯 Exact `num_datapoints`**: `revs(num_datapoints=N)` returns exactly `N` evenly
-  spaced revisions instead of over-sampling.
-- **🧮 Honest Project Limits**: `ProjectDirectory.commit_history()`, `file_change_history()`,
-  `hours_estimate()` and `revs()` now split a project-wide `limit` across repositories without
-  dropping the remainder, so small limits no longer return empty or short frames.
-- **🔢 Finite Punchcards**: `punchcard(normalize=...)` no longer emits `NaN` for an
-  all-zero metric.
+- **🕰️ Author-Date Timing**: `commit_history()` and `hours_estimate()` (on `Repository` and
+  `ProjectDirectory`) accept `date_source="author"` so rebased, cherry-picked or squash-merged
+  history is timed by when work was authored. The default (`"committer"`) is unchanged.
+- **🛡️ Clear `by=` Errors**: `blame()` and `bus_factor()` now raise a `ValueError` naming the
+  allowed values instead of `UnboundLocalError` or returning `None`.
 
 See the [changelog](CHANGELOG.md) for the full list, including the migration notes for
 the `cumulative_blame` and `revs` output changes.

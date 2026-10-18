@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+v2.7.0
+======
+
 ## New Features
 
 ### Author-Date Commit Timing
