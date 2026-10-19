@@ -189,6 +189,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
@@ -233,6 +234,28 @@
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">limit</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span> <span class="ow">or</span> <span class="n">limit</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"limit must be None or a non-negative integer; got </span><span class="si">{</span><span class="n">limit</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">limit</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validates_limit</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject an invalid ``limit`` before the cache layer reads or stores anything."""</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"force_refresh"</span><span class="p">})</span>
+        <span class="n">arguments</span><span class="o">.</span><span class="n">apply_defaults</span><span class="p">()</span>
+        <span class="n">_validate_limit</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s2">"limit"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">validate</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validates_by</span><span class="p">(</span><span class="o">*</span><span class="n">allowed</span><span class="p">):</span>
@@ -516,9 +539,10 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected error analyzing coverage data: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"filename"</span><span class="p">,</span> <span class="s2">"lines_covered"</span><span class="p">,</span> <span class="s2">"total_lines"</span><span class="p">,</span> <span class="s2">"coverage"</span><span class="p">])</span></div>
 
-
 <div class="viewcode-block" id="Repository.hours_estimate">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.hours_estimate">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@_validates_date_source</span>
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"hours_estimate"</span><span class="p">,</span>
@@ -613,9 +637,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished hours estimation for branch '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">'. Found data for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> contributors."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-
 <div class="viewcode-block" id="Repository.commit_history">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.commit_history">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@_validates_date_source</span>
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"commit_history"</span><span class="p">,</span>
@@ -777,9 +802,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished fetching commit history for branch '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">'. Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> relevant commits."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-
 <div class="viewcode-block" id="Repository.file_change_history">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.file_change_history">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"file_change_history"</span><span class="p">,</span>
         <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"days"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">,</span> <span class="s2">"skip_broken"</span><span class="p">],</span>
@@ -1039,9 +1065,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span></div>
 
-
 <div class="viewcode-block" id="Repository.file_change_rates">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.file_change_rates">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"file_change_rates"</span><span class="p">,</span>
         <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"coverage"</span><span class="p">,</span> <span class="s2">"days"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">,</span> <span class="s2">"skip_broken"</span><span class="p">],</span>
@@ -1435,9 +1462,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished calculating blame for rev '</span><span class="si">{</span><span class="n">rev</span><span class="si">}</span><span class="s2">'. Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blames_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> blame entries."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">blames_df</span></div>
 
-
 <div class="viewcode-block" id="Repository.revs">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.revs">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span><span class="n">key_prefix</span><span class="o">=</span><span class="s2">"revs"</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"skip"</span><span class="p">,</span> <span class="s2">"num_datapoints"</span><span class="p">,</span> <span class="s2">"skip_broken"</span><span class="p">])</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">revs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_datapoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_broken</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1565,9 +1593,10 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished fetching revisions for '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">'. Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> revisions."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-
 <div class="viewcode-block" id="Repository.cumulative_blame">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.cumulative_blame">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"cumulative_blame"</span><span class="p">,</span>
         <span class="n">key_list</span><span class="o">=</span><span class="p">[</span>
@@ -1762,9 +1791,10 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished cumulative blame calculation for '</span><span class="si">{</span><span class="n">resolved_branch</span><span class="si">}</span><span class="s2">'. Result shape: </span><span class="si">{</span><span class="n">revs</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">revs</span></div>
 
-
 <div class="viewcode-block" id="Repository.parallel_cumulative_blame">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.parallel_cumulative_blame">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"parallel_cumulative_blame"</span><span class="p">,</span>
         <span class="n">key_list</span><span class="o">=</span><span class="p">[</span>
@@ -2741,9 +2771,10 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error getting last edit date for </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span></div>
 
-
 <div class="viewcode-block" id="Repository.punchcard">
 <a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.punchcard">[docs]</a>
+    <span class="nd">@_validates_limit</span>
+
     <span class="nd">@multicache</span><span class="p">(</span>
         <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"punchcard"</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"branch"</span><span class="p">,</span> <span class="s2">"limit"</span><span class="p">,</span> <span class="s2">"days"</span><span class="p">,</span> <span class="s2">"by"</span><span class="p">,</span> <span class="s2">"normalize"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">]</span>
     <span class="p">)</span>

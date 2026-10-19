@@ -193,7 +193,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">git</span><span class="w"> </span><span class="kn">import</span> <span class="n">GitCommandError</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>  <span class="c1"># Import the logger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">_validate_date_source</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">_validate_date_source</span><span class="p">,</span> <span class="n">_validate_limit</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
@@ -381,12 +381,13 @@
 <span class="sd">                sum to ``limit`` rather than dropping the remainder. Returns an empty list</span>
 <span class="sd">                when the project has no repositories.</span>
 <span class="sd">        """</span>
+        <span class="n">_validate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
-        <span class="n">quotient</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">limit</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
+        <span class="n">quotient</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">quotient</span> <span class="o">+</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">remainder</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">))]</span></div>
 
 
@@ -495,6 +496,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame: DataFrame with file change statistics and optionally coverage data</span>
 <span class="sd">        """</span>
+        <span class="n">_validate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Calculating file change rates for branch '</span><span class="si">{</span><span class="n">branch</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
@@ -1099,6 +1101,7 @@
 <span class="sd">                (``by='committer'``) or per repository (``by='project'``). Label columns</span>
 <span class="sd">                are not included, so ``df.sum(axis=1)`` gives total LOC.</span>
 <span class="sd">        """</span>
+        <span class="n">_validate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Calculating cumulative blame for branch '</span><span class="si">{</span><span class="n">branch</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span><span class="si">}</span><span class="s2">' grouped by '</span><span class="si">{</span><span class="n">by</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
@@ -1419,6 +1422,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame: DataFrame with punchcard data</span>
 <span class="sd">        """</span>
+        <span class="n">_validate_limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Generating punchcard data for branch '</span><span class="si">{</span><span class="n">branch</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">branch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_branch</span>
