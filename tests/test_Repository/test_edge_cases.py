@@ -151,14 +151,11 @@ class TestRepositoryEdgeCases:
         """Test repository operations with negative limit."""
         repo = Repository(working_dir=single_commit_repo, default_branch=default_branch)
 
-        # Test commit_history with negative limit - should handle gracefully
-        history = repo.commit_history(limit=-1)
-        assert isinstance(history, pd.DataFrame)
-        # Negative limit should be handled (either ignored or treated as unlimited)
+        with pytest.raises(ValueError, match="limit must be None or a non-negative integer"):
+            repo.commit_history(limit=-1)
 
-        # Test file_change_history with negative limit
-        file_history = repo.file_change_history(limit=-1)
-        assert isinstance(file_history, pd.DataFrame)
+        with pytest.raises(ValueError, match="limit must be None or a non-negative integer"):
+            repo.file_change_history(limit=-1)
 
     def test_repository_with_very_large_limit(self, single_commit_repo, default_branch):
         """Test repository operations with very large limit."""

@@ -1,6 +1,14 @@
 Unreleased
 ==========
 
+## Bug Fixes
+
+### Limit Validation
+
+**Behavior change: a negative `limit` now raises `ValueError` instead of returning a result.** Git treats `max_count=-1` as unlimited, so a negative `limit` used to mean "everything" on some methods and "nothing" on others (a project-level `limit=-1` over two repositories returned 5, 0, 1 and 5 rows from `commit_history`, `file_change_history`, `hours_estimate` and `revs` on a 2x5-commit fixture).
+
+* **FIXED**: `limit` must be `None` or a non-negative integer on `Repository.commit_history`, `file_change_history`, `file_change_rates`, `hours_estimate`, `revs`, `punchcard`, `cumulative_blame`, `parallel_cumulative_blame` and the matching `ProjectDirectory` methods. Negative values, booleans, floats and NaN raise `ValueError` before Git or cache access, so nothing is cached. `limit=0` (zero commits), `None` and positive integers behave as before; floats such as `limit=2.0` are now rejected rather than floored.
+
 v2.7.0
 ======
 
