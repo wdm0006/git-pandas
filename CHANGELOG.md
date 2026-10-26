@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## Documentation
+
+* **NEW**: A "Result schemas" docs page lists the exact columns, index levels and dtype kinds of populated results for the core analysis methods on `Repository` and `ProjectDirectory`. It is generated from constants that `tests/test_schema_contracts.py` checks against real output.
+
 ## Bug Fixes
 
 ### Limit Validation
