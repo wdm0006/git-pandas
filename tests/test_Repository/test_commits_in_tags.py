@@ -128,6 +128,17 @@ def test_commits_in_tags_emits_no_future_warning(repo):
         repository.commits_in_tags(start=_timestamp(BASE_EPOCH))
 
 
+def test_explicit_bounds_emit_no_warnings_and_return_exact_rows(repo):
+    repository, shas = repo
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = repository.commits_in_tags(start=_timestamp(BASE_EPOCH), end=_timestamp(_epoch(6) + 1800))
+
+    assert len(result) == COMMIT_COUNT
+    assert _attribution(result) == {shas[number]: ("v1.0" if number <= 3 else "v2.0") for number in shas}
+
+
 def test_walks_history_longer_than_the_python_recursion_limit(tmp_path):
     """A tag whose release spans thousands of commits must not exhaust the interpreter stack."""
     commit_count = 1200
