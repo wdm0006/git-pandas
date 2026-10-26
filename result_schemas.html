@@ -1,0 +1,985 @@
+
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z43R9PWW0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Z43R9PWW0B');
+    </script>
+    
+    <title>Result schemas &#8212; git-pandas 2.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=30d13653" />
+    <link rel="stylesheet" type="text/css" href="_static/css/wabi.css?v=9adde7c3" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e5d61e22" />
+    <script src="_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing to Git-Pandas" href="contributors.html" />
+    <link rel="prev" title="Use Cases and Examples" href="usecases.html" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+
+
+
+<meta name="description" content="Result schemas - git-pandas documentation">
+
+
+
+
+
+
+
+
+
+<meta property="og:title" content="Result schemas">
+<meta property="og:description" content="Result schemas - git-pandas documentation">
+<meta property="og:type" content="website">
+
+<meta property="og:url" content="https://gitpandas.mcginniscommawill.com/result_schemas.html">
+
+
+<meta property="og:site_name" content="git-pandas">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Result schemas">
+<meta name="twitter:description" content="Result schemas - git-pandas documentation">
+
+<meta name="twitter:site" content="@willmcginniser">
+
+
+
+
+
+<link rel="canonical" href="https://gitpandas.mcginniscommawill.com/result_schemas.html">
+
+
+ 
+
+  </head><body>
+<header class="header">
+  <div class="header__inner">
+    
+    <a href="https://mcginniscommawill.com" class="header__logo">
+      McGinnis, Will
+    </a>
+
+    
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </button>
+
+    
+    <nav class="nav" role="navigation">
+      
+      
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/guides/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Guides
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/topics/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Topics
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/posts/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Blog
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/about/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            About
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/coffee/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            Free Coffee
+          </a>
+        
+          
+          
+          
+          <a href="https://mcginniscommawill.com/oss/" class="nav__link"
+             target="_blank" rel="noopener noreferrer">
+            OSS
+          </a>
+        
+      
+
+      
+      
+      <a href="index.html" class="nav__link nav__link--active">
+        Docs
+      </a>
+      
+    </nav>
+  </div>
+</header>
+
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <div class="breadcrumbs__inner">
+    
+    <a href="https://mcginniscommawill.com">Home</a>
+    <span class="breadcrumbs__separator">/</span>
+    
+    <a href="index.html">Docs</a>
+    
+    
+    <span class="breadcrumbs__separator">/</span>
+    <span>Result schemas</span>
+    
+  </div>
+</nav>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="result-schemas">
+<h1>Result schemas<a class="headerlink" href="#result-schemas" title="Link to this heading">¶</a></h1>
+<p>Exact column order, index levels and dtype kinds of populated results, pinned by
+<code class="docutils literal notranslate"><span class="pre">tests/test_schema_contracts.py</span></code>. Kinds are <code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">bool</span></code> and <code class="docutils literal notranslate"><span class="pre">datetime</span></code>
+(UTC); they hold on pandas 2 and 3. Shapes differ between <code class="docutils literal notranslate"><span class="pre">Repository</span></code> and <code class="docutils literal notranslate"><span class="pre">ProjectDirectory</span></code> and
+between populated and empty results; both are listed as they are today.</p>
+<section id="repository-commit-history">
+<h2>Repository.commit_history()<a class="headerlink" href="#repository-commit-history" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">date</span></code> (datetime)</p>
+<p>UTC <code class="docutils literal notranslate"><span class="pre">date</span></code> index; includes a <code class="docutils literal notranslate"><span class="pre">branch</span></code> column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">message</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">net</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">branch</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-commit-history">
+<h2>ProjectDirectory.commit_history()<a class="headerlink" href="#projectdirectory-commit-history" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p><code class="docutils literal notranslate"><span class="pre">date</span></code> is a column; the integer index restarts at 0 for each repository; no <code class="docutils literal notranslate"><span class="pre">branch</span></code> column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">message</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">net</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-file-change-history">
+<h2>Repository.file_change_history()<a class="headerlink" href="#repository-file-change-history" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">date</span></code> (datetime)</p>
+<p><code class="docutils literal notranslate"><span class="pre">date</span></code> is both the index and a column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">filename</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">message</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-file-change-history">
+<h2>ProjectDirectory.file_change_history()<a class="headerlink" href="#projectdirectory-file-change-history" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p>No <code class="docutils literal notranslate"><span class="pre">lines</span></code> column; <code class="docutils literal notranslate"><span class="pre">date</span></code> is a column on a default integer index.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">message</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">filename</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-revs">
+<h2>Repository.revs()<a class="headerlink" href="#repository-revs" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p><code class="docutils literal notranslate"><span class="pre">date</span></code> is epoch seconds stored as an integer column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rev</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-revs">
+<h2>ProjectDirectory.revs()<a class="headerlink" href="#projectdirectory-revs" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p><code class="docutils literal notranslate"><span class="pre">date</span></code> is epoch seconds stored as a float column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rev</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">date</span></code></p></td>
+<td><p>float</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-blame-by-repository">
+<h2>Repository.blame(by=’repository’)<a class="headerlink" href="#repository-blame-by-repository" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">committer</span></code> (str)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-blame-by-repository">
+<h2>ProjectDirectory.blame(by=’repository’)<a class="headerlink" href="#projectdirectory-blame-by-repository" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">committer</span></code> (str)</p>
+<p>No <code class="docutils literal notranslate"><span class="pre">repository</span></code> column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-blame-by-file">
+<h2>Repository.blame(by=’file’)<a class="headerlink" href="#repository-blame-by-file" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">committer</span></code> (str), <code class="docutils literal notranslate"><span class="pre">file</span></code> (str)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-blame-by-file">
+<h2>ProjectDirectory.blame(by=’file’)<a class="headerlink" href="#projectdirectory-blame-by-file" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">committer</span></code> (str), <code class="docutils literal notranslate"><span class="pre">file</span></code> (str), <code class="docutils literal notranslate"><span class="pre">repository</span></code> (str)</p>
+<p><code class="docutils literal notranslate"><span class="pre">repository</span></code> is an index level, not a column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-tags">
+<h2>Repository.tags()<a class="headerlink" href="#repository-tags" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">tag_date</span></code> (datetime), <code class="docutils literal notranslate"><span class="pre">commit_date</span></code> (datetime)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tag</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">annotated</span></code></p></td>
+<td><p>bool</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">annotation</span></code></p></td>
+<td><p>nullable_str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tag_sha</span></code></p></td>
+<td><p>nullable_str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-tags">
+<h2>ProjectDirectory.tags()<a class="headerlink" href="#projectdirectory-tags" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">tag_date</span></code> (datetime), <code class="docutils literal notranslate"><span class="pre">commit_date</span></code> (datetime)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tag</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">annotated</span></code></p></td>
+<td><p>bool</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">annotation</span></code></p></td>
+<td><p>nullable_str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tag_sha</span></code></p></td>
+<td><p>nullable_str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-commits-in-tags">
+<h2>Repository.commits_in_tags()<a class="headerlink" href="#repository-commits-in-tags" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">tag_date</span></code> (datetime), <code class="docutils literal notranslate"><span class="pre">commit_date</span></code> (datetime)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tag</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-commits-in-tags">
+<h2>ProjectDirectory.commits_in_tags()<a class="headerlink" href="#projectdirectory-commits-in-tags" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">tag_date</span></code> (datetime), <code class="docutils literal notranslate"><span class="pre">commit_date</span></code> (datetime)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tag</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-punchcard">
+<h2>Repository.punchcard()<a class="headerlink" href="#repository-punchcard" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hour_of_day</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">day_of_week</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">net</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-punchcard">
+<h2>ProjectDirectory.punchcard()<a class="headerlink" href="#projectdirectory-punchcard" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hour_of_day</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">day_of_week</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lines</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">insertions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">deletions</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">net</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-hours-estimate">
+<h2>Repository.hours_estimate()<a class="headerlink" href="#repository-hours-estimate" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">hours</span></code></p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-hours-estimate">
+<h2>ProjectDirectory.hours_estimate()<a class="headerlink" href="#projectdirectory-hours-estimate" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">committer</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">hours</span></code></p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-file-detail">
+<h2>Repository.file_detail()<a class="headerlink" href="#repository-file-detail" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p><code class="docutils literal notranslate"><span class="pre">file</span></code> is a column.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file_owner</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ext</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">last_edit_date</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-file-detail">
+<h2>ProjectDirectory.file_detail()<a class="headerlink" href="#projectdirectory-file-detail" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">file</span></code> (str), <code class="docutils literal notranslate"><span class="pre">repository</span></code> (str)</p>
+<p><code class="docutils literal notranslate"><span class="pre">(file,</span> <span class="pre">repository)</span></code> index; a stray <code class="docutils literal notranslate"><span class="pre">index</span></code> column of row numbers leaks through.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">index</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file_owner</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ext</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">last_edit_date</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-bus-factor-by-repository">
+<h2>Repository.bus_factor(by=’repository’)<a class="headerlink" href="#repository-bus-factor-by-repository" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-bus-factor-by-projectd">
+<h2>ProjectDirectory.bus_factor(by=’projectd’)<a class="headerlink" href="#projectdirectory-bus-factor-by-projectd" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p>Default grouping; the first column is named <code class="docutils literal notranslate"><span class="pre">projectd</span></code>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">projectd</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="repository-bus-factor-by-file">
+<h2>Repository.bus_factor(by=’file’)<a class="headerlink" href="#repository-bus-factor-by-file" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-bus-factor-by-file">
+<h2>ProjectDirectory.bus_factor(by=’file’)<a class="headerlink" href="#projectdirectory-bus-factor-by-file" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="projectdirectory-bus-factor-by-repository">
+<h2>ProjectDirectory.bus_factor(by=’repository’)<a class="headerlink" href="#projectdirectory-bus-factor-by-repository" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code> has object dtype.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">bus</span> <span class="pre">factor</span></code></p></td>
+<td><p>object</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="empty-results">
+<h2>Empty results<a class="headerlink" href="#empty-results" title="Link to this heading">¶</a></h2>
+<p>Where the empty frame differs from the populated one:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Columns</p></th>
+<th class="head"><p>Index</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Repository.file_change_history</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">insertions</span></code>, <code class="docutils literal notranslate"><span class="pre">deletions</span></code>, <code class="docutils literal notranslate"><span class="pre">lines</span></code>, <code class="docutils literal notranslate"><span class="pre">message</span></code>, <code class="docutils literal notranslate"><span class="pre">committer</span></code>, <code class="docutils literal notranslate"><span class="pre">author</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Repository.revs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">date</span></code>, <code class="docutils literal notranslate"><span class="pre">rev</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-even"><td><p>Repository.tags</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tag_date</span></code>, <code class="docutils literal notranslate"><span class="pre">commit_date</span></code>, <code class="docutils literal notranslate"><span class="pre">tag</span></code>, <code class="docutils literal notranslate"><span class="pre">annotated</span></code>, <code class="docutils literal notranslate"><span class="pre">annotation</span></code>, <code class="docutils literal notranslate"><span class="pre">tag_sha</span></code>, <code class="docutils literal notranslate"><span class="pre">commit_sha</span></code>, <code class="docutils literal notranslate"><span class="pre">repository</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Repository.commits_in_tags</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code>, <code class="docutils literal notranslate"><span class="pre">tag</span></code>, <code class="docutils literal notranslate"><span class="pre">tag_date</span></code>, <code class="docutils literal notranslate"><span class="pre">commit_date</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-even"><td><p>ProjectDirectory.revs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">repository</span></code>, <code class="docutils literal notranslate"><span class="pre">rev</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ProjectDirectory.tags</p></td>
+<td><p>(none)</p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+<tr class="row-even"><td><p>ProjectDirectory.commits_in_tags</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">commit_sha</span></code>, <code class="docutils literal notranslate"><span class="pre">tag</span></code>, <code class="docutils literal notranslate"><span class="pre">tag_date</span></code>, <code class="docutils literal notranslate"><span class="pre">commit_date</span></code></p></td>
+<td><p>(unnamed integer index)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+
+
+<h3 class="sr-only">Table of Contents</h3>
+
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote_operations.html">Remote Operations and Cache Warming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usecases.html">Use Cases and Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Result schemas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributing to Git-Pandas</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="usecases.html"
+                          title="previous chapter">Use Cases and Examples</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="contributors.html"
+                          title="next chapter">Contributing to Git-Pandas</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/result_schemas.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <div class="footer__inner">
+    
+    
+    <div class="footer__links">
+      
+        <a href="https://github.com/wdm0006" class="footer__link" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+      
+        <a href="https://www.linkedin.com/in/wmcginnis/" class="footer__link" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+      
+        <a href="https://x.com/willmcginniser" class="footer__link" target="_blank" rel="noopener noreferrer">
+          Twitter
+        </a>
+      
+    </div>
+    
+
+    
+    <p class="footer__copy">
+      
+        &copy; 2015-2025, Will McGinnis
+      
+    </p>
+  </div>
+</footer>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('.nav');
+    if (toggle && nav) {
+      toggle.addEventListener('click', function() {
+        nav.classList.toggle('is-open');
+        const isOpen = nav.classList.contains('is-open');
+        toggle.setAttribute('aria-expanded', isOpen);
+      });
+    }
+  });
+</script>
+
+  </body>
+</html>

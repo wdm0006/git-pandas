@@ -117,6 +117,7 @@ For detailed information about the components and their usage, see:
    remote_operations
    performance
    usecases
+   result_schemas
    contributors
 
 Additional Resources
