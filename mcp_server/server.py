@@ -179,7 +179,7 @@ def serialize_pandas_object(obj: Any) -> Any:
         ):
             df = df.reset_index()
 
-        for col in df.select_dtypes(include=["datetime64[ns, UTC]", "datetime64[ns]", "datetimetz"]).columns:
+        for col in df.select_dtypes(include=["datetime", "datetimetz"]).columns:
             df[col] = df[col].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return df.to_dict(orient="records")
