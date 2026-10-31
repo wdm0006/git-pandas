@@ -13,6 +13,7 @@ import functools
 import inspect
 import json
 import logging
+import math
 import numbers
 import os
 import shutil
@@ -1817,8 +1818,8 @@ class Repository:
             df_tags = df_tags.query(f'commit_date < "{end}"').copy()
 
         # convert to unix time to speed up calculations later
-        start = (start - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta("1s") if start else start
-        end = (end - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta("1s") if end else end
+        start = math.floor(start.timestamp()) if start else start
+        end = math.floor(end.timestamp()) if end else end
 
         ds = []
         checked_commits = set()
