@@ -189,6 +189,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
@@ -2045,8 +2046,8 @@
             <span class="n">df_tags</span> <span class="o">=</span> <span class="n">df_tags</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">'commit_date &lt; "</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s1">"'</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># convert to unix time to speed up calculations later</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">"1970-01-01"</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">))</span> <span class="o">//</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s2">"1s"</span><span class="p">)</span> <span class="k">if</span> <span class="n">start</span> <span class="k">else</span> <span class="n">start</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">"1970-01-01"</span><span class="p">,</span> <span class="n">tz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">))</span> <span class="o">//</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s2">"1s"</span><span class="p">)</span> <span class="k">if</span> <span class="n">end</span> <span class="k">else</span> <span class="n">end</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span> <span class="k">if</span> <span class="n">start</span> <span class="k">else</span> <span class="n">start</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">timestamp</span><span class="p">())</span> <span class="k">if</span> <span class="n">end</span> <span class="k">else</span> <span class="n">end</span>
 
         <span class="n">ds</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">checked_commits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
