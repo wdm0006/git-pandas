@@ -1,17 +1,32 @@
 Unreleased
 ==========
 
+v2.7.1
+======
+
 ## Documentation
 
 * **NEW**: A "Result schemas" docs page lists the exact columns, index levels and dtype kinds of populated results for the core analysis methods on `Repository` and `ProjectDirectory`. It is generated from constants that `tests/test_schema_contracts.py` checks against real output.
 
 ## Bug Fixes
 
+### Tag History Compatibility
+
+* **FIXED**: `commits_in_tags()` converts time bounds to epoch seconds without deprecated generic-unit Timedelta division, avoiding the NumPy deprecation warning while preserving whole-second flooring.
+
+### MCP Datetime Serialization
+
+* **FIXED**: The standalone MCP adapter serializes pandas 3 datetime columns at any resolution as timestamp strings, rather than overlooking columns that are not nanosecond-based.
+
 ### Limit Validation
 
 **Behavior change: a negative `limit` now raises `ValueError` instead of returning a result.** Git treats `max_count=-1` as unlimited, so a negative `limit` used to mean "everything" on some methods and "nothing" on others (a project-level `limit=-1` over two repositories returned 5, 0, 1 and 5 rows from `commit_history`, `file_change_history`, `hours_estimate` and `revs` on a 2x5-commit fixture).
 
 * **FIXED**: `limit` must be `None` or a non-negative integer on `Repository.commit_history`, `file_change_history`, `file_change_rates`, `hours_estimate`, `revs`, `punchcard`, `cumulative_blame`, `parallel_cumulative_blame` and the matching `ProjectDirectory` methods. Negative values, booleans, floats and NaN raise `ValueError` before Git or cache access, so nothing is cached. `limit=0` (zero commits), `None` and positive integers behave as before; floats such as `limit=2.0` are now rejected rather than floored.
+
+## Testing & Quality
+
+* **ENHANCED**: Value-level cached-versus-uncached parity coverage now checks every public analysis method and flags public methods missing from the coverage table.
 
 v2.7.0
 ======
