@@ -15,11 +15,11 @@
         gtag('config', 'G-Z43R9PWW0B');
     </script>
     
-    <title>Repository &#8212; git-pandas 2.5.0 documentation</title>
+    <title>Repository &#8212; git-pandas 2.7.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=30d13653" />
     <link rel="stylesheet" type="text/css" href="_static/css/wabi.css?v=9adde7c3" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e5d61e22" />
-    <script src="_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="_static/documentation_options.js?v=7b940564"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -296,7 +296,7 @@
 <p>Most analysis methods support these filtering parameters:</p>
 <ul class="simple">
 <li><p><strong>branch</strong>: Branch to analyze (defaults to repository’s default branch)</p></li>
-<li><p><strong>limit</strong>: Maximum number of commits to analyze</p></li>
+<li><p><strong>limit</strong>: Maximum number of commits to analyze; must be <code class="docutils literal notranslate"><span class="pre">None</span></code> or a non-negative integer (excluding booleans). Invalid values raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>; zero selects no commits</p></li>
 <li><p><strong>days</strong>: Limit analysis to last N days</p></li>
 <li><p><strong>ignore_globs</strong>: List of glob patterns for files to ignore</p></li>
 <li><p><strong>include_globs</strong>: List of glob patterns for files to include</p></li>

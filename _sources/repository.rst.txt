@@ -135,7 +135,7 @@ Common Parameters
 Most analysis methods support these filtering parameters:
 
 * **branch**: Branch to analyze (defaults to repository's default branch)
-* **limit**: Maximum number of commits to analyze
+* **limit**: Maximum number of commits to analyze; must be ``None`` or a non-negative integer (excluding booleans). Invalid values raise ``ValueError``; zero selects no commits
 * **days**: Limit analysis to last N days
 * **ignore_globs**: List of glob patterns for files to ignore
 * **include_globs**: List of glob patterns for files to include
