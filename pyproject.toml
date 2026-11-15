@@ -57,6 +57,7 @@ dev = [
     "matplotlib",
     "joblib",
     "pytest-mock",
+    "tomli; python_version < '3.11'",
     "mcp[cli]<2",
     "redis",
     "coverage>=5.0.0",

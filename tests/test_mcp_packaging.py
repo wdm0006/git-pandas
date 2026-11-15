@@ -1,8 +1,12 @@
 import importlib.util
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
+
+try:
+    import tomllib
+except ImportError:  # Python 3.10
+    import tomli as tomllib
 
 ROOT = Path(__file__).parents[1]
 
