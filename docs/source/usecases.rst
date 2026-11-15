@@ -127,6 +127,18 @@ Analyze project sustainability:
     # Analyze ownership patterns
     ownership_patterns = repo.blame(committer=True, by='repository')
 
+Knowledge Risk
+~~~~~~~~~~~~~~
+
+Find files whose dominant owner has stopped committing:
+
+.. code-block:: python
+
+    # Owner = top blame contributor per file; at risk when their last commit on the
+    # branch is at least 180 days before ``as_of`` (default: now, UTC)
+    risk = repo.knowledge_risk(inactive_days=180, as_of='2025-01-01')
+    print(risk[risk['at_risk']][['file', 'owner', 'owner_share', 'days_inactive']])
+
 Performance Optimization
 ------------------------
 

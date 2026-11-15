@@ -100,6 +100,26 @@ def _validates_by(*allowed):
     return decorate
 
 
+def _validate_inactive_days(inactive_days):
+    if isinstance(inactive_days, bool) or not isinstance(inactive_days, numbers.Integral) or inactive_days < 0:
+        raise ValueError(f"inactive_days must be a non-negative integer; got {inactive_days!r}")
+    return inactive_days
+
+
+def _validates_inactive_days(func):
+    """Reject an invalid ``inactive_days`` before any Git or cache access."""
+    signature = inspect.signature(func)
+
+    @wraps(func)
+    def validate(self, *args, **kwargs):
+        arguments = signature.bind(self, *args, **{k: v for k, v in kwargs.items() if k != "force_refresh"})
+        arguments.apply_defaults()
+        _validate_inactive_days(arguments.arguments["inactive_days"])
+        return func(self, *args, **kwargs)
+
+    return validate
+
+
 def _parallel_cumulative_blame_func(self_, x, committer, ignore_globs, include_globs):
     blm = self_.blame(
         rev=x["rev"],
@@ -2354,6 +2374,108 @@ class Repository:
             str: The absolute path to the repository
         """
         return str(self.git_dir)
+
+    @_validates_inactive_days
+    def knowledge_risk(
+        self,
+        rev="HEAD",
+        inactive_days=180,
+        committer=True,
+        ignore_globs=None,
+        include_globs=None,
+        branch=None,
+        as_of=None,
+    ):
+        """Finds files whose dominant owner has stopped committing.
+
+        The owner of a file is its top blame contributor at ``rev`` (ties broken alphabetically).
+        The owner's activity is the time of their latest commit on ``branch``; the owner is
+        at risk when that is at least ``inactive_days`` before ``as_of``.
+
+        Args:
+            rev (str, optional): Revision to compute blame at. Defaults to 'HEAD'.
+            inactive_days (int, optional): Inactivity threshold in days; a non-negative integer
+                (not a bool). Defaults to 180.
+            committer (bool, optional): If True, identities are committers and the committer timestamp
+                is used; if False, authors and author timestamps. Defaults to True.
+            ignore_globs (Optional[List[str]]): Glob patterns for files to ignore
+            include_globs (Optional[List[str]]): Glob patterns for files to include
+            branch (Optional[str]): Branch whose history defines the owner's last commit.
+                Defaults to the default branch.
+            as_of (Optional[datetime-like]): Evaluation instant; naive values are taken as UTC.
+                Defaults to now (UTC).
+
+        Returns:
+            pandas.DataFrame: One row per file with columns:
+                - file (str): File path
+                - owner (str): Top blame contributor
+                - owner_loc (int): Lines attributed to the owner
+                - total_loc (int): Total attributed lines in the file
+                - owner_share (float): owner_loc / total_loc
+                - owner_last_commit (datetime64, UTC): Owner's latest commit on ``branch``
+                - days_inactive (float): Fractional days from owner_last_commit to ``as_of``
+                - at_risk (bool): days_inactive >= inactive_days
+
+        Raises:
+            ValueError: If inactive_days is not a non-negative integer, or as_of cannot be parsed.
+
+        Note:
+            An owner with no commits found on ``branch`` (for example a file last changed on another
+            branch) gets ``NaT`` / ``NaN`` and ``at_risk=False``: absence of evidence is not flagged.
+            Last activity is measured on the whole branch history, not limited to the globs.
+        """
+        _validate_inactive_days(inactive_days)
+        evaluated = pd.Timestamp.now(tz="UTC") if as_of is None else pd.Timestamp(as_of)
+        if evaluated is pd.NaT:
+            raise ValueError(f"as_of must be a valid timestamp; got {as_of!r}")
+        evaluated = evaluated.tz_localize("UTC") if evaluated.tzinfo is None else evaluated.tz_convert("UTC")
+
+        owners = self._knowledge_risk_owners(
+            rev=rev, committer=committer, ignore_globs=ignore_globs, include_globs=include_globs, branch=branch
+        ).copy()
+        elapsed = (evaluated - owners["owner_last_commit"]).dt.total_seconds()
+        owners["days_inactive"] = elapsed / 86400.0
+        owners["at_risk"] = (owners["days_inactive"] >= inactive_days).astype(bool)
+        return owners
+
+    @multicache(
+        key_prefix="knowledge_risk",
+        key_list=["rev", "committer", "ignore_globs", "include_globs", "branch"],
+    )
+    def _knowledge_risk_owners(self, rev, committer, ignore_globs, include_globs, branch):
+        """Time-independent half of :meth:`knowledge_risk`; ages and flags are added per call."""
+        columns = ["file", "owner", "owner_loc", "total_loc", "owner_share", "owner_last_commit"]
+        identity = "committer" if committer else "author"
+        blame = self.blame(
+            rev=rev, committer=committer, by="file", ignore_globs=ignore_globs, include_globs=include_globs
+        )
+        if blame.empty:
+            out = DataFrame(
+                {
+                    "file": pd.Series(dtype="object"),
+                    "owner": pd.Series(dtype="object"),
+                    "owner_loc": pd.Series(dtype="int64"),
+                    "total_loc": pd.Series(dtype="int64"),
+                    "owner_share": pd.Series(dtype="float64"),
+                    "owner_last_commit": pd.Series(dtype="datetime64[ns, UTC]"),
+                }
+            )
+            return out
+
+        blame = blame.reset_index()[[identity, "file", "loc"]]
+        totals = blame.groupby("file")["loc"].sum()
+        top = blame.sort_values(["file", "loc", identity], ascending=[True, False, True]).drop_duplicates("file")
+        top = top.rename(columns={identity: "owner", "loc": "owner_loc"}).reset_index(drop=True)
+        top["total_loc"] = top["file"].map(totals).astype("int64")
+        top["owner_share"] = top["owner_loc"] / top["total_loc"]
+
+        history = self.commit_history(branch=branch, date_source=identity)
+        if history.empty:
+            last = pd.Series(dtype="datetime64[ns, UTC]")
+        else:
+            last = history.index.to_series().groupby(history[identity].to_numpy()).max()
+        top["owner_last_commit"] = pd.to_datetime(top["owner"].map(last), utc=True)
+        return top[columns]
 
     @_validates_by("repository", "file")
     @multicache(key_prefix="bus_factor", key_list=["by", "ignore_globs", "include_globs"])
