@@ -287,6 +287,16 @@
 </pre></div>
 </div>
 </section>
+<section id="knowledge-risk">
+<h3>Knowledge Risk<a class="headerlink" href="#knowledge-risk" title="Link to this heading">¶</a></h3>
+<p>Find files whose dominant owner has stopped committing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Owner = top blame contributor per file; at risk when their last commit on the</span>
+<span class="c1"># branch is at least 180 days before ``as_of`` (default: now, UTC)</span>
+<span class="n">risk</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">knowledge_risk</span><span class="p">(</span><span class="n">inactive_days</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">as_of</span><span class="o">=</span><span class="s1">'2025-01-01'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">risk</span><span class="p">[</span><span class="n">risk</span><span class="p">[</span><span class="s1">'at_risk'</span><span class="p">]][[</span><span class="s1">'file'</span><span class="p">,</span> <span class="s1">'owner'</span><span class="p">,</span> <span class="s1">'owner_share'</span><span class="p">,</span> <span class="s1">'days_inactive'</span><span class="p">]])</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="performance-optimization">
 <h2>Performance Optimization<a class="headerlink" href="#performance-optimization" title="Link to this heading">¶</a></h2>

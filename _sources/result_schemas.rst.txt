@@ -440,6 +440,35 @@ Index: ``file`` (str), ``repository`` (str)
    * - ``last_edit_date``
      - datetime
 
+Repository.knowledge_risk()
+---------------------------
+
+Index: ``(unnamed integer index)`` (int)
+
+One row per file; the empty frame has the same columns and index.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Column
+     - Kind
+   * - ``file``
+     - str
+   * - ``owner``
+     - str
+   * - ``owner_loc``
+     - int
+   * - ``total_loc``
+     - int
+   * - ``owner_share``
+     - float
+   * - ``owner_last_commit``
+     - datetime
+   * - ``days_inactive``
+     - float
+   * - ``at_risk``
+     - bool
+
 Repository.bus_factor(by='repository')
 --------------------------------------
 

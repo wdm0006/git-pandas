@@ -735,6 +735,44 @@ between populated and empty results; both are listed as they are today.</p>
 </tbody>
 </table>
 </section>
+<section id="repository-knowledge-risk">
+<h2>Repository.knowledge_risk()<a class="headerlink" href="#repository-knowledge-risk" title="Link to this heading">¶</a></h2>
+<p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>
+<p>One row per file; the empty frame has the same columns and index.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Kind</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">owner</span></code></p></td>
+<td><p>str</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">owner_loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">total_loc</span></code></p></td>
+<td><p>int</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">owner_share</span></code></p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">owner_last_commit</span></code></p></td>
+<td><p>datetime</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">days_inactive</span></code></p></td>
+<td><p>float</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">at_risk</span></code></p></td>
+<td><p>bool</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="repository-bus-factor-by-repository">
 <h2>Repository.bus_factor(by=’repository’)<a class="headerlink" href="#repository-bus-factor-by-repository" title="Link to this heading">¶</a></h2>
 <p>Index: <code class="docutils literal notranslate"><span class="pre">(unnamed</span> <span class="pre">integer</span> <span class="pre">index)</span></code> (int)</p>

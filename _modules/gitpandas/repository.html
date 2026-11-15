@@ -276,6 +276,26 @@
     <span class="k">return</span> <span class="n">decorate</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_inactive_days</span><span class="p">(</span><span class="n">inactive_days</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inactive_days</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inactive_days</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span> <span class="ow">or</span> <span class="n">inactive_days</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inactive_days must be a non-negative integer; got </span><span class="si">{</span><span class="n">inactive_days</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">inactive_days</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validates_inactive_days</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject an invalid ``inactive_days`` before any Git or cache access."""</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="n">signature</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">"force_refresh"</span><span class="p">})</span>
+        <span class="n">arguments</span><span class="o">.</span><span class="n">apply_defaults</span><span class="p">()</span>
+        <span class="n">_validate_inactive_days</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="s2">"inactive_days"</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">validate</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_parallel_cumulative_blame_func</span><span class="p">(</span><span class="n">self_</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">committer</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="p">,</span> <span class="n">include_globs</span><span class="p">):</span>
     <span class="n">blm</span> <span class="o">=</span> <span class="n">self_</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
         <span class="n">rev</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="s2">"rev"</span><span class="p">],</span>
@@ -2609,6 +2629,114 @@
 <span class="sd">            str: The absolute path to the repository</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">git_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Repository.knowledge_risk">
+<a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository.knowledge_risk">[docs]</a>
+    <span class="nd">@_validates_inactive_days</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">knowledge_risk</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rev</span><span class="o">=</span><span class="s2">"HEAD"</span><span class="p">,</span>
+        <span class="n">inactive_days</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+        <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">as_of</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Finds files whose dominant owner has stopped committing.</span>
+
+<span class="sd">        The owner of a file is its top blame contributor at ``rev`` (ties broken alphabetically).</span>
+<span class="sd">        The owner's activity is the time of their latest commit on ``branch``; the owner is</span>
+<span class="sd">        at risk when that is at least ``inactive_days`` before ``as_of``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rev (str, optional): Revision to compute blame at. Defaults to 'HEAD'.</span>
+<span class="sd">            inactive_days (int, optional): Inactivity threshold in days; a non-negative integer</span>
+<span class="sd">                (not a bool). Defaults to 180.</span>
+<span class="sd">            committer (bool, optional): If True, identities are committers and the committer timestamp</span>
+<span class="sd">                is used; if False, authors and author timestamps. Defaults to True.</span>
+<span class="sd">            ignore_globs (Optional[List[str]]): Glob patterns for files to ignore</span>
+<span class="sd">            include_globs (Optional[List[str]]): Glob patterns for files to include</span>
+<span class="sd">            branch (Optional[str]): Branch whose history defines the owner's last commit.</span>
+<span class="sd">                Defaults to the default branch.</span>
+<span class="sd">            as_of (Optional[datetime-like]): Evaluation instant; naive values are taken as UTC.</span>
+<span class="sd">                Defaults to now (UTC).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: One row per file with columns:</span>
+<span class="sd">                - file (str): File path</span>
+<span class="sd">                - owner (str): Top blame contributor</span>
+<span class="sd">                - owner_loc (int): Lines attributed to the owner</span>
+<span class="sd">                - total_loc (int): Total attributed lines in the file</span>
+<span class="sd">                - owner_share (float): owner_loc / total_loc</span>
+<span class="sd">                - owner_last_commit (datetime64, UTC): Owner's latest commit on ``branch``</span>
+<span class="sd">                - days_inactive (float): Fractional days from owner_last_commit to ``as_of``</span>
+<span class="sd">                - at_risk (bool): days_inactive &gt;= inactive_days</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If inactive_days is not a non-negative integer, or as_of cannot be parsed.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            An owner with no commits found on ``branch`` (for example a file last changed on another</span>
+<span class="sd">            branch) gets ``NaT`` / ``NaN`` and ``at_risk=False``: absence of evidence is not flagged.</span>
+<span class="sd">            Last activity is measured on the whole branch history, not limited to the globs.</span>
+<span class="sd">        """</span>
+        <span class="n">_validate_inactive_days</span><span class="p">(</span><span class="n">inactive_days</span><span class="p">)</span>
+        <span class="n">evaluated</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="s2">"UTC"</span><span class="p">)</span> <span class="k">if</span> <span class="n">as_of</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">as_of</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">evaluated</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"as_of must be a valid timestamp; got </span><span class="si">{</span><span class="n">as_of</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">evaluated</span> <span class="o">=</span> <span class="n">evaluated</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span> <span class="k">if</span> <span class="n">evaluated</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">evaluated</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span>
+
+        <span class="n">owners</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_knowledge_risk_owners</span><span class="p">(</span>
+            <span class="n">rev</span><span class="o">=</span><span class="n">rev</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span> <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span><span class="p">,</span> <span class="n">branch</span><span class="o">=</span><span class="n">branch</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">evaluated</span> <span class="o">-</span> <span class="n">owners</span><span class="p">[</span><span class="s2">"owner_last_commit"</span><span class="p">])</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="n">owners</span><span class="p">[</span><span class="s2">"days_inactive"</span><span class="p">]</span> <span class="o">=</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="mf">86400.0</span>
+        <span class="n">owners</span><span class="p">[</span><span class="s2">"at_risk"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">owners</span><span class="p">[</span><span class="s2">"days_inactive"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">inactive_days</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">owners</span></div>
+
+
+<div class="viewcode-block" id="Repository._knowledge_risk_owners">
+<a class="viewcode-back" href="../../repository.html#gitpandas.repository.Repository._knowledge_risk_owners">[docs]</a>
+    <span class="nd">@multicache</span><span class="p">(</span>
+        <span class="n">key_prefix</span><span class="o">=</span><span class="s2">"knowledge_risk"</span><span class="p">,</span>
+        <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="s2">"rev"</span><span class="p">,</span> <span class="s2">"committer"</span><span class="p">,</span> <span class="s2">"ignore_globs"</span><span class="p">,</span> <span class="s2">"include_globs"</span><span class="p">,</span> <span class="s2">"branch"</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_knowledge_risk_owners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rev</span><span class="p">,</span> <span class="n">committer</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="p">,</span> <span class="n">include_globs</span><span class="p">,</span> <span class="n">branch</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Time-independent half of :meth:`knowledge_risk`; ages and flags are added per call."""</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"file"</span><span class="p">,</span> <span class="s2">"owner"</span><span class="p">,</span> <span class="s2">"owner_loc"</span><span class="p">,</span> <span class="s2">"total_loc"</span><span class="p">,</span> <span class="s2">"owner_share"</span><span class="p">,</span> <span class="s2">"owner_last_commit"</span><span class="p">]</span>
+        <span class="n">identity</span> <span class="o">=</span> <span class="s2">"committer"</span> <span class="k">if</span> <span class="n">committer</span> <span class="k">else</span> <span class="s2">"author"</span>
+        <span class="n">blame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blame</span><span class="p">(</span>
+            <span class="n">rev</span><span class="o">=</span><span class="n">rev</span><span class="p">,</span> <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">"file"</span><span class="p">,</span> <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span> <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">blame</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">"file"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"object"</span><span class="p">),</span>
+                    <span class="s2">"owner"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"object"</span><span class="p">),</span>
+                    <span class="s2">"owner_loc"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"int64"</span><span class="p">),</span>
+                    <span class="s2">"total_loc"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"int64"</span><span class="p">),</span>
+                    <span class="s2">"owner_share"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">),</span>
+                    <span class="s2">"owner_last_commit"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"datetime64[ns, UTC]"</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="n">blame</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[[</span><span class="n">identity</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">,</span> <span class="s2">"loc"</span><span class="p">]]</span>
+        <span class="n">totals</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"file"</span><span class="p">)[</span><span class="s2">"loc"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">blame</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">"file"</span><span class="p">,</span> <span class="s2">"loc"</span><span class="p">,</span> <span class="n">identity</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">"file"</span><span class="p">)</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">identity</span><span class="p">:</span> <span class="s2">"owner"</span><span class="p">,</span> <span class="s2">"loc"</span><span class="p">:</span> <span class="s2">"owner_loc"</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">top</span><span class="p">[</span><span class="s2">"total_loc"</span><span class="p">]</span> <span class="o">=</span> <span class="n">top</span><span class="p">[</span><span class="s2">"file"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">totals</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">)</span>
+        <span class="n">top</span><span class="p">[</span><span class="s2">"owner_share"</span><span class="p">]</span> <span class="o">=</span> <span class="n">top</span><span class="p">[</span><span class="s2">"owner_loc"</span><span class="p">]</span> <span class="o">/</span> <span class="n">top</span><span class="p">[</span><span class="s2">"total_loc"</span><span class="p">]</span>
+
+        <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commit_history</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span> <span class="n">date_source</span><span class="o">=</span><span class="n">identity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">history</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"datetime64[ns, UTC]"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">history</span><span class="p">[</span><span class="n">identity</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">top</span><span class="p">[</span><span class="s2">"owner_last_commit"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">top</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">last</span><span class="p">),</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">top</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Repository.bus_factor">
