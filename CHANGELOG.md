@@ -1,6 +1,14 @@
 Unreleased
 ==========
 
+## New Features
+
+### MCP Extra and Console Command
+
+* **NEW**: The MCP server now ships inside the wheel as `gitpandas.mcp_server`. Install it with `pip install "git-pandas[mcp]"` and launch it with the `git-pandas-mcp` command. `import gitpandas` still works without `mcp`; importing the server without the extra raises an error naming `git-pandas[mcp]`.
+* **NOTE**: the extra pins `mcp[cli]<2` because mcp 2.x renamed `FastMCP`.
+* **ENHANCED**: `mcp_server/server.py` is now a thin launcher for the packaged server, so the documented script path keeps working. Its PEP 723 block now requires `git-pandas[mcp]`.
+
 v2.7.1
 ======
 

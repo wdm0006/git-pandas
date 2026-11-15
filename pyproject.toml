@@ -32,6 +32,9 @@ Documentation = "https://gitpandas.mcginniscommawill.com"
 Source = "https://github.com/wdm0006/git-pandas"
 Issues = "https://github.com/wdm0006/git-pandas/issues"
 
+[project.scripts]
+git-pandas-mcp = "gitpandas.mcp_server:main"
+
 [project.optional-dependencies]
 examples = [
     "matplotlib",
@@ -43,6 +46,9 @@ redis = [
 coverage = [
     "coverage>=5.0.0",
 ]
+mcp = [
+    "mcp[cli]<2",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -51,6 +57,7 @@ dev = [
     "matplotlib",
     "joblib",
     "pytest-mock",
+    "mcp[cli]<2",
     "redis",
     "coverage>=5.0.0",
 ]
@@ -59,6 +66,7 @@ all = [
     "lifelines",
     "redis",
     "coverage>=5.0.0",
+    "mcp[cli]<2",
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "sphinx>=7.0.0",

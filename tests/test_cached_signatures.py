@@ -46,7 +46,7 @@ def test_mcp_wrapper_preserves_cached_method_signature(monkeypatch):
     monkeypatch.setitem(sys.modules, "mcp.server", mcp_server_module)
     monkeypatch.setitem(sys.modules, "mcp.server.fastmcp", fastmcp_module)
 
-    server_path = Path(__file__).parents[1] / "mcp_server" / "server.py"
+    server_path = Path(__file__).parents[1] / "gitpandas" / "mcp_server.py"
     spec = importlib.util.spec_from_file_location("gitpandas_mcp_server", server_path)
     server = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(server)

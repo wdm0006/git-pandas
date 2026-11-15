@@ -78,7 +78,7 @@ run-example:
 	MPLBACKEND=Agg $(UV) run python $(EXAMPLES_DIR)/$(example).py
 
 mcp:
-	$(UV) run python mcp_server/server.py
+	$(UV) run --extra mcp python mcp_server/server.py
 
 gitnoc:
 	$(UV) run python gitnoc/app.py
