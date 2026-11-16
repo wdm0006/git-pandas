@@ -182,6 +182,8 @@ PROJECT_CASES = [
     ("blame", {"by": "repository"}),
     ("bus_factor", {"by": "repository"}),
     ("bus_factor", {"by": "projectd", "ignore_globs": ["*.md"]}),
+    ("knowledge_risk", {"branch": DEFAULT, "as_of": "2024-01-01", "inactive_days": 30}),
+    ("knowledge_risk", {"branch": DEFAULT, "as_of": "2024-01-01", "committer": False, "ignore_globs": ["*.md"]}),
     ("repo_information", {}),
 ]
 

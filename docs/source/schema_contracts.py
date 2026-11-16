@@ -247,6 +247,22 @@ SCHEMAS = [
         note="``(file, repository)`` index; a stray ``index`` column of row numbers leaks through.",
     ),
     _s(
+        PROJECT,
+        "knowledge_risk",
+        [
+            ("repository", "str"),
+            ("file", "str"),
+            ("owner", "str"),
+            ("owner_loc", "int"),
+            ("total_loc", "int"),
+            ("owner_share", "float"),
+            ("owner_last_commit", "datetime"),
+            ("days_inactive", "float"),
+            ("at_risk", "bool"),
+        ],
+        note="One row per repository/file; ownership and activity are repository-local.",
+    ),
+    _s(
         REPOSITORY,
         "knowledge_risk",
         [

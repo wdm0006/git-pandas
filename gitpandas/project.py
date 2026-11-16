@@ -17,7 +17,13 @@ import requests
 from git import GitCommandError
 
 from gitpandas.logging import logger  # Import the logger
-from gitpandas.repository import Repository, _validate_date_source, _validate_limit
+from gitpandas.repository import (
+    Repository,
+    _resolve_as_of,
+    _validate_date_source,
+    _validate_inactive_days,
+    _validate_limit,
+)
 
 try:
     from joblib import Parallel, delayed
@@ -1073,6 +1079,87 @@ class ProjectDirectory:
 
         logger.info(f"Fetched detailed information for {len(df)} repositories.")
         return df
+
+    def knowledge_risk(
+        self,
+        rev="HEAD",
+        inactive_days=180,
+        committer=True,
+        ignore_globs=None,
+        include_globs=None,
+        branch=None,
+        as_of=None,
+    ):
+        """Finds files whose dominant owner has stopped committing, across all repositories.
+
+        Delegates to :meth:`Repository.knowledge_risk` for each member and stacks the results with a
+        leading ``repository`` column. Ownership and activity are repository-local: an owner is judged
+        by their latest commit in the same repository as the file, even when the same name owns files
+        elsewhere. A default ``as_of`` is resolved once, so every member is evaluated at the same instant.
+
+        Args:
+            rev (str, optional): Revision to compute blame at. Defaults to 'HEAD'.
+            inactive_days (int, optional): Inactivity threshold in days; a non-negative integer
+                (not a bool). Defaults to 180.
+            committer (bool, optional): If True, identities are committers; otherwise authors.
+            ignore_globs (Optional[List[str]]): Glob patterns for files to ignore
+            include_globs (Optional[List[str]]): Glob patterns for files to include
+            branch (Optional[str]): Branch whose history defines each owner's last commit. When omitted,
+                each repository uses its own default branch.
+            as_of (Optional[datetime-like]): Evaluation instant; naive values are taken as UTC.
+                Defaults to now (UTC), resolved once for the whole call.
+
+        Returns:
+            pandas.DataFrame: One row per repository/file, in member order and each member's row order,
+            with a fresh integer index and columns ``repository`` followed by ``file``, ``owner``,
+            ``owner_loc``, ``total_loc``, ``owner_share``, ``owner_last_commit``, ``days_inactive`` and
+            ``at_risk`` as documented on :meth:`Repository.knowledge_risk`. An empty project or all-empty
+            members yield an empty frame with the same columns.
+
+        Raises:
+            ValueError: If inactive_days is not a non-negative integer, or as_of cannot be parsed. This is
+                checked before any repository is visited, including for an empty project.
+
+        Note:
+            An owner with no commits found on ``branch`` has ``NaT``/``NaN`` activity and
+            ``at_risk=False``: unknown activity is not evidence that the file is safe. Errors raised by a
+            member propagate instead of producing a partial inventory.
+        """
+        _validate_inactive_days(inactive_days)
+        evaluated = _resolve_as_of(as_of)
+
+        frames = []
+        for repo in self.repos:
+            member = repo.knowledge_risk(
+                rev=rev,
+                inactive_days=inactive_days,
+                committer=committer,
+                ignore_globs=ignore_globs,
+                include_globs=include_globs,
+                branch=branch,
+                as_of=evaluated,
+            ).copy()
+            member.insert(0, "repository", repo.repo_name)
+            frames.append(member)
+
+        non_empty = [f for f in frames if not f.empty]
+        if non_empty:
+            return pd.concat(non_empty, ignore_index=True)
+        if frames:
+            return frames[0].reset_index(drop=True)
+        return pd.DataFrame(
+            {
+                "repository": pd.Series(dtype="object"),
+                "file": pd.Series(dtype="object"),
+                "owner": pd.Series(dtype="object"),
+                "owner_loc": pd.Series(dtype="int64"),
+                "total_loc": pd.Series(dtype="int64"),
+                "owner_share": pd.Series(dtype="float64"),
+                "owner_last_commit": pd.Series(dtype="datetime64[ns, UTC]"),
+                "days_inactive": pd.Series(dtype="float64"),
+                "at_risk": pd.Series(dtype="bool"),
+            }
+        )
 
     def bus_factor(self, ignore_globs=None, include_globs=None, by="projectd"):
         """Calculates the "bus factor" for the repositories.

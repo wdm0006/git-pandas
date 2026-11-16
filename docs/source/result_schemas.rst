@@ -440,6 +440,37 @@ Index: ``file`` (str), ``repository`` (str)
    * - ``last_edit_date``
      - datetime
 
+ProjectDirectory.knowledge_risk()
+---------------------------------
+
+Index: ``(unnamed integer index)`` (int)
+
+One row per repository/file; ownership and activity are repository-local.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Column
+     - Kind
+   * - ``repository``
+     - str
+   * - ``file``
+     - str
+   * - ``owner``
+     - str
+   * - ``owner_loc``
+     - int
+   * - ``total_loc``
+     - int
+   * - ``owner_share``
+     - float
+   * - ``owner_last_commit``
+     - datetime
+   * - ``days_inactive``
+     - float
+   * - ``at_risk``
+     - bool
+
 Repository.knowledge_risk()
 ---------------------------
 
