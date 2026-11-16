@@ -248,6 +248,21 @@ SCHEMAS = [
     ),
     _s(
         REPOSITORY,
+        "knowledge_risk",
+        [
+            ("file", "str"),
+            ("owner", "str"),
+            ("owner_loc", "int"),
+            ("total_loc", "int"),
+            ("owner_share", "float"),
+            ("owner_last_commit", "datetime"),
+            ("days_inactive", "float"),
+            ("at_risk", "bool"),
+        ],
+        note="One row per file; the empty frame has the same columns and index.",
+    ),
+    _s(
+        REPOSITORY,
         "bus_factor",
         [("repository", "str"), ("bus factor", "int")],
         kwargs=(("by", "repository"),),

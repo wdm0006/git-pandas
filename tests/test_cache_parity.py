@@ -147,6 +147,8 @@ COMMON_OWNERSHIP = [
 REPOSITORY_CASES = [
     *COMMON_ACTIVITY,
     *COMMON_OWNERSHIP,
+    ("knowledge_risk", {"branch": DEFAULT, "as_of": "2024-01-01", "inactive_days": 30}),
+    ("knowledge_risk", {"branch": DEFAULT, "as_of": "2024-01-01", "committer": False, "ignore_globs": ["*.md"]}),
     ("parallel_cumulative_blame", {"branch": DEFAULT}),
     ("parallel_cumulative_blame", {"branch": FEATURE, "committer": False, "num_datapoints": 3}),
     ("file_owner", {"rev": "HEAD", "filename": "README.md"}),
