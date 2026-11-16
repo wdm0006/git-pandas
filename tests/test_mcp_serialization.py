@@ -28,7 +28,7 @@ def server():
     sys.modules["mcp.server"] = mcp_server_module
     sys.modules["mcp.server.fastmcp"] = fastmcp_module
     try:
-        server_path = Path(__file__).parents[1] / "mcp_server" / "server.py"
+        server_path = Path(__file__).parents[1] / "gitpandas" / "mcp_server.py"
         spec = importlib.util.spec_from_file_location("gitpandas_mcp_server", server_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

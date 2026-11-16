@@ -1,22 +1,30 @@
 # GitPandas MCP Server
 
-This directory contains an experimental Model Context Protocol (MCP) server that acts as a wrapper around the `git-pandas` Python library. It allows MCP-compatible clients (like AI assistants or IDE extensions) to interact with git repository data using structured tools.
+An experimental Model Context Protocol (MCP) stdio server wrapping the `git-pandas` library, so MCP clients (AI assistants, IDE extensions) can query git repository data. The implementation lives in the package as `gitpandas.mcp_server`.
 
-## Prerequisites
+## Install and launch
 
-*   Python 3.8+
-*   `uv` (Python package installer and virtual environment manager). See [uv installation guide](https://github.com/astral-sh/uv#installation). You can often install it via pip: `pip install uv`.
+```bash
+pip install "git-pandas[mcp]"
+git-pandas-mcp
+```
 
-## Setup and Installation (using uv)
+Without the `mcp` extra, `import gitpandas` works as before; importing the server raises an error telling you to install `git-pandas[mcp]`.
 
-1.  **Clone the Repository:** If you haven't already, clone the main `git-pandas` repository.
+From a clone, `uv run mcp_server/server.py` (or `make mcp`) still works; the script is a thin launcher that uses the checkout's own `gitpandas`.
+
+On startup the server scans `~/Documents` for git repositories (up to 1,000) and registers `list_available_repos` plus a `repo_<method>` tool for each eligible `Repository` method (`blame`, `cumulative_blame` and `parallel_cumulative_blame` are excluded).
 
 ## Connecting with Claude Desktop (or similar clients)
 
-1.  Open Claude Desktop's settings or preferences.
-2.  Look for a section related to "Tools", "MCP Servers", "External Tools", or similar.
-3.  Add a new server configuration.
-4.  When prompted for the server command or path, paste the **full `uv run` command** you constructed in the previous section (e.g., `uv run --cwd /absolute/path/to/git-pandas/mcp_server python server.py`).
-5.  Save the configuration.
+Add an MCP server entry whose command is the installed script:
 
-Claude Desktop should now be able to launch this server process using `uv` when needed and communicate with it to use the defined tools.
+```json
+{
+  "mcpServers": {
+    "git-pandas": { "command": "git-pandas-mcp" }
+  }
+}
+```
+
+Or, without a persistent install: `uvx --from "git-pandas[mcp]" git-pandas-mcp`.
