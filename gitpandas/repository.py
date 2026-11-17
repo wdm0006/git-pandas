@@ -106,6 +106,14 @@ def _validate_inactive_days(inactive_days):
     return inactive_days
 
 
+def _resolve_as_of(as_of):
+    """Return ``as_of`` (default now) as a UTC ``Timestamp``; naive values are taken as UTC."""
+    evaluated = pd.Timestamp.now(tz="UTC") if as_of is None else pd.Timestamp(as_of)
+    if evaluated is pd.NaT:
+        raise ValueError(f"as_of must be a valid timestamp; got {as_of!r}")
+    return evaluated.tz_localize("UTC") if evaluated.tzinfo is None else evaluated.tz_convert("UTC")
+
+
 def _validates_inactive_days(func):
     """Reject an invalid ``inactive_days`` before any Git or cache access."""
     signature = inspect.signature(func)
@@ -2425,10 +2433,7 @@ class Repository:
             Last activity is measured on the whole branch history, not limited to the globs.
         """
         _validate_inactive_days(inactive_days)
-        evaluated = pd.Timestamp.now(tz="UTC") if as_of is None else pd.Timestamp(as_of)
-        if evaluated is pd.NaT:
-            raise ValueError(f"as_of must be a valid timestamp; got {as_of!r}")
-        evaluated = evaluated.tz_localize("UTC") if evaluated.tzinfo is None else evaluated.tz_convert("UTC")
+        evaluated = _resolve_as_of(as_of)
 
         owners = self._knowledge_risk_owners(
             rev=rev, committer=committer, ignore_globs=ignore_globs, include_globs=include_globs, branch=branch
