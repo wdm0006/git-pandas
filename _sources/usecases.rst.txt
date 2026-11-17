@@ -139,6 +139,24 @@ Find files whose dominant owner has stopped committing:
     risk = repo.knowledge_risk(inactive_days=180, as_of='2025-01-01')
     print(risk[risk['at_risk']][['file', 'owner', 'owner_share', 'days_inactive']])
 
+Compare a whole collection with ``ProjectDirectory.knowledge_risk``. The result has a leading
+``repository`` column and one row per repository/file, so identical relative paths in different
+repositories stay distinct:
+
+.. code-block:: python
+
+    from gitpandas import ProjectDirectory
+
+    project = ProjectDirectory('/path/to/repos', verbose=False)
+    # One as_of for every member; omit it to use "now", resolved once per call
+    risk = project.knowledge_risk(inactive_days=180, as_of='2025-01-01')
+    print(risk[risk['at_risk']].groupby('repository').size())
+
+Inactivity is repository-local: an owner is judged by their latest commit in the *same* repository,
+so someone active in one repository can still be inactive in another. Owners whose activity cannot
+be found on the branch have ``NaT``/``NaN`` activity and ``at_risk=False``; unknown activity is not
+evidence that a file is safe. A member error raises instead of returning a partial inventory.
+
 Performance Optimization
 ------------------------
 

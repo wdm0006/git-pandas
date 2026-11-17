@@ -793,6 +793,52 @@ Git object model.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gitpandas.project.ProjectDirectory.knowledge_risk">
+<span class="sig-name descname"><span class="pre">knowledge_risk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'HEAD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">committer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.knowledge_risk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.knowledge_risk" title="Link to this definition">¶</a></dt>
+<dd><p>Finds files whose dominant owner has stopped committing, across all repositories.</p>
+<p>Delegates to <code class="xref py py-meth docutils literal notranslate"><span class="pre">Repository.knowledge_risk()</span></code> for each member and stacks the results with a
+leading <code class="docutils literal notranslate"><span class="pre">repository</span></code> column. Ownership and activity are repository-local: an owner is judged
+by their latest commit in the same repository as the file, even when the same name owns files
+elsewhere. A default <code class="docutils literal notranslate"><span class="pre">as_of</span></code> is resolved once, so every member is evaluated at the same instant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rev</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Revision to compute blame at. Defaults to ‘HEAD’.</p></li>
+<li><p><strong>inactive_days</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Inactivity threshold in days; a non-negative integer
+(not a bool). Defaults to 180.</p></li>
+<li><p><strong>committer</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, identities are committers; otherwise authors.</p></li>
+<li><p><strong>ignore_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – Glob patterns for files to ignore</p></li>
+<li><p><strong>include_globs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em><em>]</em>) – Glob patterns for files to include</p></li>
+<li><p><strong>branch</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>]</em>) – Branch whose history defines each owner’s last commit. When omitted,
+each repository uses its own default branch.</p></li>
+<li><p><strong>as_of</strong> (<em>Optional</em><em>[</em><em>datetime-like</em><em>]</em>) – Evaluation instant; naive values are taken as UTC.
+Defaults to now (UTC), resolved once for the whole call.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One row per repository/file, in member order and each member’s row order,
+with a fresh integer index and columns <code class="docutils literal notranslate"><span class="pre">repository</span></code> followed by <code class="docutils literal notranslate"><span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">owner</span></code>,
+<code class="docutils literal notranslate"><span class="pre">owner_loc</span></code>, <code class="docutils literal notranslate"><span class="pre">total_loc</span></code>, <code class="docutils literal notranslate"><span class="pre">owner_share</span></code>, <code class="docutils literal notranslate"><span class="pre">owner_last_commit</span></code>, <code class="docutils literal notranslate"><span class="pre">days_inactive</span></code> and
+<code class="docutils literal notranslate"><span class="pre">at_risk</span></code> as documented on <code class="xref py py-meth docutils literal notranslate"><span class="pre">Repository.knowledge_risk()</span></code>. An empty project or all-empty
+members yield an empty frame with the same columns.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)">pandas.DataFrame</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If inactive_days is not a non-negative integer, or as_of cannot be parsed. This is
+    checked before any repository is visited, including for an empty project.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>An owner with no commits found on <code class="docutils literal notranslate"><span class="pre">branch</span></code> has <code class="docutils literal notranslate"><span class="pre">NaT</span></code>/<code class="docutils literal notranslate"><span class="pre">NaN</span></code> activity and
+<code class="docutils literal notranslate"><span class="pre">at_risk=False</span></code>: unknown activity is not evidence that the file is safe. Errors raised by a
+member propagate instead of producing a partial inventory.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gitpandas.project.ProjectDirectory.bus_factor">
 <span class="sig-name descname"><span class="pre">bus_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_globs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'projectd'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gitpandas/project.html#ProjectDirectory.bus_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gitpandas.project.ProjectDirectory.bus_factor" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the “bus factor” for the repositories.</p>

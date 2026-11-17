@@ -193,7 +193,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">git</span><span class="w"> </span><span class="kn">import</span> <span class="n">GitCommandError</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>  <span class="c1"># Import the logger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">_validate_date_source</span><span class="p">,</span> <span class="n">_validate_limit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas.repository</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Repository</span><span class="p">,</span>
+    <span class="n">_resolve_as_of</span><span class="p">,</span>
+    <span class="n">_validate_date_source</span><span class="p">,</span>
+    <span class="n">_validate_inactive_days</span><span class="p">,</span>
+    <span class="n">_validate_limit</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
@@ -1304,6 +1310,90 @@
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fetched detailed information for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> repositories."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="ProjectDirectory.knowledge_risk">
+<a class="viewcode-back" href="../../project.html#gitpandas.project.ProjectDirectory.knowledge_risk">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">knowledge_risk</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rev</span><span class="o">=</span><span class="s2">"HEAD"</span><span class="p">,</span>
+        <span class="n">inactive_days</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+        <span class="n">committer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ignore_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_globs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">as_of</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Finds files whose dominant owner has stopped committing, across all repositories.</span>
+
+<span class="sd">        Delegates to :meth:`Repository.knowledge_risk` for each member and stacks the results with a</span>
+<span class="sd">        leading ``repository`` column. Ownership and activity are repository-local: an owner is judged</span>
+<span class="sd">        by their latest commit in the same repository as the file, even when the same name owns files</span>
+<span class="sd">        elsewhere. A default ``as_of`` is resolved once, so every member is evaluated at the same instant.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rev (str, optional): Revision to compute blame at. Defaults to 'HEAD'.</span>
+<span class="sd">            inactive_days (int, optional): Inactivity threshold in days; a non-negative integer</span>
+<span class="sd">                (not a bool). Defaults to 180.</span>
+<span class="sd">            committer (bool, optional): If True, identities are committers; otherwise authors.</span>
+<span class="sd">            ignore_globs (Optional[List[str]]): Glob patterns for files to ignore</span>
+<span class="sd">            include_globs (Optional[List[str]]): Glob patterns for files to include</span>
+<span class="sd">            branch (Optional[str]): Branch whose history defines each owner's last commit. When omitted,</span>
+<span class="sd">                each repository uses its own default branch.</span>
+<span class="sd">            as_of (Optional[datetime-like]): Evaluation instant; naive values are taken as UTC.</span>
+<span class="sd">                Defaults to now (UTC), resolved once for the whole call.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: One row per repository/file, in member order and each member's row order,</span>
+<span class="sd">            with a fresh integer index and columns ``repository`` followed by ``file``, ``owner``,</span>
+<span class="sd">            ``owner_loc``, ``total_loc``, ``owner_share``, ``owner_last_commit``, ``days_inactive`` and</span>
+<span class="sd">            ``at_risk`` as documented on :meth:`Repository.knowledge_risk`. An empty project or all-empty</span>
+<span class="sd">            members yield an empty frame with the same columns.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If inactive_days is not a non-negative integer, or as_of cannot be parsed. This is</span>
+<span class="sd">                checked before any repository is visited, including for an empty project.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            An owner with no commits found on ``branch`` has ``NaT``/``NaN`` activity and</span>
+<span class="sd">            ``at_risk=False``: unknown activity is not evidence that the file is safe. Errors raised by a</span>
+<span class="sd">            member propagate instead of producing a partial inventory.</span>
+<span class="sd">        """</span>
+        <span class="n">_validate_inactive_days</span><span class="p">(</span><span class="n">inactive_days</span><span class="p">)</span>
+        <span class="n">evaluated</span> <span class="o">=</span> <span class="n">_resolve_as_of</span><span class="p">(</span><span class="n">as_of</span><span class="p">)</span>
+
+        <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">repo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repos</span><span class="p">:</span>
+            <span class="n">member</span> <span class="o">=</span> <span class="n">repo</span><span class="o">.</span><span class="n">knowledge_risk</span><span class="p">(</span>
+                <span class="n">rev</span><span class="o">=</span><span class="n">rev</span><span class="p">,</span>
+                <span class="n">inactive_days</span><span class="o">=</span><span class="n">inactive_days</span><span class="p">,</span>
+                <span class="n">committer</span><span class="o">=</span><span class="n">committer</span><span class="p">,</span>
+                <span class="n">ignore_globs</span><span class="o">=</span><span class="n">ignore_globs</span><span class="p">,</span>
+                <span class="n">include_globs</span><span class="o">=</span><span class="n">include_globs</span><span class="p">,</span>
+                <span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span>
+                <span class="n">as_of</span><span class="o">=</span><span class="n">evaluated</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"repository"</span><span class="p">,</span> <span class="n">repo</span><span class="o">.</span><span class="n">repo_name</span><span class="p">)</span>
+            <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+
+        <span class="n">non_empty</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frames</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">empty</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">non_empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">non_empty</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"repository"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"object"</span><span class="p">),</span>
+                <span class="s2">"file"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"object"</span><span class="p">),</span>
+                <span class="s2">"owner"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"object"</span><span class="p">),</span>
+                <span class="s2">"owner_loc"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"int64"</span><span class="p">),</span>
+                <span class="s2">"total_loc"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"int64"</span><span class="p">),</span>
+                <span class="s2">"owner_share"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">),</span>
+                <span class="s2">"owner_last_commit"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"datetime64[ns, UTC]"</span><span class="p">),</span>
+                <span class="s2">"days_inactive"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"float64"</span><span class="p">),</span>
+                <span class="s2">"at_risk"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"bool"</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ProjectDirectory.bus_factor">

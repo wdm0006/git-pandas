@@ -296,6 +296,21 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">risk</span><span class="p">[</span><span class="n">risk</span><span class="p">[</span><span class="s1">'at_risk'</span><span class="p">]][[</span><span class="s1">'file'</span><span class="p">,</span> <span class="s1">'owner'</span><span class="p">,</span> <span class="s1">'owner_share'</span><span class="p">,</span> <span class="s1">'days_inactive'</span><span class="p">]])</span>
 </pre></div>
 </div>
+<p>Compare a whole collection with <code class="docutils literal notranslate"><span class="pre">ProjectDirectory.knowledge_risk</span></code>. The result has a leading
+<code class="docutils literal notranslate"><span class="pre">repository</span></code> column and one row per repository/file, so identical relative paths in different
+repositories stay distinct:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">gitpandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProjectDirectory</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">ProjectDirectory</span><span class="p">(</span><span class="s1">'/path/to/repos'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># One as_of for every member; omit it to use "now", resolved once per call</span>
+<span class="n">risk</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">knowledge_risk</span><span class="p">(</span><span class="n">inactive_days</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">as_of</span><span class="o">=</span><span class="s1">'2025-01-01'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">risk</span><span class="p">[</span><span class="n">risk</span><span class="p">[</span><span class="s1">'at_risk'</span><span class="p">]]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">'repository'</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Inactivity is repository-local: an owner is judged by their latest commit in the <em>same</em> repository,
+so someone active in one repository can still be inactive in another. Owners whose activity cannot
+be found on the branch have <code class="docutils literal notranslate"><span class="pre">NaT</span></code>/<code class="docutils literal notranslate"><span class="pre">NaN</span></code> activity and <code class="docutils literal notranslate"><span class="pre">at_risk=False</span></code>; unknown activity is not
+evidence that a file is safe. A member error raises instead of returning a partial inventory.</p>
 </section>
 </section>
 <section id="performance-optimization">
